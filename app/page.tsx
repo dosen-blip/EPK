@@ -1,8 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type ArchiveMode = "tune" | "drift" | "lock";
+
+const MIX_SEGMENTS = Array.from({ length: 31 }, (_, index) => ({
+  src: `/audio/dosen-escapade-ap-${String(index).padStart(3, "0")}.mp3`,
+  offset: index * 180,
+  duration: index === 30 ? 104.031202 : 180,
+}));
+
+const MIX_DURATION = MIX_SEGMENTS.at(-1)!.offset + MIX_SEGMENTS.at(-1)!.duration;
+
+function formatTime(seconds: number) {
+  const safeSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const remainingSeconds = safeSeconds % 60;
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+}
 
 const transmissions = [
   {
@@ -54,6 +70,72 @@ const timeline = [
 export default function Home() {
   const [mode, setMode] = useState<ArchiveMode>("tune");
   const [transmitting, setTransmitting] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [segmentIndex, setSegmentIndex] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const duration = MIX_DURATION;
+
+  function loadSegment(nextIndex: number, localTime: number, shouldPlay: boolean) {
+    const audio = audioRef.current;
+    const segment = MIX_SEGMENTS[nextIndex];
+    if (!audio || !segment) return;
+
+    setSegmentIndex(nextIndex);
+    audio.src = segment.src;
+    audio.load();
+    audio.addEventListener(
+      "loadedmetadata",
+      () => {
+        audio.currentTime = Math.min(localTime, segment.duration);
+        if (shouldPlay) void audio.play();
+      },
+      { once: true },
+    );
+  }
+
+  async function togglePlayback() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      try {
+        await audio.play();
+      } catch {
+        setTransmitting(false);
+      }
+    } else {
+      audio.pause();
+    }
+  }
+
+  function handleSegmentEnded() {
+    const nextIndex = segmentIndex + 1;
+    if (nextIndex < MIX_SEGMENTS.length) {
+      loadSegment(nextIndex, 0, true);
+      return;
+    }
+
+    setTransmitting(false);
+    setCurrentTime(0);
+    loadSegment(0, 0, false);
+  }
+
+  function seekTo(nextTime: number) {
+    const boundedTime = Math.min(Math.max(nextTime, 0), MIX_DURATION);
+    const nextIndex = MIX_SEGMENTS.findIndex(
+      (segment, index) =>
+        boundedTime < segment.offset + segment.duration || index === MIX_SEGMENTS.length - 1,
+    );
+    const segment = MIX_SEGMENTS[nextIndex];
+    const localTime = boundedTime - segment.offset;
+    const shouldPlay = audioRef.current ? !audioRef.current.paused : false;
+
+    if (nextIndex === segmentIndex && audioRef.current) {
+      audioRef.current.currentTime = localTime;
+    } else {
+      loadSegment(nextIndex, localTime, shouldPlay);
+    }
+    setCurrentTime(boundedTime);
+  }
 
   return (
     <main className={`site-shell mode-${mode}`}>
@@ -168,28 +250,47 @@ export default function Home() {
       </section>
 
       <section className="signal-section section" id="signal">
+        <audio
+          ref={audioRef}
+          src={MIX_SEGMENTS[0].src}
+          preload="metadata"
+          onPlay={() => setTransmitting(true)}
+          onPause={() => setTransmitting(false)}
+          onEnded={handleSegmentEnded}
+          onTimeUpdate={(event) =>
+            setCurrentTime(MIX_SEGMENTS[segmentIndex].offset + event.currentTarget.currentTime)
+          }
+        />
         <div className="signal-intro">
           <p className="eyebrow">THE CURRENT SIGNAL</p>
           <h2>Built for the late hours.</h2>
           <p>
             Driving tech house, minimal tension, and euphoric release. The player
-            shell is ready for a reviewed SoundCloud or self-hosted mix.
+            now carried by the full Escapade afterparty opening set.
           </p>
         </div>
         <button
           className={`player-disc ${transmitting ? "is-playing" : ""}`}
           type="button"
           aria-pressed={transmitting}
-          onClick={() => setTransmitting((value) => !value)}
+          onClick={() => void togglePlayback()}
         >
-          <span className="disc-ring" aria-hidden="true" />
-          <span>{transmitting ? "PAUSE SIGNAL" : "TEST PLAYER"}</span>
-          <small>PLACEHOLDER AUDIO</small>
+          <img
+            className="player-cover-art"
+            src="/media/escapade-ap-cover.png"
+            alt="Escapade official afterparty: Odd Mob B2B Walker & Royce, opening set DOSEN"
+            width="1254"
+            height="1254"
+          />
+          <span className="player-cover-control">
+            <span className="player-action">{transmitting ? "PAUSE SIGNAL" : "PLAY FULL SET"}</span>
+            <small>320 KBPS / {formatTime(duration)}</small>
+          </span>
         </button>
         <div className="signal-data mono">
           <div><span>NOW QUEUED</span><strong>ODD MOB X WALKER &amp; ROYCE / OPENING SET</strong></div>
-          <div><span>FORMAT</span><strong>FULL SET / 01:31:44</strong></div>
-          <div><span>STATUS</span><strong>EMBED PENDING MEDIA REVIEW</strong></div>
+          <div><span>FORMAT</span><strong>FULL SET / {formatTime(duration)}</strong></div>
+          <div><span>STATUS</span><strong>LIVE PLAYER / 320 KBPS MP3</strong></div>
         </div>
       </section>
 
@@ -254,15 +355,27 @@ export default function Home() {
       </footer>
 
       <div className={`signal-dock ${transmitting ? "is-playing" : ""}`}>
-        <button type="button" onClick={() => setTransmitting((value) => !value)} aria-label={transmitting ? "Pause placeholder player" : "Play placeholder player"}>
+        <button type="button" onClick={() => void togglePlayback()} aria-label={transmitting ? "Pause Escapade opening set" : "Play Escapade opening set"}>
           {transmitting ? "Ⅱ" : "▶"}
         </button>
         <div className="dock-track">
-          <span>PLACEHOLDER / OPENING SET</span>
-          <div className="progress"><i /></div>
+          <span>ESCAPADE AP / OPENING SET</span>
+          <input
+            className="progress"
+            type="range"
+            min="0"
+            max={duration}
+            step="1"
+            value={Math.min(currentTime, duration)}
+            aria-label="Seek through Escapade opening set"
+            onChange={(event) => {
+              const nextTime = Number(event.currentTarget.value);
+              seekTo(nextTime);
+            }}
+          />
         </div>
-        <span className="dock-time mono">00:00 / 91:44</span>
-        <span className="dock-status mono">{transmitting ? "TRANSMITTING" : "STANDBY"}</span>
+        <span className="dock-time mono">{formatTime(currentTime)} / {formatTime(duration)}</span>
+        <span className="dock-status mono">{transmitting ? "TRANSMITTING" : "READY"}</span>
       </div>
     </main>
   );

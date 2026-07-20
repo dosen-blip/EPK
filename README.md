@@ -9,6 +9,8 @@ Responsive one-page scaffold for the DOSEN electronic press kit. The visual dire
 - The booking contact and final approved biography are visibly marked as pending.
 - Every on-page wordmark is live `DOSEN` text rendered with the embedded `public/fonts/Ethnocentric-Regular.otf` webfont.
 - The social preview remains a bitmap at `public/og-ethnocentric.png`, as required by social-unfurl platforms, but its mark is rendered in Ethnocentric.
+- The signal player streams the complete 1:31:44 Escapade afterparty opening set as 31 sequential 320 kbps MP3 delivery segments under `public/audio/`. The player presents them as one continuous timeline; the supplied WAV master remains untouched outside the site.
+- The player artwork is the supplied 1254×1254 Escapade afterparty cover at `public/media/escapade-ap-cover.png`.
 
 ## Replacing media
 

@@ -107,13 +107,16 @@ button { color: inherit; }
 .signal-section { position: relative; min-height: 92vh; border-block: 1px solid var(--line); display: grid; grid-template-columns: 1fr minmax(280px, 38vw) 1fr; gap: 4vw; align-items: center; background: radial-gradient(circle at center, rgba(183,72,255,.16), transparent 38%); }
 .signal-intro h2 { max-width: 600px; font-size: clamp(3.5rem, 6.4vw, 7.5rem); }
 .signal-intro > p:last-child { max-width: 420px; color: var(--muted); line-height: 1.5; }
-.player-disc { position: relative; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--line); background: #0b0b0b; color: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: inset 0 0 0 5vw #121212, inset 0 0 0 calc(5vw + 1px) var(--line); }
-.player-disc::before { content: ""; position: absolute; inset: 7%; border: 1px dashed var(--muted); border-radius: inherit; }
-.player-disc span:not(.disc-ring) { z-index: 2; font-weight: 900; letter-spacing: -.03em; }
-.player-disc small { z-index: 2; color: var(--muted); font: .55rem/1 "SFMono-Regular", Consolas, monospace; }
-.player-disc.is-playing { animation: spin 8s linear infinite; }
-.player-disc.is-playing > span:not(.disc-ring), .player-disc.is-playing > small { animation: spin 8s linear infinite reverse; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.player-disc { position: relative; aspect-ratio: 1; overflow: hidden; border: 1px solid var(--line); background: #0b0b0b; color: var(--paper); padding: 0; cursor: pointer; box-shadow: 0 30px 100px rgba(0,0,0,.46); transform: rotate(-1.25deg); transition: transform .25s ease, border-color .25s ease; }
+.player-disc:hover { transform: rotate(0); border-color: var(--violet); }
+.player-cover-art { display: block; width: 100%; height: 100%; object-fit: cover; }
+.player-cover-control { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; background: linear-gradient(180deg, transparent 48%, rgba(8,8,8,.82)); transition: background .25s ease; }
+.player-cover-control::before { content: ""; position: absolute; width: 34%; aspect-ratio: 1; border: 1px solid rgba(238,234,225,.72); border-radius: 50%; background: rgba(8,8,8,.54); backdrop-filter: blur(8px); }
+.player-action, .player-disc small { position: relative; z-index: 2; }
+.player-action { font-weight: 900; letter-spacing: -.03em; }
+.player-disc small { color: var(--muted); font: .55rem/1 "SFMono-Regular", Consolas, monospace; }
+.player-disc.is-playing { animation: player-pulse 2.4s ease-in-out infinite alternate; }
+@keyframes player-pulse { to { box-shadow: 0 30px 110px rgba(183,72,255,.26); } }
 .signal-data { display: grid; gap: 24px; }
 .signal-data div, .press-facts div { padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .signal-data span, .press-facts span { display: block; margin-bottom: 8px; color: var(--muted); font-size: .55rem; }
@@ -151,10 +154,12 @@ footer p, footer a { font-size: .58rem; }
 .signal-dock { position: fixed; z-index: 60; left: 0; bottom: 0; width: 100%; height: 66px; display: grid; grid-template-columns: 66px 1fr auto auto; align-items: center; gap: 20px; border-top: 1px solid var(--line); background: rgba(8,8,8,.94); backdrop-filter: blur(14px); }
 .signal-dock > button { height: 65px; border: 0; border-right: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; font-weight: 900; }
 .dock-track > span { display: block; margin-bottom: 7px; font: 700 .6rem/1 "SFMono-Regular", Consolas, monospace; letter-spacing: .08em; }
-.progress { width: 100%; height: 2px; background: var(--line); }
-.progress i { display: block; width: 18%; height: 100%; background: var(--violet); }
-.signal-dock.is-playing .progress i { animation: progress 12s linear infinite; }
-@keyframes progress { from { width: 4%; } to { width: 96%; } }
+.progress { width: 100%; height: 14px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
+.progress::-webkit-slider-runnable-track { height: 2px; background: var(--line); }
+.progress::-webkit-slider-thumb { width: 10px; height: 10px; margin-top: -4px; appearance: none; border: 0; border-radius: 50%; background: var(--violet); box-shadow: 0 0 9px var(--violet); }
+.progress::-moz-range-track { height: 2px; background: var(--line); }
+.progress::-moz-range-progress { height: 2px; background: var(--violet); }
+.progress::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 50%; background: var(--violet); box-shadow: 0 0 9px var(--violet); }
 .dock-time, .dock-status { font-size: .55rem; white-space: nowrap; }
 .dock-status { padding-right: 28px; color: var(--violet); }
 

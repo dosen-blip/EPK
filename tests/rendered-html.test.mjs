@@ -48,6 +48,14 @@ test("keeps placeholder media explicit and replaceable", async () => {
 
   assert.match(page, /MEDIA PENDING/);
   assert.match(page, /ADD BEFORE LAUNCH/);
+  assert.match(page, /Array\.from\(\{ length: 31 \}/);
+  assert.match(page, /dosen-escapade-ap-\$\{String\(index\)\.padStart\(3, "0"\)\}\.mp3/);
+  assert.doesNotMatch(page, /\/audio\/dosen-escapade-ap\.mp3/);
+  assert.match(page, /\/media\/escapade-ap-cover\.png/);
+  assert.match(page, /PLAY FULL SET/);
+  assert.match(page, /320 KBPS/);
+  assert.match(page, /Seek through Escapade opening set/);
+  assert.doesNotMatch(page, /PLACEHOLDER AUDIO|Pause placeholder player|Play placeholder player/);
   assert.match(page, /className="hero-mark">DOSEN<\/h1>/);
   assert.doesNotMatch(page, /dosen-wordmark|wordmark-on-dark|wordmark-on-light/);
   assert.match(layout, /openGraph/);
