@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
 async function render() {
@@ -48,8 +48,14 @@ test("keeps placeholder media explicit and replaceable", async () => {
 
   assert.match(page, /MEDIA PENDING/);
   assert.match(page, /ADD BEFORE LAUNCH/);
+  assert.match(page, /className="hero-mark">DOSEN<\/h1>/);
+  assert.doesNotMatch(page, /dosen-wordmark|wordmark-on-dark|wordmark-on-light/);
   assert.match(layout, /openGraph/);
   assert.match(layout, /\/og-ethnocentric\.png/);
+  assert.match(css, /font-family:\s*"Ethnocentric"/);
+  assert.match(css, /\/fonts\/Ethnocentric-Regular\.otf/);
+  assert.doesNotMatch(css, /dosen-wordmark/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+  await access(new URL("../public/fonts/Ethnocentric-Regular.otf", import.meta.url));
 });

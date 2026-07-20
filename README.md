@@ -7,8 +7,8 @@ Responsive one-page scaffold for the DOSEN electronic press kit. The visual dire
 - Site structure, responsive layout, motion, and interaction shells are implemented.
 - Performance-media areas are intentional placeholders pending the quality and rights review.
 - The booking contact and final approved biography are visibly marked as pending.
-- The social preview uses the supplied Ethnocentric mark at `public/og-ethnocentric.png`.
-- The displayed wordmark uses the supplied Ethnocentric source crop at `public/brand/dosen-wordmark-v2.png`; the site does not substitute another face for the mark.
+- Every on-page wordmark is live `DOSEN` text rendered with the embedded `public/fonts/Ethnocentric-Regular.otf` webfont.
+- The social preview remains a bitmap at `public/og-ethnocentric.png`, as required by social-unfurl platforms, but its mark is rendered in Ethnocentric.
 
 ## Replacing media
 

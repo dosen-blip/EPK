@@ -59,7 +59,7 @@ export default function Home() {
     <main className={`site-shell mode-${mode}`}>
       <header className="site-header">
         <a className="mini-mark" href="#top" aria-label="DOSEN home">
-          <img className="wordmark-on-dark wordmark-small" src="/brand/dosen-wordmark-v2.png" alt="DOSEN" width="935" height="145" />
+          <span className="wordmark wordmark-small">DOSEN</span>
         </a>
         <div className="header-signal" aria-hidden="true">
           <span className="signal-dot" /> OTTAWA / CA
@@ -81,10 +81,7 @@ export default function Home() {
 
         <div className="hero-copy">
           <p className="eyebrow">MINIMAL GRIT / ROLLING PRESSURE / LATE-HOUR RELEASE</p>
-          <h1 className="hero-mark">
-            <span className="sr-only">DOSEN</span>
-            <img className="wordmark-on-dark" src="/brand/dosen-wordmark-v2.png" alt="" width="935" height="145" />
-          </h1>
+          <h1 className="hero-mark">DOSEN</h1>
           <div className="hero-bottom">
             <p className="hero-statement">
               Ottawa-based DJ building pressure through tech house, trance lift,
@@ -251,9 +248,7 @@ export default function Home() {
       </section>
 
       <footer>
-        <span className="mini-mark" aria-label="DOSEN">
-          <img className="wordmark-on-light wordmark-small" src="/brand/dosen-wordmark-v2.png" alt="" width="935" height="145" />
-        </span>
+        <span className="mini-mark wordmark wordmark-small">DOSEN</span>
         <p className="mono">EPK SCAFFOLD / MEDIA SLOTS ARE PLACEHOLDERS / 2026</p>
         <a href="#top" aria-label="Back to top">↑ TOP</a>
       </footer>
