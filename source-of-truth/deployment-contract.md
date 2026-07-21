@@ -6,15 +6,16 @@
 - Project name: `dosen-epk`
 - Production branch: `main`
 - Canonical hostname: `www.dosen.ca`
+- Redirect hostname: `dosen.ca` (permanent redirect to the canonical hostname, preserving path and query)
 - Stable Pages hostname: `dosen-epk.pages.dev`
 - Build command: `npm run build:pages`
 - Output directory: `.pages-dist`
 - Runtime: Pages Functions advanced mode (`_worker.js`)
 - Node.js: `22.13.0` or newer 22.x
 
-The canonical hostname is attached once at the Pages project level. Every approved update must deploy to the existing `dosen-epk` project on `main`; Cloudflare then routes `www.dosen.ca` to the newest successful production deployment automatically. Do not create a new deployment project, attach the hostname to another platform, or treat a version-specific URL as production.
+Both hostnames are attached once at the Pages project level. Every approved update must deploy to the existing `dosen-epk` project on `main`; Cloudflare then routes them to the newest successful production deployment automatically. Requests to `dosen.ca` are redirected by the application Worker to the canonical `www.dosen.ca` hostname. Do not create a new deployment project, attach either hostname to another platform, or treat a version-specific URL as production.
 
-Authoritative DNS is hosted at IONOS. `www` must be a CNAME to `dosen-epk.pages.dev`; conflicting `A` and `AAAA` records at `www` are forbidden because they bypass Cloudflare Pages and break TLS.
+IONOS remains the registrar, but authoritative DNS is hosted by Cloudflare. Cloudflare must provide proxied, flattened routing from the apex and proxied CNAME routing from `www` to `dosen-epk.pages.dev`. IONOS forwarding and IONOS-managed A/AAAA records are forbidden because they can overwrite or bypass the Pages hostnames and break TLS.
 
 The Pages output contains the application Worker, content-hashed JavaScript/CSS, favicon, and social-preview image. Audio, video, event imagery, and fonts stay in R2 and are addressed through the canonical media origin.
 

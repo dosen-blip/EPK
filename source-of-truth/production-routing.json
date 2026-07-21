@@ -6,11 +6,23 @@
   "productionBranch": "main",
   "pagesHostname": "dosen-epk.pages.dev",
   "canonicalHostname": "www.dosen.ca",
-  "dnsAuthority": "IONOS",
+  "redirectHostname": "dosen.ca",
+  "dnsAuthority": "Cloudflare",
+  "registrar": "IONOS",
   "requiredDns": {
-    "type": "CNAME",
-    "name": "www",
-    "target": "dosen-epk.pages.dev"
+    "www": {
+      "type": "CNAME",
+      "name": "www",
+      "target": "dosen-epk.pages.dev",
+      "proxied": true
+    },
+    "apex": {
+      "type": "CNAME",
+      "name": "@",
+      "target": "dosen-epk.pages.dev",
+      "proxied": true,
+      "flattened": true
+    }
   },
   "releasePolicy": {
     "reuseProject": true,

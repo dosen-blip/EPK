@@ -37,7 +37,7 @@ test("keeps production media and visual treatments explicit", async () => {
     access(new URL("../dist/client/og-dosen-wordmark.png", import.meta.url)),
   ]);
 
-  const [page, playerModel, layout, css, favicon, packageJson, manifestJson, routingJson, viteConfig] = await Promise.all([
+  const [page, playerModel, layout, css, favicon, packageJson, manifestJson, routingJson, viteConfig, workerEntry] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/player-model.mjs", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
@@ -47,6 +47,7 @@ test("keeps production media and visual treatments explicit", async () => {
     readFile(new URL("../source-of-truth/media-manifest.json", import.meta.url), "utf8"),
     readFile(new URL("../source-of-truth/production-routing.json", import.meta.url), "utf8"),
     readFile(new URL("../vite.config.ts", import.meta.url), "utf8"),
+    readFile(new URL("../worker/index.ts", import.meta.url), "utf8"),
   ]);
   const manifest = JSON.parse(manifestJson);
   const routing = JSON.parse(routingJson);
@@ -54,8 +55,14 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.equal(routing.platform, "cloudflare-pages");
   assert.equal(routing.projectName, "dosen-epk");
   assert.equal(routing.canonicalHostname, "www.dosen.ca");
-  assert.equal(routing.requiredDns.target, "dosen-epk.pages.dev");
+  assert.equal(routing.redirectHostname, "dosen.ca");
+  assert.equal(routing.dnsAuthority, "Cloudflare");
+  assert.equal(routing.requiredDns.www.target, "dosen-epk.pages.dev");
+  assert.equal(routing.requiredDns.apex.target, "dosen-epk.pages.dev");
   assert.doesNotMatch(viteConfig, /sites-vite-plugin|hosting\.json/);
+  assert.match(workerEntry, /url\.hostname === "dosen\.ca"/);
+  assert.match(workerEntry, /url\.hostname = "www\.dosen\.ca"/);
+  assert.match(workerEntry, /Response\.redirect\(url\.toString\(\), 301\)/);
 
   for (const slot of [
     "hero-escapade",
