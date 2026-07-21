@@ -540,6 +540,18 @@ function EventClipRow({
   );
 }
 
+function PlaybackIcon({ playing, className = "" }: { playing: boolean; className?: string }) {
+  return (
+    <span
+      className={`playback-icon ${playing ? "is-pause" : "is-play"} ${className}`.trim()}
+      aria-hidden="true"
+    >
+      <i />
+      <i />
+    </span>
+  );
+}
+
 function DossierVinylPlayer({
   set,
   isActive,
@@ -644,7 +656,7 @@ function DossierVinylPlayer({
           onClick={onToggle}
           aria-label={isPlaying ? `Pause ${set.title}` : `Play ${set.title}`}
         >
-          <span aria-hidden="true">{isPlaying ? "Ⅱ" : "▶"}</span>
+          <PlaybackIcon playing={isPlaying} />
           {isPlaying ? "PAUSE" : "PLAY"}
         </button>
       </div>
@@ -1463,7 +1475,7 @@ export default function Home() {
                 aria-label={transmitting ? `Pause ${activeSet.title}` : `Play ${activeSet.title}`}
                 onClick={() => void togglePlayback()}
               >
-                <span className="vinyl-play-icon" aria-hidden="true">{transmitting ? "Ⅱ" : "▶"}</span>
+                <PlaybackIcon playing={transmitting} className="vinyl-play-icon" />
                 <span>{transmitting ? "PAUSE" : "PLAY"}</span>
                 <small className="mono">320 KBPS / {formatTime(duration)}</small>
               </button>
@@ -1615,7 +1627,7 @@ export default function Home() {
 
       <div className={`signal-dock ${transmitting ? "is-playing" : ""}`}>
         <button type="button" onClick={() => void togglePlayback()} aria-label={transmitting ? `Pause ${activeSet.title}` : `Play ${activeSet.title}`}>
-          {transmitting ? "Ⅱ" : "▶"}
+          <PlaybackIcon playing={transmitting} />
         </button>
         <div className="dock-track">
           <span>{activeSet.dockTitle}</span>

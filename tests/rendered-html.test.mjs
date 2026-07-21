@@ -97,6 +97,8 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.doesNotMatch(page, /\/audio\/dosen-escapade-ap\.mp3/);
   assert.match(page, /\/media\/escapade-ap-cover\.png/);
   assert.match(page, /transmitting \? "PAUSE" : "PLAY"/);
+  assert.match(page, /function PlaybackIcon/);
+  assert.doesNotMatch(page, /▶|Ⅱ/);
   assert.match(page, /320 KBPS/);
   assert.match(page, /Seek through \$\{activeSet\.title\}/);
   assert.match(page, /data-active-set/);
