@@ -1576,7 +1576,7 @@ export default function Home() {
       </section>
 
       <section className="press section" id="press">
-        <div className="press-label mono">ARTIST PROFILE / WORKING COPY</div>
+        <div className="press-label mono">ARTIST PROFILE / OFFICIAL BIO</div>
         <div className="press-copy">
           <p className="drop-cap">
             DOSEN is an Ottawa-based DJ with a sound rooted in minimal, gritty
@@ -1588,7 +1588,6 @@ export default function Home() {
             debut and Frequency Shift appearances to an opening slot at the
             official Escapade afterparty for Odd Mob B2B Walker &amp; Royce.
           </p>
-          <p className="press-note mono">BIO STATUS / DRAFT — FINAL APPROVAL REQUIRED</p>
         </div>
         <aside className="press-facts">
           <div><span>BASE</span><strong>OTTAWA, CANADA</strong></div>
@@ -1602,7 +1601,7 @@ export default function Home() {
         <p className="eyebrow">BOOKINGS / PRESS / COLLABORATION</p>
         <h2>Make a night of it.</h2>
         <div className="contact-actions">
-          <span className="contact-placeholder">BOOKING CONTACT / ADD BEFORE LAUNCH</span>
+          <a href="mailto:matiadosen@outlook.com">matiadosen@outlook.com ↗</a>
           <a href="https://www.instagram.com/matia_dosen/" target="_blank" rel="noreferrer">Instagram ↗</a>
           <a href="https://soundcloud.com/user-278640203" target="_blank" rel="noreferrer">SoundCloud ↗</a>
         </div>
@@ -1610,7 +1609,7 @@ export default function Home() {
 
       <footer>
         <span className="mini-mark wordmark wordmark-small">DOSEN</span>
-        <p className="mono">EPK PREVIEW / MEDIA PASS IN PROGRESS / 2026</p>
+        <p className="mono">ELECTRONIC PRESS KIT / OTTAWA / 2026</p>
         <a href="#top" aria-label="Back to top">↑ TOP</a>
       </footer>
 

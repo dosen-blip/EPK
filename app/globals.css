@@ -321,7 +321,6 @@ button { color: inherit; }
 .press-label { color: var(--violet); font-size: .58rem; }
 .press-copy p { max-width: 800px; font-size: clamp(1.25rem, 2.25vw, 2.45rem); line-height: 1.16; letter-spacing: -.04em; }
 .press-copy .drop-cap::first-letter { float: left; margin: .05em .13em 0 0; font-size: 5.2em; line-height: .7; color: var(--violet); font-weight: 900; }
-.press-copy .press-note { margin-top: 42px; color: var(--muted); font-size: .57rem; letter-spacing: .08em; }
 .press-facts { display: grid; align-content: start; gap: 22px; }
 
 .contact { position: relative; overflow: hidden; border-top: 1px solid var(--line); background: var(--paper); color: var(--ink); }
@@ -331,7 +330,6 @@ button { color: inherit; }
 .contact-actions > * { padding: 14px 18px; border: 1px solid currentColor; border-radius: 999px; font: 700 .63rem/1 "SFMono-Regular", Consolas, monospace; letter-spacing: .07em; }
 .contact-actions a { transition: .2s ease; }
 .contact-actions a:hover { background: var(--ink); color: var(--paper); }
-.contact-placeholder { opacity: .45; border-style: dashed !important; }
 footer { min-height: 160px; padding: 42px clamp(18px, 3vw, 48px); display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--ink); background: var(--paper); color: var(--ink); }
 footer p, footer a { font-size: .58rem; }
 

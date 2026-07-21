@@ -32,11 +32,12 @@ test("server-renders the DOSEN EPK scaffold", async () => {
 });
 
 test("keeps production media and visual treatments explicit", async () => {
-  const [page, playerModel, layout, css, packageJson, manifestJson] = await Promise.all([
+  const [page, playerModel, layout, css, favicon, packageJson, manifestJson] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/player-model.mjs", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../public/favicon.svg", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../source-of-truth/media-manifest.json", import.meta.url), "utf8"),
   ]);
@@ -88,7 +89,9 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /const clipLabel = `\$\{eventTitle\} CLIP \$\{clipNumber\}`/);
   assert.match(page, /startIndex=\{landscapeClips\.length\}/);
   assert.match(page, /controls/);
-  assert.match(page, /ADD BEFORE LAUNCH/);
+  assert.match(page, /mailto:matiadosen@outlook\.com/);
+  assert.match(page, /ARTIST PROFILE \/ OFFICIAL BIO/);
+  assert.doesNotMatch(page, /WORKING COPY|DRAFT|FINAL APPROVAL|ADD BEFORE LAUNCH|EPK PREVIEW|IN PROGRESS/);
   assert.match(playerModel, /Array\.from\(\{ length: 62 \}/);
   assert.match(playerModel, /dosen-escapade-ap-\$\{String\(index\)\.padStart\(3, "0"\)\}\.mp3/);
   assert.doesNotMatch(page, /\/audio\/dosen-escapade-ap\.mp3/);
@@ -119,6 +122,8 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(layout, /openGraph/);
   assert.match(layout, /https:\/\/dosen-media\.matiadosen\.workers\.dev/);
   assert.match(layout, /\/og-ethnocentric\.png/);
+  assert.match(layout, /\/favicon\.svg/);
+  assert.match(favicon, /DOSEN D monogram/);
   assert.match(css, /font-family:\s*"Ethnocentric"/);
   assert.match(css, /https:\/\/dosen-media\.matiadosen\.workers\.dev\/fonts\/Ethnocentric-Regular\.otf/);
   assert.doesNotMatch(css, /dosen-wordmark/);
