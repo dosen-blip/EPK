@@ -1,28 +1,29 @@
 # DOSEN EPK website
 
-Responsive one-page scaffold for the DOSEN electronic press kit. The visual direction combines **Signal Archive** with **Contact Sheet After Midnight**: broadcast-like navigation, a transmission archive, a chronological booking record, working artist copy, and a clean contact layer.
+Production source for the DOSEN electronic press kit. The visual direction is media-first and editorial: a full-bleed performance hero, a selected-set archive, a chronological booking record, artist copy, and a clean contact layer.
 
 ## Current status
 
-- Site structure, responsive layout, motion, and interaction shells are implemented.
-- Performance-media areas are intentional placeholders pending the quality and rights review.
+- Site structure, responsive layout, motion, media lightboxes, and set-player interactions are implemented.
+- The hero uses separate full-duration desktop and mobile compilations.
+- The hero expands into a seven-clip library where each full source clip can be played with its original audio.
 - The booking contact and final approved biography are visibly marked as pending.
-- Every on-page wordmark is live `DOSEN` text rendered with the embedded `public/fonts/Ethnocentric-Regular.otf` webfont.
-- The social preview remains a bitmap at `public/og-ethnocentric.png`, as required by social-unfurl platforms, but its mark is rendered in Ethnocentric.
-- The signal player streams the complete 1:31:44 Escapade afterparty opening set as 31 sequential 320 kbps MP3 delivery segments under `public/audio/`. The player presents them as one continuous timeline; the supplied WAV master remains untouched outside the site.
-- The player artwork is the supplied 1254×1254 Escapade afterparty cover at `public/media/escapade-ap-cover.png`.
+- Every media URL, including the Ethnocentric font and social card, is served from the dedicated Cloudflare R2 media Worker.
+- The signal player streams the complete 1:31:44 Escapade afterparty opening set as 62 sequential 320 kbps MP3 segments presented as one continuous timeline.
+- The full ignored `public/` library is retained locally as a rollback source; it is not copied into application deployments.
 
 ## Replacing media
 
 Media surfaces in `app/page.tsx` have stable `data-media-slot` values:
 
-- `hero-loop`
 - `hero-escapade`
 - `offgrid-anniversary`
 - `solstice-frequency`
 - `offgrid-halloween`
 
-Replace the internal placeholder markup for a slot with the approved image, video, or embed while retaining the surrounding card metadata and slot name. New media should be placed under `public/media/` after clearance.
+The rollback copies of the hero compilations live under `public/media/hero/`; web-delivery copies of the full source clips and their posters live under `public/media/library/`. Production objects live in R2 under the same keys and are pinned in `source-of-truth/media-manifest.json`.
+
+Add or replace local rollback media only after clearance. Regenerate the media manifest, upload the new R2 object deliberately, and verify both local checksums and remote range delivery before committing.
 
 ## Local commands
 
@@ -30,6 +31,9 @@ Replace the internal placeholder markup for a slot with the approved image, vide
 npm run dev
 npm run build
 npm test
+npm run build:pages
+npm run verify:sot:local
+npm run verify:sot:remote
 ```
 
-The project uses the bundled vinext/Sites structure and declares no database or object storage.
+The project uses vinext and Cloudflare's Vite runtime. Cloudflare Pages receives the advanced-mode bundle in `.pages-dist`; all production media remains in R2. See `source-of-truth/` for the release contract and regression gates.

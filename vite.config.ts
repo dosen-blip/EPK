@@ -44,6 +44,10 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    // All runtime media is delivered from the dedicated R2 media Worker. Keep
+    // the local public library as a rollback source without copying 1.3 GB of
+    // duplicate media into every Sites deployment.
+    publicDir: false,
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,

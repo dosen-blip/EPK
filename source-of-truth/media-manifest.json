@@ -1,0 +1,853 @@
+{
+  "schemaVersion": 1,
+  "authority": "Cloudflare R2",
+  "bucket": "dosenepk",
+  "deliveryWorker": "dosen-media",
+  "origin": "https://dosen-media.matiadosen.workers.dev",
+  "cacheControl": "public, max-age=31536000, immutable",
+  "objectCount": 120,
+  "totalBytes": 1407665107,
+  "hashAlgorithm": "sha256",
+  "objects": [
+    {
+      "key": "audio/dosen-escapade-ap-000.mp3",
+      "bytes": 3601864,
+      "sha256": "012c59cbabcafb2668e7f75ef605dad74ac5c07137f902648d2c6e0e7876d7e3",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-000.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-001.mp3",
+      "bytes": 3600819,
+      "sha256": "fd748815f7e3aea7915e160dab66f40e568780e9f3e246c891f8501d129e13f9",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-001.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-002.mp3",
+      "bytes": 3600820,
+      "sha256": "147f08a4b0542ac05225457fcf7e685c2f0889c9a62f8ada0fc29fc3c8cadee6",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-002.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-003.mp3",
+      "bytes": 3601864,
+      "sha256": "0927fdc5646b039492ed34181e6d06307926875a1a0cda187a4fe4a48bd6fb4d",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-003.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-004.mp3",
+      "bytes": 3600820,
+      "sha256": "70ac611ae9f87e8cc5e486c0b2aa7787002244f0c333170532b0977cb2a0a14e",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-004.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-005.mp3",
+      "bytes": 3600819,
+      "sha256": "753a51af2b198e6135b867f087cee4bee497766c4c5d953790884946c488d0d0",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-005.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-006.mp3",
+      "bytes": 3601865,
+      "sha256": "43cb7183d54f3944226f9fbcffeb88832f287a7a2eeb118d5a4fa4affba98225",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-006.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-007.mp3",
+      "bytes": 3600819,
+      "sha256": "c8ef59382cb56e1a4898f26580282f6889799863232c2cbef50496134b6515a5",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-007.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-008.mp3",
+      "bytes": 3600820,
+      "sha256": "ba920ffac5a33174a597127632625a323cbaddcbeb6d1b416ea76f6a72c0d2f2",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-008.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-009.mp3",
+      "bytes": 3601864,
+      "sha256": "04da9a68edf1e4cee4b99358f12a58478535b7a4b7114d19803652f5bf648d04",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-009.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-010.mp3",
+      "bytes": 3600819,
+      "sha256": "0e29460e2b3ce6798f12c2f281e5013d23ceb83f7c6c0f56710a6e634e8c6888",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-010.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-011.mp3",
+      "bytes": 3600820,
+      "sha256": "da8d60acbd6734b1fee6232bd90e0914d5273a7448482d8c3b1d3dbdad374383",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-011.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-012.mp3",
+      "bytes": 3601864,
+      "sha256": "51693cfcdb90f6b33488e92cd56441f7833f48fbd623c14ce061653cc00a7b3d",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-012.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-013.mp3",
+      "bytes": 3600820,
+      "sha256": "5189f7332d15d794b7b56a3006167d55bbd31f695a4d6ad62ae7d7a47a675ad3",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-013.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-014.mp3",
+      "bytes": 3600819,
+      "sha256": "4270cf3d9837b259199c48237a3598548e60a9fe5c56c045dd5d907c3a2f5e4a",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-014.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-015.mp3",
+      "bytes": 3600820,
+      "sha256": "728f5661a08b8dd89e1cebf8c579123a47be335951e62e80f4b825f14395fe33",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-015.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-016.mp3",
+      "bytes": 3601864,
+      "sha256": "2c7556e3ac84983e3cf49f2507fd78e7bffe686ee33f1eda29b63ad586d777ac",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-016.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-017.mp3",
+      "bytes": 3600819,
+      "sha256": "533fb0a1a51b0415fb85ecfb1ae6cd65153f9e66d4f83cd80a69bb74d7cad642",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-017.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-018.mp3",
+      "bytes": 3600820,
+      "sha256": "25f3823a9a55b3a3019017b25d4070388e09f3734fe6c6517ed3471f5037e071",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-018.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-019.mp3",
+      "bytes": 3601864,
+      "sha256": "ec8c08fc974ca4386455d469ad9b197a11c318c204ff59a37b486f772ea1730d",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-019.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-020.mp3",
+      "bytes": 3600820,
+      "sha256": "af6e5825150dba421c8606e5193507a326e6c533cd5126b9fa171aa479a47a02",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-020.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-021.mp3",
+      "bytes": 3600819,
+      "sha256": "94ab7ae9bab94b51d679d06d49b10b86f8a37ae1d8c4d06160be2f26ac0b7c4a",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-021.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-022.mp3",
+      "bytes": 3601865,
+      "sha256": "2907531bccf8a0f33dde9808c580233847aeb8a1d8da2e827b8ec96ca2c4d84f",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-022.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-023.mp3",
+      "bytes": 3600819,
+      "sha256": "01fce28214d291036cb3c8c3a1782c67425d67e48811a0a85888dcf87ef4653d",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-023.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-024.mp3",
+      "bytes": 3600820,
+      "sha256": "927c0daad9852fc342dcd94942e7b24cbcecd07e666a3d5f0407417ee1155a5a",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-024.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-025.mp3",
+      "bytes": 3601864,
+      "sha256": "948684e21448239da16a370d13236403da3e2f804edfe5e74978b37b8df5a99b",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-025.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-026.mp3",
+      "bytes": 3600819,
+      "sha256": "752751e4fe1bd160260d0bc4077868f8017e9aced0adadbcf482547e13a1f966",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-026.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-027.mp3",
+      "bytes": 3600820,
+      "sha256": "b8d25902be9c04bf88e2ba6fb00533c9d70034ebc36d36de35631f5064361182",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-027.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-028.mp3",
+      "bytes": 3601864,
+      "sha256": "3ec4c8ae3f1566624803319f2315624320ea2d23b83ccaafe171af9cba17bca4",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-028.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-029.mp3",
+      "bytes": 3600820,
+      "sha256": "6fc992e9ce91addc04678624d3b993eabbea6ad396b9b4a82d0085858aa5e202",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-029.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-030.mp3",
+      "bytes": 3600819,
+      "sha256": "2fe934581782f08af80f4279bf6e9109e0056f58524e6481a32f7a269f4d22b6",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-030.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-031.mp3",
+      "bytes": 3600820,
+      "sha256": "9723de4b232a53431c6b36006f1cce6d2665f71245f744da371a9e25c573d8f5",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-031.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-032.mp3",
+      "bytes": 3601864,
+      "sha256": "e812715bf29b5816bfc2faf05a974f59f7c90ed10889b35c15ea780a76ddc338",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-032.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-033.mp3",
+      "bytes": 3600819,
+      "sha256": "f0ddc86bfcc05f2ec365847729aa4b813ba3e9dcfef0fa769da9641a1753e340",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-033.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-034.mp3",
+      "bytes": 3600820,
+      "sha256": "4a44c62d9ef96233e765c210952c840ab8be87ce350b521afd6ee339b8da4e96",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-034.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-035.mp3",
+      "bytes": 3601864,
+      "sha256": "30cece9b0d9f83c352291200f79fc556b874ed42df06010d7d2a778f1b362ab6",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-035.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-036.mp3",
+      "bytes": 3600820,
+      "sha256": "561bbe43f0658e0bc56ba9857f7ceb9e1ecc8cfae06c79614f574f0ef152f85b",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-036.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-037.mp3",
+      "bytes": 3600819,
+      "sha256": "df68f6131cb8759968357e500275bfb82b13e52a1907e5b54e0ed6bbcc0e4650",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-037.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-038.mp3",
+      "bytes": 3601865,
+      "sha256": "a74465b2a433ca5eead04dc9677ebe563e3477eb49d39399f08f3ead62b1f3bc",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-038.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-039.mp3",
+      "bytes": 3600819,
+      "sha256": "4f18bb55da3680f3d2977664ae8f915217b9f96a80f046693e3a8454012515ea",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-039.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-040.mp3",
+      "bytes": 3600820,
+      "sha256": "36d69c1d9eea28fb16c30b4511fe1d4b3bf24abef483b359fdc97cb5e733501f",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-040.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-041.mp3",
+      "bytes": 3601864,
+      "sha256": "74b96b39822d803a27e526006cfe6439499140805c225094d334ee1010245fa8",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-041.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-042.mp3",
+      "bytes": 3600819,
+      "sha256": "3b2b9f29c9f3d46682d18fee2c7d1c2b9fae77eb38f1e458244555f125f821da",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-042.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-043.mp3",
+      "bytes": 3600820,
+      "sha256": "d5b006229a6c8f1e898d32e0890c1dc13d3cdf5cb6a2dc1384969d7e7c41979d",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-043.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-044.mp3",
+      "bytes": 3601864,
+      "sha256": "28d7270ee4ac6cd209e7c9ce64c7687fc31ed90e9c7394904d3fd3d6d8f6a83e",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-044.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-045.mp3",
+      "bytes": 3600820,
+      "sha256": "ff003e9e4cb4f6e1c8559f83205d96a1ed9ce8db9d1607554d186f78ba0f7e01",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-045.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-046.mp3",
+      "bytes": 3600819,
+      "sha256": "7a25909e176081829d786d8dca8b9402436e9abd1b7e00a1a6f97e40c71d44de",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-046.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-047.mp3",
+      "bytes": 3600820,
+      "sha256": "2749b5ea86aaa9a76c886256da7fb2302c628ccfb4a235c875aa14df9837b2e8",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-047.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-048.mp3",
+      "bytes": 3601864,
+      "sha256": "a7014417e00b0686cda3bbb44e20b709d34dd45958b596e6de757fcc8cdf96bb",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-048.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-049.mp3",
+      "bytes": 3600819,
+      "sha256": "a3fcb42ed869fe0ecb04307adebd85446cab0aaaabc907e85765f35bf6459d14",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-049.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-050.mp3",
+      "bytes": 3600820,
+      "sha256": "e37a8864b4ce92c14e72f3574ed878432478d88ff7c9bf55258ffcadcb15685c",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-050.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-051.mp3",
+      "bytes": 3601864,
+      "sha256": "f958676f8bafab73cbedd95ef2048a27178af0b17feff2a53a9267ec0fe2d558",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-051.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-052.mp3",
+      "bytes": 3600820,
+      "sha256": "ea653ab3f2776704110fe4ff2e5ea539eea29b686b705d1060a289af8183a712",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-052.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-053.mp3",
+      "bytes": 3600819,
+      "sha256": "92f65fd6a79969e3d8094cf13b1220c1d81227a9e26477bfbf73ca0647889e66",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-053.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-054.mp3",
+      "bytes": 3601865,
+      "sha256": "a99dc8fb3ae580db27ae557ed524fd324686ebe0ec663c3cb23afc338cacd35e",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-054.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-055.mp3",
+      "bytes": 3600819,
+      "sha256": "527e7307529a7c560a43045e0c7c53b411c7f85b7027e43725622d7a0918bf7e",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-055.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-056.mp3",
+      "bytes": 3600820,
+      "sha256": "587b87dd6d945cebe9e4f661ebed140688fad00c21af8a32b999053c8c81ffe3",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-056.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-057.mp3",
+      "bytes": 3601864,
+      "sha256": "b0916c7c860ab406253b8d6675bb904b2db5b2d762ad249538862026b0a03a5c",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-057.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-058.mp3",
+      "bytes": 3600819,
+      "sha256": "57cc00fb629524b82eb26ded80d9ef4cb65a40f49cd7cac7c319fc4c92ff4533",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-058.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-059.mp3",
+      "bytes": 3600820,
+      "sha256": "f6e317b560cb656cf6572949f0cb3a37b32b55097be25333210b86e142319a93",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-059.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-060.mp3",
+      "bytes": 3601864,
+      "sha256": "9b703632e9d055e024403e9643057012e25b849ad02652023741597075ea2865",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-060.mp3"
+    },
+    {
+      "key": "audio/dosen-escapade-ap-061.mp3",
+      "bytes": 566436,
+      "sha256": "2cddfa76fcee6cfc55b5fadea7eb68ea9fad41130df3d2686e63cd1dc93aed87",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/dosen-escapade-ap-061.mp3"
+    },
+    {
+      "key": "audio/exosphere-002-sky-lounge.mp3",
+      "bytes": 141950556,
+      "sha256": "02bff030de690d772b2217c40df69880ff9aeffcda687e47f953a75210b39e13",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/exosphere-002-sky-lounge.mp3"
+    },
+    {
+      "key": "audio/off-grid-1-year-dosen-b2b-fastr.mp3",
+      "bytes": 168507603,
+      "sha256": "ac2b0f23671eac7e9b1544d2a12b79925bb530ad9e7c9c692a0fd83bedf0a9ce",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/off-grid-1-year-dosen-b2b-fastr.mp3"
+    },
+    {
+      "key": "audio/offgrid-032.mp3",
+      "bytes": 227298846,
+      "sha256": "91daa3f855a6c47d8941d1b23b700fe31be8fa36cc77f61c9a974d8dd927e3eb",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/offgrid-032.mp3"
+    },
+    {
+      "key": "audio/offgrid-x-frequency-shift.mp3",
+      "bytes": 179699584,
+      "sha256": "3fc85b8062ca348be518be132965fc7d1e61519ce8fefb2d58df95381fa62bf9",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/offgrid-x-frequency-shift.mp3"
+    },
+    {
+      "key": "favicon.svg",
+      "bytes": 712,
+      "sha256": "e6d2e59b7b5bbb0342e0fb496dfc262decbfe4426bbb7b047aec8d467d1dc6f7",
+      "contentType": "image/svg+xml",
+      "url": "https://dosen-media.matiadosen.workers.dev/favicon.svg"
+    },
+    {
+      "key": "file.svg",
+      "bytes": 391,
+      "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4",
+      "contentType": "image/svg+xml",
+      "url": "https://dosen-media.matiadosen.workers.dev/file.svg"
+    },
+    {
+      "key": "fonts/Ethnocentric-Regular.otf",
+      "bytes": 68388,
+      "sha256": "4d7ab140b0510b38e8714c5f64ce0f6bea7aa1ef5346e9565de20901eac40247",
+      "contentType": "font/otf",
+      "url": "https://dosen-media.matiadosen.workers.dev/fonts/Ethnocentric-Regular.otf"
+    },
+    {
+      "key": "globe.svg",
+      "bytes": 1035,
+      "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf",
+      "contentType": "image/svg+xml",
+      "url": "https://dosen-media.matiadosen.workers.dev/globe.svg"
+    },
+    {
+      "key": "media/dossiers/exosphere-002-sky-lounge-cover.png",
+      "bytes": 1366209,
+      "sha256": "b2cced406ad0895f356ffbf58c8f13edcdfea7d313f7a3f1686297f0b4590e57",
+      "contentType": "image/png",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/exosphere-002-sky-lounge-cover.png"
+    },
+    {
+      "key": "media/dossiers/off-grid-1-year-poster.jpg",
+      "bytes": 4942456,
+      "sha256": "0f4e738e7dcc32877c756ff6450904035b9ec0388936575577eb989e3f71d9d0",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/off-grid-1-year-poster.jpg"
+    },
+    {
+      "key": "media/dossiers/off-grid-anniversary-soundcloud.png",
+      "bytes": 1487688,
+      "sha256": "c2f6008f7755dd06ca1aea783380f195fbeb952452131a7cff48ff6afdfc1862",
+      "contentType": "image/png",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/off-grid-anniversary-soundcloud.png"
+    },
+    {
+      "key": "media/dossiers/off-grid-frequency-shift-poster.jpg",
+      "bytes": 907887,
+      "sha256": "7df656719be647789511d38fde886f32ceb93d0ce91ebb55936d025a4903b2ee",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/off-grid-frequency-shift-poster.jpg"
+    },
+    {
+      "key": "media/dossiers/off-grid-frequency-shift-soundcloud.png",
+      "bytes": 1786297,
+      "sha256": "73b5dbcf3343ba5e36e2120fa1704c774eee31cec4f2538465ac834c7ffda126",
+      "contentType": "image/png",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/off-grid-frequency-shift-soundcloud.png"
+    },
+    {
+      "key": "media/dossiers/off-grid-halloweekend-poster.jpeg",
+      "bytes": 522584,
+      "sha256": "156e76f112478d664a32501324ff81a075d0583e4bbe8e0308d8c6a9970612ea",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/off-grid-halloweekend-poster.jpeg"
+    },
+    {
+      "key": "media/dossiers/off-grid-halloweekend-soundcloud.png",
+      "bytes": 1343325,
+      "sha256": "a12478664f9c52613680c92f7a729bc132bee61b07c4453caaf6ff2e4ba173c7",
+      "contentType": "image/png",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/off-grid-halloweekend-soundcloud.png"
+    },
+    {
+      "key": "media/dossiers/off-grid-halloween.jpg",
+      "bytes": 68348,
+      "sha256": "aa42836277bcfeea339dffb5311578428201503e3d95ef14c53c342cedefef18",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/off-grid-halloween.jpg"
+    },
+    {
+      "key": "media/dossiers/solstice-frequency-poster.png",
+      "bytes": 5531718,
+      "sha256": "6f1d789c582715d0ff42fd6b467c9177d9072314bbec196e1592cb5aba0a4464",
+      "contentType": "image/png",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/solstice-frequency-poster.png"
+    },
+    {
+      "key": "media/escapade-ap-cover.png",
+      "bytes": 2211255,
+      "sha256": "5f32be2282919622bfd519c10faddf33c516c69ad17c4150e6d9c037c10ebc36",
+      "contentType": "image/png",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/escapade-ap-cover.png"
+    },
+    {
+      "key": "media/hero/hero-desktop-v1.mp4",
+      "bytes": 52275212,
+      "sha256": "db9ecc6eeb91bfc52ee1f7f162b615b4124e7f0c7d20bcdae68c2869c341c869",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/hero/hero-desktop-v1.mp4"
+    },
+    {
+      "key": "media/hero/hero-mobile-v1.mp4",
+      "bytes": 58067517,
+      "sha256": "dd8daa9e6d557e36905f65f3a574c6503ab8d20dc89c59ee1b647bd2daa4f16e",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/hero/hero-mobile-v1.mp4"
+    },
+    {
+      "key": "media/library/frequency-shift-jan-03-1.mp4",
+      "bytes": 1776427,
+      "sha256": "78dec64caf0ffb4f618db2baea950a3e2c08c69f0319113a11da246869971516",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/frequency-shift-jan-03-1.mp4"
+    },
+    {
+      "key": "media/library/frequency-shift-jan-03-2.mp4",
+      "bytes": 1715583,
+      "sha256": "8207b407498203a589084f41686462267c020fa390807c3df5a80a37f7e71e84",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/frequency-shift-jan-03-2.mp4"
+    },
+    {
+      "key": "media/library/frequency-shift-jan-03-3.mp4",
+      "bytes": 4859192,
+      "sha256": "7d67de706451f1b3d7d14b0511ffaa141c40f62bd3c15072403b5c13e7291d48",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/frequency-shift-jan-03-3.mp4"
+    },
+    {
+      "key": "media/library/off-grid-anniversary-2.mp4",
+      "bytes": 45370022,
+      "sha256": "7ff45ce41e2aa814f6d43de1e613ea6a1ea39f79a95bc7d3a82fb04803b4e9b8",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-anniversary-2.mp4"
+    },
+    {
+      "key": "media/library/off-grid-anniversary-3.mp4",
+      "bytes": 41970869,
+      "sha256": "f265b6d13f23eff2c0c4f21a6c3dc054d768d13ebae31e94f8ef500d43c2fbe6",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-anniversary-3.mp4"
+    },
+    {
+      "key": "media/library/off-grid-anniversary-4.mp4",
+      "bytes": 53292854,
+      "sha256": "9a1cdcdfdc0092679b199c0970ca7e4edf86dac304d0cbc38e649dd308ff2c5f",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-anniversary-4.mp4"
+    },
+    {
+      "key": "media/library/off-grid-anniversary-5.mp4",
+      "bytes": 39172302,
+      "sha256": "bd643d874670984b9e231ba329fa2d93b4d6a444d829e4654e8cc4b1d24ae092",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-anniversary-5.mp4"
+    },
+    {
+      "key": "media/library/off-grid-anniversary-6.mp4",
+      "bytes": 51376482,
+      "sha256": "4f9ac36d6aa24ffe5275d580c50b1258ed9139feb1fad03268d7e7fcb8e10ea4",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-anniversary-6.mp4"
+    },
+    {
+      "key": "media/library/off-grid-anniversary-7.mp4",
+      "bytes": 18007777,
+      "sha256": "d07e3ba7149104bf196616b3014350908dfe434ec95f7bfe706de284b11f1c85",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-anniversary-7.mp4"
+    },
+    {
+      "key": "media/library/off-grid-anniversary-8.mp4",
+      "bytes": 48242778,
+      "sha256": "15ab2b77e50f24a927f8eaa580964821d078d74eac1451351a2a0c585a8edcd0",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-anniversary-8.mp4"
+    },
+    {
+      "key": "media/library/off-grid-anniversary-9.mp4",
+      "bytes": 6235518,
+      "sha256": "5c0a73052eaf721a4c4c905164a6ff60ba75b28693ea45e8b521bf8b025094a2",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-anniversary-9.mp4"
+    },
+    {
+      "key": "media/library/off-grid-blue-crowd-vertical.mp4",
+      "bytes": 1886470,
+      "sha256": "5ab0a7188d2f2c0280775eb8e0fe4c983e6b267131eb8f2f5cfa64761f926f34",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-blue-crowd-vertical.mp4"
+    },
+    {
+      "key": "media/library/off-grid-blue-room-vertical.mp4",
+      "bytes": 2553441,
+      "sha256": "374284195008dc436133e5122b4807335781a226d3d3a6e0c2ce6b24b5914d7c",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-blue-room-vertical.mp4"
+    },
+    {
+      "key": "media/library/off-grid-red-decks-vertical.mp4",
+      "bytes": 4631689,
+      "sha256": "b3dbf8d26a8bb51a07bc277a35dd886e867409e406f38fea47b5459b54748645",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/off-grid-red-decks-vertical.mp4"
+    },
+    {
+      "key": "media/library/posters/frequency-shift-jan-03-1.jpg",
+      "bytes": 30211,
+      "sha256": "80da9a1e77109e9e882254d535a52cb85a575fe9c366e047d340b712b1caf053",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/frequency-shift-jan-03-1.jpg"
+    },
+    {
+      "key": "media/library/posters/frequency-shift-jan-03-2.jpg",
+      "bytes": 26312,
+      "sha256": "7a2d6715a5f1a3e76bf3f9b8dc9d1cafb2136404391bbcab0f6050bca6470180",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/frequency-shift-jan-03-2.jpg"
+    },
+    {
+      "key": "media/library/posters/frequency-shift-jan-03-3.jpg",
+      "bytes": 31639,
+      "sha256": "a6d7edd46804675d210ba44512411ceddb2a9d00e00878a7c4265ab35071cec2",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/frequency-shift-jan-03-3.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-anniversary-2.jpg",
+      "bytes": 60488,
+      "sha256": "394088bb691c1eeee8ff8802416444860a292243456c2b1e121c2f8c64f1f65f",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-anniversary-2.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-anniversary-3.jpg",
+      "bytes": 85642,
+      "sha256": "6b70aac9b555d6e7ee061932df5a18a30612e44d064f0f3c1b30d91bf14ef290",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-anniversary-3.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-anniversary-4.jpg",
+      "bytes": 116271,
+      "sha256": "2ce751063e33964a61f4190f0676c1a954116265b30b72a420f33bcd07793b95",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-anniversary-4.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-anniversary-5.jpg",
+      "bytes": 137038,
+      "sha256": "6a3ac586ad68a781e477f779becb5523b485fb244dff802a0cf1394a152b694d",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-anniversary-5.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-anniversary-6.jpg",
+      "bytes": 153091,
+      "sha256": "378e3476108888d0f2fdae6048492358522477796237dbe07ed58d631a58053e",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-anniversary-6.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-anniversary-7.jpg",
+      "bytes": 139176,
+      "sha256": "6c4d9cddfdaa4c4a55370b693739cc5a267f6c133a8249672e7a9f86141a6648",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-anniversary-7.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-anniversary-8.jpg",
+      "bytes": 152572,
+      "sha256": "f1eb7a58d929aff92939696c9bb3a05a91b174de1b4262d080921eeaa7241f8e",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-anniversary-8.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-anniversary-9.jpg",
+      "bytes": 47045,
+      "sha256": "51ffe307b8f1ebef81c31cb79bb02a563920a7c325b7116266980e1bb671fda6",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-anniversary-9.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-blue-crowd-vertical.jpg",
+      "bytes": 9508,
+      "sha256": "3ba7f517cb0bfee1a2bda97dacd50d5caf9bca2a003715df9e06044ade9f21ac",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-blue-crowd-vertical.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-blue-room-vertical.jpg",
+      "bytes": 19333,
+      "sha256": "737b68d918e4993718933295ec65a0fe54c8a1e5a23e190a0b20f8c0de244f72",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-blue-room-vertical.jpg"
+    },
+    {
+      "key": "media/library/posters/off-grid-red-decks-vertical.jpg",
+      "bytes": 23587,
+      "sha256": "de8bd98d66c049485c127a8efef2e976d52b0df26fb0b418db022b165b6e59a3",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/off-grid-red-decks-vertical.jpg"
+    },
+    {
+      "key": "media/library/posters/solstice-frequency-1.jpg",
+      "bytes": 38294,
+      "sha256": "2129a966ffdb2477665419427723d7577a8d143af214fd4edae9d2b20aefaa03",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/solstice-frequency-1.jpg"
+    },
+    {
+      "key": "media/library/posters/solstice-frequency-2.jpg",
+      "bytes": 55305,
+      "sha256": "a309baa050b09c3219ce85f8538f34324354a54cfe2459c518ad69d2da33b67a",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/solstice-frequency-2.jpg"
+    },
+    {
+      "key": "media/library/posters/solstice-frequency-4.jpg",
+      "bytes": 21414,
+      "sha256": "a58e0eeeb24259e23b95344d96be22e22a46472731f691c56414d173282bb7aa",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/solstice-frequency-4.jpg"
+    },
+    {
+      "key": "media/library/posters/solstice-magenta-room-vertical.jpg",
+      "bytes": 23443,
+      "sha256": "41b51d42bda54dd1a62ceef40f2633ea3fff040091da9c0d1a973bc0aec8b39e",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/solstice-magenta-room-vertical.jpg"
+    },
+    {
+      "key": "media/library/solstice-frequency-1.mp4",
+      "bytes": 5576053,
+      "sha256": "1d126208ca2fe50f5a3b45328b8aaab72359147b424eaf8fd6a6b89e9b906979",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/solstice-frequency-1.mp4"
+    },
+    {
+      "key": "media/library/solstice-frequency-2.mp4",
+      "bytes": 2925046,
+      "sha256": "38efa2318a2b06910db59d5779158ca9f326d906ccd4eff9e59bf7a9e97d745f",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/solstice-frequency-2.mp4"
+    },
+    {
+      "key": "media/library/solstice-frequency-4.mp4",
+      "bytes": 2348990,
+      "sha256": "258114e745b2ea5346dc6680851340e2abbf62895e2be66843ab30c2f940392c",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/solstice-frequency-4.mp4"
+    },
+    {
+      "key": "media/library/solstice-magenta-room-vertical.mp4",
+      "bytes": 5704799,
+      "sha256": "33ba04e5a9f8bb15aff65a2622fc164835b8f5745662df8be78b0d8902ec6a95",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/solstice-magenta-room-vertical.mp4"
+    },
+    {
+      "key": "og-ethnocentric.png",
+      "bytes": 573129,
+      "sha256": "12e8c95a6c62b6644fdfa9ca829e9cf16477ec67108c113f630797600cae3079",
+      "contentType": "image/png",
+      "url": "https://dosen-media.matiadosen.workers.dev/og-ethnocentric.png"
+    },
+    {
+      "key": "window.svg",
+      "bytes": 385,
+      "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1",
+      "contentType": "image/svg+xml",
+      "url": "https://dosen-media.matiadosen.workers.dev/window.svg"
+    }
+  ]
+}

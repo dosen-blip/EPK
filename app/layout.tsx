@@ -4,13 +4,14 @@ import "./globals.css";
 
 const title = "DOSEN — Electronic Press Kit";
 const description = "DOSEN is an Ottawa-based DJ moving through minimal, gritty tech house, trance lift, and late-hour pressure.";
+const mediaOrigin = "https://dosen-media.matiadosen.workers.dev";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const origin = new URL(`${protocol}://${host}`);
-  const socialImage = new URL("/og-ethnocentric.png", origin).toString();
+  const socialImage = `${mediaOrigin}/og-ethnocentric.png`;
 
   return {
     metadataBase: origin,
