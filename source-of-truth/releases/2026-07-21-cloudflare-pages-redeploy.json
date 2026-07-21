@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-07-21T22:30:39Z",
+  "reason": "Redeployed after the GitHub repository was made public",
+  "sourceCommit": "6645ace6de04bc1243caa0860789f5e7d206c8ca",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "379ca404-22a2-43d6-abba-9802e1a31f69",
+    "deploymentUrl": "https://379ca404.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev"
+  },
+  "verification": {
+    "unitAndRenderTests": "6 passed",
+    "remoteMediaObjects": "120 passed",
+    "pagesHtml": "HTTP 200",
+    "pagesCss": "HTTP 200",
+    "heroVideoRange": "HTTP 206",
+    "heroMattes": "standard and WebKit blur(13px) present"
+  }
+}
