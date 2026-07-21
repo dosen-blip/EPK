@@ -37,7 +37,7 @@ test("keeps production media and visual treatments explicit", async () => {
     access(new URL("../dist/client/og-dosen-wordmark.png", import.meta.url)),
   ]);
 
-  const [page, playerModel, layout, css, favicon, packageJson, manifestJson] = await Promise.all([
+  const [page, playerModel, layout, css, favicon, packageJson, manifestJson, routingJson, viteConfig] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/player-model.mjs", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
@@ -45,9 +45,17 @@ test("keeps production media and visual treatments explicit", async () => {
     readFile(new URL("../public/favicon.svg", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../source-of-truth/media-manifest.json", import.meta.url), "utf8"),
+    readFile(new URL("../source-of-truth/production-routing.json", import.meta.url), "utf8"),
+    readFile(new URL("../vite.config.ts", import.meta.url), "utf8"),
   ]);
   const manifest = JSON.parse(manifestJson);
+  const routing = JSON.parse(routingJson);
   const mediaKeys = new Set(manifest.objects.map((object) => object.key));
+  assert.equal(routing.platform, "cloudflare-pages");
+  assert.equal(routing.projectName, "dosen-epk");
+  assert.equal(routing.canonicalHostname, "www.dosen.ca");
+  assert.equal(routing.requiredDns.target, "dosen-epk.pages.dev");
+  assert.doesNotMatch(viteConfig, /sites-vite-plugin|hosting\.json/);
 
   for (const slot of [
     "hero-escapade",

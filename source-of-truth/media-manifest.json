@@ -6,7 +6,7 @@
   "origin": "https://dosen-media.matiadosen.workers.dev",
   "cacheControl": "public, max-age=31536000, immutable",
   "objectCount": 120,
-  "totalBytes": 1407665107,
+  "totalBytes": 1407664779,
   "hashAlgorithm": "sha256",
   "objects": [
     {
@@ -473,8 +473,8 @@
     },
     {
       "key": "favicon.svg",
-      "bytes": 712,
-      "sha256": "e6d2e59b7b5bbb0342e0fb496dfc262decbfe4426bbb7b047aec8d467d1dc6f7",
+      "bytes": 384,
+      "sha256": "adf88b5d09216b7acfc3edd79955ba3cc20858c8d59c73cb22486de04d2be686",
       "contentType": "image/svg+xml",
       "url": "https://dosen-media.matiadosen.workers.dev/favicon.svg"
     },

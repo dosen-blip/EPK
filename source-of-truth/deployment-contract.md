@@ -2,14 +2,21 @@
 
 ## Cloudflare Pages
 
+- Sole production platform: Cloudflare Pages. ChatGPT Sites and other deployment targets are not production mirrors or fallbacks.
 - Project name: `dosen-epk`
 - Production branch: `main`
+- Canonical hostname: `www.dosen.ca`
+- Stable Pages hostname: `dosen-epk.pages.dev`
 - Build command: `npm run build:pages`
 - Output directory: `.pages-dist`
 - Runtime: Pages Functions advanced mode (`_worker.js`)
 - Node.js: `22.13.0` or newer 22.x
 
-The Pages output contains only the application Worker and content-hashed JavaScript/CSS. Audio, video, imagery, fonts, and social artwork stay in R2 and are addressed through the canonical media origin.
+The canonical hostname is attached once at the Pages project level. Every approved update must deploy to the existing `dosen-epk` project on `main`; Cloudflare then routes `www.dosen.ca` to the newest successful production deployment automatically. Do not create a new deployment project, attach the hostname to another platform, or treat a version-specific URL as production.
+
+Authoritative DNS is hosted at IONOS. `www` must be a CNAME to `dosen-epk.pages.dev`; conflicting `A` and `AAAA` records at `www` are forbidden because they bypass Cloudflare Pages and break TLS.
+
+The Pages output contains the application Worker, content-hashed JavaScript/CSS, favicon, and social-preview image. Audio, video, event imagery, and fonts stay in R2 and are addressed through the canonical media origin.
 
 ## Non-negotiable visual behavior
 

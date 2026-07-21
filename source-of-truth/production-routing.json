@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "platform": "cloudflare-pages",
+  "accountId": "c2491bcbdd23a575e03d8dcf400800de",
+  "projectName": "dosen-epk",
+  "productionBranch": "main",
+  "pagesHostname": "dosen-epk.pages.dev",
+  "canonicalHostname": "www.dosen.ca",
+  "dnsAuthority": "IONOS",
+  "requiredDns": {
+    "type": "CNAME",
+    "name": "www",
+    "target": "dosen-epk.pages.dev"
+  },
+  "releasePolicy": {
+    "reuseProject": true,
+    "customDomainIsProjectLevel": true,
+    "deployEveryMainUpdateToProduction": true,
+    "alternateDeploymentPlatformsAllowed": false
+  }
+}

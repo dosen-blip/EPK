@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const manifest = JSON.parse(await readFile(join(root, "source-of-truth", "media-manifest.json"), "utf8"));
+const routing = JSON.parse(await readFile(join(root, "source-of-truth", "production-routing.json"), "utf8"));
 const requireLocal = process.argv.includes("--require-local");
 const verifyRemote = process.argv.includes("--remote");
 
@@ -17,6 +18,30 @@ assert.equal(manifest.objectCount, manifest.objects.length);
 assert.equal(manifest.totalBytes, manifest.objects.reduce((sum, object) => sum + object.bytes, 0));
 assert.equal(new Set(manifest.objects.map((object) => object.key)).size, manifest.objectCount);
 assert.equal(manifest.objectCount, 120);
+
+assert.deepEqual(routing, {
+  schemaVersion: 1,
+  platform: "cloudflare-pages",
+  accountId: "c2491bcbdd23a575e03d8dcf400800de",
+  projectName: "dosen-epk",
+  productionBranch: "main",
+  pagesHostname: "dosen-epk.pages.dev",
+  canonicalHostname: "www.dosen.ca",
+  dnsAuthority: "IONOS",
+  requiredDns: {
+    type: "CNAME",
+    name: "www",
+    target: "dosen-epk.pages.dev",
+  },
+  releasePolicy: {
+    reuseProject: true,
+    customDomainIsProjectLevel: true,
+    deployEveryMainUpdateToProduction: true,
+    alternateDeploymentPlatformsAllowed: false,
+  },
+});
+assert.equal(await exists(join(root, ".openai", "hosting.json")), false, "ChatGPT Sites hosting config must remain absent");
+console.log(`Production routing verified: ${routing.canonicalHostname} -> ${routing.projectName} (${routing.platform})`);
 
 async function exists(path) {
   try {
