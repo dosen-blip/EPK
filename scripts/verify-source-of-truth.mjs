@@ -34,7 +34,10 @@ async function sha256(path) {
 }
 
 const publicRoot = join(root, "public");
-if (await exists(publicRoot)) {
+const localPresence = await Promise.all(
+  manifest.objects.map((object) => exists(join(publicRoot, ...object.key.split("/")))),
+);
+if (localPresence.every(Boolean)) {
   for (const object of manifest.objects) {
     const path = join(publicRoot, ...object.key.split("/"));
     const details = await stat(path);
@@ -43,9 +46,10 @@ if (await exists(publicRoot)) {
   }
   console.log(`Local media verified: ${manifest.objectCount} objects, ${manifest.totalBytes} bytes`);
 } else if (requireLocal) {
-  throw new Error("public/ rollback media is required for this verification run");
+  const missingCount = localPresence.filter((present) => !present).length;
+  throw new Error(`public/ rollback media is incomplete (${missingCount} objects missing)`);
 } else {
-  console.log("Local rollback media absent; manifest integrity checks passed");
+  console.log("Complete local rollback library absent; manifest integrity checks passed");
 }
 
 async function verifyRemoteObject(object) {
