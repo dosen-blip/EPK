@@ -24,3 +24,5 @@ npm run verify:sot:remote
 ```
 
 The GitHub workflow runs the same checks for every pull request and every push to `main`.
+
+Verified production releases are recorded under `releases/`. A receipt identifies the exact source commit, Pages deployment, production URL, and media-manifest digest used for that release.

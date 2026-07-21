@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-07-21T22:23:00Z",
+  "sourceCommit": "376eac483ced8f74287d1bfc9ebc6f54c3723e23",
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "productionBranch": "main",
+    "deploymentId": "602b280d-56df-470f-8282-445985a0718d",
+    "deploymentUrl": "https://602b280d.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev"
+  },
+  "media": {
+    "bucket": "dosenepk",
+    "origin": "https://dosen-media.matiadosen.workers.dev",
+    "manifestSha256": "16389983b3482760104711ef56e92f28bf874ddb743b793498d88ae77b9c3ec0",
+    "objectCount": 120,
+    "totalBytes": 1407665107
+  },
+  "verification": {
+    "unitAndRenderTests": "6 passed",
+    "localMediaChecksums": "120 passed",
+    "remoteRangeChecks": "120 passed",
+    "pagesHtml": "HTTP 200",
+    "pagesAssets": "HTTP 200 with immutable caching",
+    "heroMattes": "standard and WebKit blur(13px) present"
+  }
+}
