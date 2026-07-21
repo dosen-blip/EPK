@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
 async function render() {
@@ -32,6 +32,11 @@ test("server-renders the DOSEN EPK scaffold", async () => {
 });
 
 test("keeps production media and visual treatments explicit", async () => {
+  await Promise.all([
+    access(new URL("../dist/client/favicon.svg", import.meta.url)),
+    access(new URL("../dist/client/og-dosen-wordmark.png", import.meta.url)),
+  ]);
+
   const [page, playerModel, layout, css, favicon, packageJson, manifestJson] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/player-model.mjs", import.meta.url), "utf8"),
