@@ -383,6 +383,19 @@ const playableSets: PlayableSet[] = transmissions.flatMap((transmission) => {
   return config ? [{ ...transmission, ...config }] : [];
 });
 
+function getEventArtwork(set: Transmission) {
+  return set.eventPoster ?? set.cardPoster ?? set.poster;
+}
+
+function getLibraryEvent(set: Transmission) {
+  return LIBRARY_EVENTS.find((event) => event.id === set.libraryEventId) ?? null;
+}
+
+function getFeaturedClip(set: Transmission) {
+  if (!set.featureVideo) return null;
+  return getLibraryEvent(set)?.clips.find((clip) => clip.src === set.featureVideo) ?? null;
+}
+
 function getSetSegments(set: PlayableSet) {
   return set.source.kind === "segmented"
     ? set.source.segments
@@ -715,6 +728,8 @@ export default function Home() {
   const duration = getAudioDuration(activeSegments);
   const selectedSet = transmissions.find((item) => item.slug === selectedSetSlug) ?? null;
   const selectedPlayableSet = playableSets.find((item) => item.slug === selectedSetSlug) ?? null;
+  const selectedLibraryEvent = selectedSet ? getLibraryEvent(selectedSet) : null;
+  const selectedFeaturedClip = selectedSet ? getFeaturedClip(selectedSet) : null;
   const playerStateLabel = playerStatus === "error"
     ? "AUDIO ERROR"
     : playerStatus === "loading"
@@ -1248,7 +1263,7 @@ export default function Home() {
                 key={item.id}
               >
                 <span className="set-library-media">
-                  <img src={mediaUrl(item.poster)} alt="" />
+                  <img src={mediaUrl(getEventArtwork(item))} alt="" />
                   <span className="mono">{String(index + 1).padStart(2, "0")}</span>
                 </span>
                 <span className="set-library-meta mono"><span>{item.date}</span><span>{item.id}</span></span>
@@ -1285,23 +1300,30 @@ export default function Home() {
               <p>{selectedSet.detail}</p>
             </div>
 
-            <figure className="set-dossier-media">
+            <figure className={`set-dossier-media ${selectedFeaturedClip ? `is-${selectedFeaturedClip.orientation}` : "is-artwork"}`}>
               {selectedSet.featureVideo ? (
                 <video
                   controls
                   playsInline
                   preload="metadata"
-                  poster={mediaUrl(selectedSet.poster)}
+                  aria-label={`${selectedSet.title} featured event clip`}
                   onPlay={() => audioRef.current?.pause()}
                 >
                   <source src={mediaUrl(selectedSet.featureVideo)} type="video/mp4" />
                 </video>
               ) : (
-                <img src={mediaUrl(selectedSet.poster)} alt={`${selectedSet.title} event artwork`} />
+                <img src={mediaUrl(getEventArtwork(selectedSet))} alt={`${selectedSet.title} event artwork`} />
               )}
-              <figcaption className="mono">
-                {selectedSet.featureVideo ? "FEATURED EVENT CLIP / ORIGINAL AUDIO" : "EVENT ARTWORK / ARCHIVE VISUAL"}
-              </figcaption>
+              <div className="set-dossier-media-footer">
+                <figcaption className="mono">
+                  {selectedSet.featureVideo ? "FEATURED EVENT CLIP / ORIGINAL AUDIO" : "EVENT ARTWORK / ARCHIVE VISUAL"}
+                </figcaption>
+                {selectedSet.featureVideo && selectedLibraryEvent && (
+                  <button className="mono" type="button" onClick={() => openSetMedia(selectedLibraryEvent.id)}>
+                    VIEW ALL {selectedLibraryEvent.clips.length} EVENT VIDEOS <span aria-hidden="true">↗</span>
+                  </button>
+                )}
+              </div>
             </figure>
           </div>
 
@@ -1342,11 +1364,6 @@ export default function Home() {
               )}
 
               <div className="set-dossier-actions mono">
-                {selectedSet.libraryEventId && (
-                  <button type="button" onClick={() => openSetMedia(selectedSet.libraryEventId!)}>
-                    VIEW ALL EVENT MEDIA <span aria-hidden="true">↗</span>
-                  </button>
-                )}
                 {selectedSet.recordingUrl && (
                   <a href={selectedSet.recordingUrl} target="_blank" rel="noreferrer">
                     LISTEN TO FULL SET <span aria-hidden="true">↗</span>
@@ -1391,7 +1408,7 @@ export default function Home() {
               </header>
               <figure>
                 <img
-                  src={mediaUrl(selectedSet.eventPoster ?? selectedSet.cardPoster ?? selectedSet.poster)}
+                  src={mediaUrl(getEventArtwork(selectedSet))}
                   alt={`${selectedSet.title} event poster`}
                 />
                 <figcaption className="mono">OFFICIAL EVENT POSTER / ARCHIVE VISUAL</figcaption>
@@ -1544,7 +1561,7 @@ export default function Home() {
                 onClick={() => openSetDossier(item.slug)}
               >
                 <div className="archive-media media-slot" data-media-slot={item.slot}>
-                  <img className="archive-poster" src={mediaUrl(item.cardPoster ?? item.poster)} alt="" />
+                  <img className="archive-poster" src={mediaUrl(getEventArtwork(item))} alt="" />
                   <span className="archive-index mono">{String(index + 1).padStart(2, "0")}</span>
                   <span className="placeholder-label mono">OPEN DOSSIER / {item.id}</span>
                 </div>

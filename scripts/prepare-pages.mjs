@@ -9,6 +9,7 @@ await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 await cp(join(root, "dist", "client"), output, { recursive: true });
 await cp(join(root, "public", "favicon.svg"), join(output, "favicon.svg"));
+await cp(join(root, "public", "og-dosen-wordmark.png"), join(output, "og-dosen-wordmark.png"));
 await cp(join(root, "dist", "server"), join(output, "server"), { recursive: true });
 // This generated Worker deployment config is build metadata, not runtime code.
 // Leaving it in the Pages bundle makes Wrangler parse its legacy-only fields.
@@ -20,7 +21,7 @@ await writeFile(
 export default {
   fetch(request, env, ctx) {
     const pathname = new URL(request.url).pathname;
-    if (pathname.startsWith("/assets/") || pathname === "/favicon.svg") {
+    if (pathname.startsWith("/assets/") || pathname === "/favicon.svg" || pathname === "/og-dosen-wordmark.png") {
       return env.ASSETS.fetch(request);
     }
     return app.fetch(request, env, ctx);

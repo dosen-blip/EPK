@@ -64,7 +64,7 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /SET LIBRARY/);
   assert.match(page, /archiveLibraryOpen/);
   assert.doesNotMatch(page, /ArchiveMode|mode-switch|LOOSE \/|COMPACT \/|setMode/);
-  assert.match(page, /VIEW ALL EVENT MEDIA/);
+  assert.match(page, /VIEW ALL \{selectedLibraryEvent\.clips\.length\} EVENT VIDEOS/);
   assert.match(page, /window\.history\.pushState/);
   assert.match(page, /off-grid-1-year/);
   assert.match(page, /off-grid-1-year-dosen-b2b-fastr\.mp3/);
@@ -110,8 +110,13 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /off-grid-halloweekend-soundcloud\.png/);
   assert.match(page, /off-grid-frequency-shift-poster\.jpg/);
   assert.match(page, /off-grid-halloweekend-poster\.jpeg/);
-  assert.match(page, /item\.cardPoster \?\? item\.poster/);
-  assert.match(page, /selectedSet\.eventPoster \?\? selectedSet\.cardPoster \?\? selectedSet\.poster/);
+  assert.match(page, /function getEventArtwork/);
+  assert.match(page, /set\.eventPoster \?\? set\.cardPoster \?\? set\.poster/);
+  assert.match(page, /mediaUrl\(getEventArtwork\(item\)\)/);
+  assert.match(page, /mediaUrl\(getEventArtwork\(selectedSet\)\)/);
+  assert.doesNotMatch(page, /poster=\{mediaUrl\(selectedSet\.poster\)\}/);
+  assert.match(page, /selectedFeaturedClip\.orientation/);
+  assert.match(css, /\.set-dossier-media\.is-portrait video/);
   assert.match(page, /event-visual-lightbox/);
   assert.match(page, /setEventVisualOpen\(true\)/);
   assert.match(page, /Close \$\{selectedSet\.title\} event visual/);
@@ -122,8 +127,9 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /className="hero-mark">DOSEN<\/h1>/);
   assert.doesNotMatch(page, /dosen-wordmark|wordmark-on-dark|wordmark-on-light/);
   assert.match(layout, /openGraph/);
-  assert.match(layout, /https:\/\/dosen-media\.matiadosen\.workers\.dev/);
-  assert.match(layout, /\/og-ethnocentric\.png/);
+  assert.match(layout, /\/og-dosen-wordmark\.png/);
+  assert.match(layout, /width: 1262, height: 718/);
+  assert.match(layout, /alt: "DOSEN wordmark"/);
   assert.match(layout, /\/favicon\.svg/);
   assert.match(favicon, /DOSEN D monogram/);
   assert.match(css, /font-family:\s*"Ethnocentric"/);
