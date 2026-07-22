@@ -6,7 +6,7 @@
   "origin": "https://dosen-media.matiadosen.workers.dev",
   "cacheControl": "public, max-age=31536000, immutable",
   "objectCount": 120,
-  "totalBytes": 1407664779,
+  "totalBytes": 1407833804,
   "hashAlgorithm": "sha256",
   "objects": [
     {
@@ -472,13 +472,6 @@
       "url": "https://dosen-media.matiadosen.workers.dev/audio/offgrid-x-frequency-shift.mp3"
     },
     {
-      "key": "favicon.svg",
-      "bytes": 384,
-      "sha256": "adf88b5d09216b7acfc3edd79955ba3cc20858c8d59c73cb22486de04d2be686",
-      "contentType": "image/svg+xml",
-      "url": "https://dosen-media.matiadosen.workers.dev/favicon.svg"
-    },
-    {
       "key": "file.svg",
       "bytes": 391,
       "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4",
@@ -834,6 +827,13 @@
       "sha256": "33ba04e5a9f8bb15aff65a2622fc164835b8f5745662df8be78b0d8902ec6a95",
       "contentType": "video/mp4",
       "url": "https://dosen-media.matiadosen.workers.dev/media/library/solstice-magenta-room-vertical.mp4"
+    },
+    {
+      "key": "media/profile/dosen-headshot-2026.jpeg",
+      "bytes": 169409,
+      "sha256": "16b7af6286a07d54e20f28aaa9407d125bbf5985c8480a508c785b6ab211d628",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/profile/dosen-headshot-2026.jpeg"
     },
     {
       "key": "og-ethnocentric.png",

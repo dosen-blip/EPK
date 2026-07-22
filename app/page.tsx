@@ -1509,7 +1509,7 @@ export default function Home() {
 
         <div className="set-selector" aria-labelledby="set-selector-title">
           <div className="set-selector-heading mono">
-            <span id="set-selector-title">CHOOSE A SET</span>
+            <span id="set-selector-title">SELECT A SET</span>
             <span>{String(playableSets.length).padStart(2, "0")} LOCAL RECORDINGS</span>
           </div>
           <div className="set-selector-track" role="group" aria-label="Playable DOSEN sets">
@@ -1605,7 +1605,16 @@ export default function Home() {
       </section>
 
       <section className="press section" id="press">
-        <div className="press-label mono">ARTIST PROFILE / OFFICIAL BIO</div>
+        <div className="press-profile">
+          <div className="press-label mono">ARTIST PROFILE / OFFICIAL BIO</div>
+          <figure className="press-headshot">
+            <img
+              src={mediaUrl("/media/profile/dosen-headshot-2026.jpeg")}
+              alt="DOSEN seated beneath blue architectural lighting"
+            />
+            <figcaption className="mono">DOSEN / ARTIST PORTRAIT</figcaption>
+          </figure>
+        </div>
         <div className="press-copy">
           <p className="drop-cap">
             DOSEN is an Ottawa-based DJ with a sound rooted in minimal, gritty

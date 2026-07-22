@@ -8,6 +8,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const publicRoot = join(root, "public");
 const output = join(root, "source-of-truth", "media-manifest.json");
 const origin = "https://dosen-media.matiadosen.workers.dev";
+const pagesLocalAssets = new Set(["favicon.svg", "og-dosen-wordmark.png"]);
 
 const contentTypes = {
   ".jpeg": "image/jpeg",
@@ -39,6 +40,7 @@ async function sha256(path) {
 const objects = [];
 for (const path of await walk(publicRoot)) {
   const key = relative(publicRoot, path).split("\\").join("/");
+  if (pagesLocalAssets.has(key)) continue;
   const details = await stat(path);
   objects.push({
     key,

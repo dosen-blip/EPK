@@ -23,10 +23,10 @@ test("server-renders the DOSEN EPK scaffold", async () => {
   assert.match(html, /<title>DOSEN — Electronic Press Kit<\/title>/i);
   assert.match(html, /Selected sets/);
   assert.match(html, /ESCAPADE OFFICIAL AFTERPARTY/);
-  assert.match(html, /CHOOSE A SET/);
+  assert.match(html, /SELECT A SET/);
   assert.match(html, /Recent dates/);
   assert.match(html, /Make a night of it\./);
-  assert.ok(html.indexOf("CHOOSE A SET") < html.indexOf("Selected sets"));
+  assert.ok(html.indexOf("SELECT A SET") < html.indexOf("Selected sets"));
   assert.ok(html.indexOf('href="#signal">Listen') < html.indexOf('href="#archive">Sets'));
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
@@ -63,6 +63,10 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(workerEntry, /url\.hostname === "dosen\.ca"/);
   assert.match(workerEntry, /url\.hostname = "www\.dosen\.ca"/);
   assert.match(workerEntry, /Response\.redirect\(url\.toString\(\), 301\)/);
+  assert.ok(mediaKeys.has("media/profile/dosen-headshot-2026.jpeg"));
+  assert.match(page, /className="press-headshot"/);
+  assert.match(page, /DOSEN \/ ARTIST PORTRAIT/);
+  assert.match(page, /SELECT A SET/);
 
   for (const slot of [
     "hero-escapade",
