@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-07-22T18:59:25Z",
+  "reason": "Added the artist portrait and refined site-wide microtypography",
+  "sourceCommit": "ca32faeeffc8a254c2af6c406a4e2c24c211db19",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "d414aca8-6c13-445d-8091-da03605f9a6b",
+    "deploymentUrl": "https://d414aca8.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "4951e42c062436c1dd22cbe5a928e3ef63a23135b8c442b64d7a391d4f96da7c",
+  "verification": {
+    "unitAndRenderTests": "6 passed",
+    "remoteMediaObjects": "120 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/",
+    "livePortrait": "present",
+    "liveSetSelectorHeading": "present"
+  }
+}
