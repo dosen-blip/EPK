@@ -68,6 +68,10 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /className="press-headshot"/);
   assert.match(page, /DOSEN \/ ARTIST PORTRAIT/);
   assert.match(page, /SELECT A SET/);
+  assert.match(page, /className="dock-toggle"/);
+  assert.match(page, /--dock-progress/);
+  assert.match(css, /\.signal-dock \{[^}]*border-radius: 23px/);
+  assert.match(css, /\.progress::\-webkit-slider-runnable-track \{[^}]*border-radius: 999px/);
 
   for (const slot of [
     "hero-escapade",

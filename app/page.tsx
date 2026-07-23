@@ -1650,12 +1650,35 @@ export default function Home() {
         <a href="#top" aria-label="Back to top">↑ TOP</a>
       </footer>
 
-      <div className={`signal-dock ${transmitting ? "is-playing" : ""}`}>
-        <button type="button" onClick={() => void togglePlayback()} aria-label={transmitting ? `Pause ${activeSet.title}` : `Play ${activeSet.title}`}>
+      <div
+        className={`signal-dock ${transmitting ? "is-playing" : ""}`}
+        style={{
+          "--dock-accent": activeSet.accent,
+          "--dock-progress": `${duration > 0 ? Math.min((currentTime / duration) * 100, 100) : 0}%`,
+        } as CSSProperties}
+        role="region"
+        aria-label="Persistent set player"
+      >
+        <button
+          className="dock-toggle"
+          type="button"
+          onClick={() => void togglePlayback()}
+          aria-label={transmitting ? `Pause ${activeSet.title}` : `Play ${activeSet.title}`}
+        >
           <PlaybackIcon playing={transmitting} />
         </button>
-        <div className="dock-track">
-          <span>{activeSet.dockTitle}</span>
+        <div className="dock-player">
+          <div className="dock-heading">
+            <div className="dock-identification">
+              <span className="dock-state mono" role="status">{playerStateLabel}</span>
+              <strong>{activeSet.dockTitle}</strong>
+            </div>
+            <span className="dock-time mono">
+              <span>{formatTime(currentTime)}</span>
+              <span aria-hidden="true">/</span>
+              <span>{formatTime(duration)}</span>
+            </span>
+          </div>
           <input
             className="progress"
             type="range"
@@ -1670,8 +1693,6 @@ export default function Home() {
             }}
           />
         </div>
-        <span className="dock-time mono">{formatTime(currentTime)} / {formatTime(duration)}</span>
-        <span className="dock-status mono">{playerStateLabel}</span>
       </div>
     </main>
   );
