@@ -15,6 +15,16 @@
 
 Both hostnames are attached once at the Pages project level. Every approved update must deploy to the existing `dosen-epk` project on `main`; Cloudflare then routes them to the newest successful production deployment automatically. Requests to `dosen.ca` are redirected by the application Worker to the canonical `www.dosen.ca` hostname. Do not create a new deployment project, attach either hostname to another platform, or treat a version-specific URL as production.
 
+The canonical release entrypoint is:
+
+```bash
+npm run release:cloudflare -- --reason "Release description" --receipt release-slug
+```
+
+It requires a clean, pushed `main`, runs the complete release gate, verifies the existing Pages
+project and all three domains, deploys `.pages-dist`, checks production routing, and creates a
+new release receipt without overwriting history.
+
 IONOS remains the registrar, but authoritative DNS is hosted by Cloudflare. Cloudflare must provide proxied, flattened routing from the apex and proxied CNAME routing from `www` to `dosen-epk.pages.dev`. IONOS forwarding and IONOS-managed A/AAAA records are forbidden because they can overwrite or bypass the Pages hostnames and break TLS.
 
 The Pages output contains the application Worker, content-hashed JavaScript/CSS, favicon, and social-preview image. Audio, video, event imagery, and fonts stay in R2 and are addressed through the canonical media origin.

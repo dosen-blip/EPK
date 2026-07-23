@@ -38,21 +38,40 @@ test("keeps production media and visual treatments explicit", async () => {
     access(new URL("../dist/client/og-dosen-wordmark.png", import.meta.url)),
   ]);
 
-  const [page, playerModel, layout, css, favicon, packageJson, manifestJson, routingJson, viteConfig, workerEntry] = await Promise.all([
+  const [
+    page,
+    contentAdapter,
+    playerModel,
+    layout,
+    css,
+    favicon,
+    packageJson,
+    manifestJson,
+    contentManifestJson,
+    routingJson,
+    viteConfig,
+    workerEntry,
+    releaseScript,
+  ] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/content.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/player-model.mjs", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../public/favicon.svg", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../source-of-truth/media-manifest.json", import.meta.url), "utf8"),
+    readFile(new URL("../source-of-truth/content-manifest.json", import.meta.url), "utf8"),
     readFile(new URL("../source-of-truth/production-routing.json", import.meta.url), "utf8"),
     readFile(new URL("../vite.config.ts", import.meta.url), "utf8"),
     readFile(new URL("../worker/index.ts", import.meta.url), "utf8"),
+    readFile(new URL("../scripts/release.mjs", import.meta.url), "utf8"),
   ]);
   const manifest = JSON.parse(manifestJson);
+  const content = JSON.parse(contentManifestJson);
   const routing = JSON.parse(routingJson);
   const mediaKeys = new Set(manifest.objects.map((object) => object.key));
+  const transmissions = new Map(content.transmissions.map((item) => [item.slug, item]));
   assert.equal(routing.platform, "cloudflare-pages");
   assert.equal(routing.projectName, "dosen-epk");
   assert.equal(routing.canonicalHostname, "www.dosen.ca");
@@ -64,6 +83,13 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(workerEntry, /url\.hostname === "dosen\.ca"/);
   assert.match(workerEntry, /url\.hostname = "www\.dosen\.ca"/);
   assert.match(workerEntry, /Response\.redirect\(url\.toString\(\), 301\)/);
+  assert.match(releaseScript, /const PROJECT = "dosen-epk"/);
+  assert.match(releaseScript, /const PRODUCTION_BRANCH = "main"/);
+  assert.match(releaseScript, /--commit-dirty=false/);
+  assert.match(releaseScript, /writeFile\(receiptPath,[\s\S]*flag: "wx"/);
+  assert.doesNotMatch(releaseScript, /pages", "project", "create/);
+  assert.match(packageJson, /"release:check": "node scripts\/release\.mjs check"/);
+  assert.match(packageJson, /"release:cloudflare": "node scripts\/release\.mjs deploy"/);
   assert.ok(mediaKeys.has("media/profile/dosen-headshot-2026.jpeg"));
   assert.match(page, /className="press-headshot"/);
   assert.match(page, /DOSEN \/ ARTIST PORTRAIT/);
@@ -72,6 +98,14 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /--dock-progress/);
   assert.match(css, /\.signal-dock \{[^}]*border-radius: 23px/);
   assert.match(css, /\.progress::\-webkit-slider-runnable-track \{[^}]*border-radius: 999px/);
+  assert.equal(content.schemaVersion, 1);
+  assert.equal(content.transmissionCount, 6);
+  assert.equal(content.playableSetCount, 5);
+  assert.equal(content.libraryClipCount, 18);
+  assert.equal(content.defaultFeaturedSetSlug, "escapade-afterparty");
+  assert.match(contentAdapter, /rawContentManifest/);
+  assert.match(contentAdapter, /contentManifest\.transmissions/);
+  assert.doesNotMatch(page, /const transmissions\s*=/);
 
   for (const slot of [
     "hero-escapade",
@@ -80,7 +114,7 @@ test("keeps production media and visual treatments explicit", async () => {
     "frequency-shift",
     "offgrid-halloween",
   ]) {
-    assert.match(page, new RegExp(slot));
+    assert.ok(content.transmissions.some((item) => item.slot === slot), `content manifest is missing ${slot}`);
   }
 
   assert.match(page, /Open video library/);
@@ -95,9 +129,12 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.doesNotMatch(page, /ArchiveMode|mode-switch|LOOSE \/|COMPACT \/|setMode/);
   assert.match(page, /VIEW ALL \{selectedLibraryEvent\.clips\.length\} EVENT VIDEOS/);
   assert.match(page, /window\.history\.pushState/);
-  assert.match(page, /off-grid-1-year/);
-  assert.match(page, /off-grid-1-year-dosen-b2b-fastr\.mp3/);
-  assert.match(page, /escapade-afterparty/);
+  assert.ok(transmissions.has("off-grid-1-year"));
+  assert.equal(
+    transmissions.get("off-grid-1-year").player.src,
+    "/audio/off-grid-1-year-dosen-b2b-fastr.mp3",
+  );
+  assert.ok(transmissions.has("escapade-afterparty"));
   assert.match(page, /autoPlay/);
   assert.match(page, /playsInline/);
   assert.match(page, /\/media\/hero\/hero-desktop-v1\.mp4/);
@@ -109,7 +146,8 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(css, /\.hero-film-matte \{ display: none; \}/);
   assert.doesNotMatch(page, /PERFORMANCE REEL|LOADING FILM|hero-film-placeholder/);
   assert.match(page, /FULL CLIP LIBRARY \/ ORIGINAL AUDIO/);
-  assert.match(page, /const MEDIA_ORIGIN = "https:\/\/dosen-media\.matiadosen\.workers\.dev"/);
+  assert.equal(content.mediaOrigin, "https://dosen-media.matiadosen.workers.dev");
+  assert.match(contentAdapter, /MEDIA_ORIGIN = contentManifest\.mediaOrigin/);
   assert.match(page, /audio\.src = mediaUrl\(segment\.src\)/);
   assert.match(page, /src=\{mediaUrl\(activeSegments\[0\]\.src\)\}/);
   assert.match(page, /PROFESSIONAL MEDIA/);
@@ -124,7 +162,10 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(playerModel, /Array\.from\(\{ length: 62 \}/);
   assert.match(playerModel, /dosen-escapade-ap-\$\{String\(index\)\.padStart\(3, "0"\)\}\.mp3/);
   assert.doesNotMatch(page, /\/audio\/dosen-escapade-ap\.mp3/);
-  assert.match(page, /\/media\/escapade-ap-cover\.png/);
+  assert.equal(
+    transmissions.get("escapade-afterparty").artwork.vinylCover,
+    "/media/escapade-ap-cover.png",
+  );
   assert.match(page, /transmitting \? "PAUSE" : "PLAY"/);
   assert.match(page, /function PlaybackIcon/);
   assert.doesNotMatch(page, /▶|Ⅱ/);
@@ -135,15 +176,28 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /IntersectionObserver/);
   assert.match(page, /set-selector-track/);
   assert.match(page, /aria-pressed=\{isActive\}/);
-  assert.match(page, /off-grid-frequency-shift-soundcloud\.png/);
-  assert.match(page, /off-grid-halloweekend-soundcloud\.png/);
-  assert.match(page, /off-grid-frequency-shift-poster\.jpg/);
-  assert.match(page, /off-grid-halloweekend-poster\.jpeg/);
-  assert.match(page, /function getEventArtwork/);
-  assert.match(page, /set\.eventPoster \?\? set\.cardPoster \?\? set\.poster/);
+  assert.equal(
+    transmissions.get("off-grid-frequency-shift").artwork.vinylCover,
+    "/media/dossiers/off-grid-frequency-shift-soundcloud.png",
+  );
+  assert.equal(
+    transmissions.get("off-grid-halloweekend").artwork.vinylCover,
+    "/media/dossiers/off-grid-halloweekend-soundcloud.png",
+  );
+  assert.equal(
+    transmissions.get("off-grid-frequency-shift").artwork.eventPoster,
+    "/media/dossiers/off-grid-frequency-shift-poster.jpg",
+  );
+  assert.equal(
+    transmissions.get("off-grid-halloweekend").artwork.eventPoster,
+    "/media/dossiers/off-grid-halloweekend-poster.jpeg",
+  );
+  assert.match(contentAdapter, /function getEventArtwork/);
+  assert.match(contentAdapter, /set\.artwork\.eventPoster \?\? set\.artwork\.vinylCover/);
   assert.match(page, /mediaUrl\(getEventArtwork\(item\)\)/);
   assert.match(page, /mediaUrl\(getEventArtwork\(selectedSet\)\)/);
-  assert.doesNotMatch(page, /poster=\{mediaUrl\(selectedSet\.poster\)\}/);
+  assert.match(page, /mediaUrl\(set\.artwork\.vinylCover\)/);
+  assert.doesNotMatch(page, /mediaUrl\(set\.artwork\.eventPoster\)/);
   assert.match(page, /selectedFeaturedClip\.orientation/);
   assert.match(css, /\.set-dossier-media\.is-portrait video/);
   assert.match(page, /event-visual-lightbox/);

@@ -1,0 +1,337 @@
+{
+  "schemaVersion": 1,
+  "mediaOrigin": "https://dosen-media.matiadosen.workers.dev",
+  "defaultFeaturedSetSlug": "escapade-afterparty",
+  "transmissionCount": 6,
+  "playableSetCount": 5,
+  "libraryClipCount": 18,
+  "timelineOrder": [
+    "escapade-afterparty",
+    "solstice-frequency-shift",
+    "off-grid-1-year",
+    "off-grid-frequency-shift",
+    "off-grid-halloweekend",
+    "exosphere-002-sky-lounge"
+  ],
+  "libraryEvents": [
+    {
+      "id": "off-grid-1-year",
+      "title": "OFF GRID 1 YEAR",
+      "set": "DOSEN B2B FASTR",
+      "date": "28 MAR 2026",
+      "time": "SET TIME / TBC",
+      "location": "GRIDWRKS / OTTAWA",
+      "clips": [
+        {
+          "title": "Anniversary Clip 02",
+          "orientation": "landscape",
+          "src": "/media/library/off-grid-anniversary-2.mp4",
+          "poster": "/media/library/posters/off-grid-anniversary-2.jpg"
+        },
+        {
+          "title": "Anniversary Clip 03",
+          "orientation": "landscape",
+          "src": "/media/library/off-grid-anniversary-3.mp4",
+          "poster": "/media/library/posters/off-grid-anniversary-3.jpg"
+        },
+        {
+          "title": "Anniversary Clip 04",
+          "orientation": "landscape",
+          "src": "/media/library/off-grid-anniversary-4.mp4",
+          "poster": "/media/library/posters/off-grid-anniversary-4.jpg"
+        },
+        {
+          "title": "Anniversary Clip 05",
+          "orientation": "landscape",
+          "src": "/media/library/off-grid-anniversary-5.mp4",
+          "poster": "/media/library/posters/off-grid-anniversary-5.jpg"
+        },
+        {
+          "title": "Anniversary Clip 06",
+          "orientation": "landscape",
+          "src": "/media/library/off-grid-anniversary-6.mp4",
+          "poster": "/media/library/posters/off-grid-anniversary-6.jpg"
+        },
+        {
+          "title": "Anniversary Clip 07",
+          "orientation": "landscape",
+          "src": "/media/library/off-grid-anniversary-7.mp4",
+          "poster": "/media/library/posters/off-grid-anniversary-7.jpg"
+        },
+        {
+          "title": "Anniversary Clip 08",
+          "orientation": "landscape",
+          "src": "/media/library/off-grid-anniversary-8.mp4",
+          "poster": "/media/library/posters/off-grid-anniversary-8.jpg"
+        },
+        {
+          "title": "Blue Crowd",
+          "orientation": "portrait",
+          "src": "/media/library/off-grid-blue-crowd-vertical.mp4",
+          "poster": "/media/library/posters/off-grid-blue-crowd-vertical.jpg"
+        },
+        {
+          "title": "Blue Room",
+          "orientation": "portrait",
+          "src": "/media/library/off-grid-blue-room-vertical.mp4",
+          "poster": "/media/library/posters/off-grid-blue-room-vertical.jpg"
+        },
+        {
+          "title": "Behind the Decks",
+          "orientation": "portrait",
+          "src": "/media/library/off-grid-red-decks-vertical.mp4",
+          "poster": "/media/library/posters/off-grid-red-decks-vertical.jpg"
+        },
+        {
+          "title": "Anniversary Clip 09",
+          "orientation": "portrait",
+          "src": "/media/library/off-grid-anniversary-9.mp4",
+          "poster": "/media/library/posters/off-grid-anniversary-9.jpg"
+        }
+      ]
+    },
+    {
+      "id": "off-grid-frequency-shift",
+      "title": "OFF GRID × FREQUENCY SHIFT",
+      "set": "DOSEN / RECORDED SET",
+      "date": "03 JAN 2026",
+      "time": "SET TIME / TBC",
+      "location": "GRIDWRKS / OTTAWA",
+      "clips": [
+        {
+          "title": "Frequency Shift Clip 01",
+          "orientation": "portrait",
+          "src": "/media/library/frequency-shift-jan-03-1.mp4",
+          "poster": "/media/library/posters/frequency-shift-jan-03-1.jpg"
+        },
+        {
+          "title": "Frequency Shift Clip 02",
+          "orientation": "portrait",
+          "src": "/media/library/frequency-shift-jan-03-2.mp4",
+          "poster": "/media/library/posters/frequency-shift-jan-03-2.jpg"
+        },
+        {
+          "title": "Frequency Shift Clip 03",
+          "orientation": "portrait",
+          "src": "/media/library/frequency-shift-jan-03-3.mp4",
+          "poster": "/media/library/posters/frequency-shift-jan-03-3.jpg"
+        }
+      ]
+    },
+    {
+      "id": "solstice-frequency-shift",
+      "title": "SOLSTICE × FREQUENCY SHIFT",
+      "set": "DOSEN B2B GAB BALLADELLI",
+      "date": "22 MAY 2026",
+      "time": "SET TIME / TBC",
+      "location": "CITY AT NIGHT / OTTAWA",
+      "clips": [
+        {
+          "title": "Solstice Clip 01",
+          "orientation": "portrait",
+          "src": "/media/library/solstice-frequency-1.mp4",
+          "poster": "/media/library/posters/solstice-frequency-1.jpg"
+        },
+        {
+          "title": "Solstice Clip 02",
+          "orientation": "portrait",
+          "src": "/media/library/solstice-frequency-2.mp4",
+          "poster": "/media/library/posters/solstice-frequency-2.jpg"
+        },
+        {
+          "title": "Solstice Clip 04",
+          "orientation": "portrait",
+          "src": "/media/library/solstice-frequency-4.mp4",
+          "poster": "/media/library/posters/solstice-frequency-4.jpg"
+        },
+        {
+          "title": "Magenta Room",
+          "orientation": "portrait",
+          "src": "/media/library/solstice-magenta-room-vertical.mp4",
+          "poster": "/media/library/posters/solstice-magenta-room-vertical.jpg"
+        }
+      ]
+    }
+  ],
+  "transmissions": [
+    {
+      "id": "TR-0626",
+      "slug": "escapade-afterparty",
+      "date": "26 JUN 2026",
+      "venue": "GRIDWRKS / OTTAWA",
+      "title": "ESCAPADE OFFICIAL AFTERPARTY",
+      "detail": "OPENING SUPPORT — ODD MOB B2B WALKER & ROYCE",
+      "slot": "hero-escapade",
+      "tone": "violet",
+      "role": "OPENING SUPPORT",
+      "timelineFormat": "OPENING SUPPORT",
+      "lineup": "ODD MOB B2B WALKER & ROYCE",
+      "duration": "1:31:44",
+      "artwork": {
+        "vinylCover": "/media/escapade-ap-cover.png",
+        "eventPoster": null
+      },
+      "featureVideo": null,
+      "story": "The opening set for the official Escapade afterparty, setting the room in motion before Odd Mob and Walker & Royce took over.",
+      "sound": "Driving tech house moved through a deliberate turn into dubstep before closing on rolling, euphoric techno.",
+      "recordingUrl": "https://soundcloud.com/user-278640203/odd-mob-x-walker-royce-x-dosen",
+      "secondaryUrl": null,
+      "libraryEventId": null,
+      "player": {
+        "kind": "segmented",
+        "model": "escapade-62-segment",
+        "accent": "#b748ff",
+        "dockTitle": "ESCAPADE AP / OPENING SET"
+      }
+    },
+    {
+      "id": "OGS-053",
+      "slug": "off-grid-1-year",
+      "date": "28 MAR 2026",
+      "venue": "GRIDWRKS / OTTAWA",
+      "title": "OFF GRID 1 YEAR",
+      "detail": "DOSEN B2B FASTR — FULL SET AVAILABLE",
+      "slot": "offgrid-anniversary",
+      "tone": "amber",
+      "role": "B2B PERFORMANCE",
+      "timelineFormat": "B2B FASTR",
+      "lineup": "DOSEN B2B FASTR",
+      "duration": "1:10:12",
+      "artwork": {
+        "vinylCover": "/media/dossiers/off-grid-anniversary-soundcloud.png",
+        "eventPoster": "/media/dossiers/off-grid-1-year-poster.jpg"
+      },
+      "featureVideo": "/media/library/off-grid-anniversary-2.mp4",
+      "story": "A full anniversary-room document and the clearest view of DOSEN in an extended B2B format: responsive, physical, and built around shared escalation.",
+      "sound": "Rolling tech-house pressure with fast handoffs, redline moments, and enough lift to keep the set moving as one continuous exchange.",
+      "recordingUrl": "https://soundcloud.com/user-278640203/offgrid-anniversary-dosen-b2b",
+      "secondaryUrl": "https://www.youtube.com/watch?v=8ihwDpYYRiM",
+      "libraryEventId": "off-grid-1-year",
+      "player": {
+        "kind": "file",
+        "src": "/audio/off-grid-1-year-dosen-b2b-fastr.mp3",
+        "durationSeconds": 4212.623469,
+        "accent": "#ff9933",
+        "dockTitle": "OFF GRID 1 YEAR / DOSEN B2B FASTR"
+      }
+    },
+    {
+      "id": "FS-0522",
+      "slug": "solstice-frequency-shift",
+      "date": "22 MAY 2026",
+      "venue": "CITY AT NIGHT / OTTAWA",
+      "title": "SOLSTICE X FREQUENCY SHIFT",
+      "detail": "DOSEN B2B GAB BALLADELLI",
+      "slot": "solstice-frequency",
+      "tone": "magenta",
+      "role": "B2B PERFORMANCE",
+      "timelineFormat": "B2B BALLADELLI",
+      "lineup": "DOSEN B2B GAB BALLADELLI",
+      "duration": "SET RECORDING PENDING",
+      "artwork": {
+        "vinylCover": "/media/dossiers/solstice-frequency-poster.png",
+        "eventPoster": "/media/dossiers/solstice-frequency-poster.png"
+      },
+      "featureVideo": "/media/library/solstice-frequency-1.mp4",
+      "story": "A huge turnout packed City At Night for the Solstice and Frequency Shift crossover—and produced one of the strongest sets in the current run.",
+      "sound": "A high-energy B2B set built for a full room, with tech-house foundations opening into heavier pressure and moments of lift.",
+      "recordingUrl": null,
+      "secondaryUrl": null,
+      "libraryEventId": "solstice-frequency-shift",
+      "player": null
+    },
+    {
+      "id": "FS-0103",
+      "slug": "off-grid-frequency-shift",
+      "date": "03 JAN 2026",
+      "venue": "GRIDWRKS / OTTAWA",
+      "title": "OFF GRID X FREQUENCY SHIFT",
+      "detail": "TECH HOUSE SET — FULL RECORDING AVAILABLE",
+      "slot": "frequency-shift",
+      "tone": "violet",
+      "role": "RECORDED SET",
+      "timelineFormat": "RECORDED SET",
+      "lineup": "DOSEN",
+      "duration": "1:14:52",
+      "artwork": {
+        "vinylCover": "/media/dossiers/off-grid-frequency-shift-soundcloud.png",
+        "eventPoster": "/media/dossiers/off-grid-frequency-shift-poster.jpg"
+      },
+      "featureVideo": "/media/library/frequency-shift-jan-03-1.mp4",
+      "story": "A January collaboration between OFF GRID and Frequency Shift at GRIDWRKS, documented through a full recording and a focused set of room clips.",
+      "sound": "A dedicated tech-house set: direct, club-focused, and built around a steady increase in pressure across the room.",
+      "recordingUrl": "https://soundcloud.com/user-278640203/offgrid-x-frequency-shift",
+      "secondaryUrl": null,
+      "libraryEventId": "off-grid-frequency-shift",
+      "player": {
+        "kind": "file",
+        "src": "/audio/offgrid-x-frequency-shift.mp3",
+        "durationSeconds": 4492.417324,
+        "accent": "#d75aff",
+        "dockTitle": "OFF GRID × FREQUENCY SHIFT"
+      }
+    },
+    {
+      "id": "OGS-032",
+      "slug": "off-grid-halloweekend",
+      "date": "01 NOV 2025",
+      "venue": "GRIDWRKS / OTTAWA",
+      "title": "OFF GRID HALLOWEEKEND",
+      "detail": "DEBUT / OPENING SET — FULL SET AVAILABLE",
+      "slot": "offgrid-halloween",
+      "tone": "red",
+      "role": "DEBUT / OPENING SET",
+      "timelineFormat": "DEBUT / OPENING",
+      "lineup": "DOSEN",
+      "duration": "1:34:42",
+      "artwork": {
+        "vinylCover": "/media/dossiers/off-grid-halloweekend-soundcloud.png",
+        "eventPoster": "/media/dossiers/off-grid-halloweekend-poster.jpeg"
+      },
+      "featureVideo": null,
+      "story": "The first GRIDWRKS appearance and OFF GRID debut—the opening night that began the current run of performances in the room.",
+      "sound": "Tech house from beginning to end: a patient opening arc that steadily increased the room's energy without leaving its lane.",
+      "recordingUrl": "https://soundcloud.com/user-278640203/offgrid-halloween",
+      "secondaryUrl": "https://www.youtube.com/watch?v=BBwCfF2a7dU",
+      "libraryEventId": null,
+      "player": {
+        "kind": "file",
+        "src": "/audio/offgrid-032.mp3",
+        "durationSeconds": 5682.410975,
+        "accent": "#ff4938",
+        "dockTitle": "OFF GRID / HALLOWEEKEND"
+      }
+    },
+    {
+      "id": "EXO-002",
+      "slug": "exosphere-002-sky-lounge",
+      "date": "SUMMER 2025",
+      "venue": "SKY LOUNGE / OTTAWA",
+      "title": "EXOSPHERE 002",
+      "detail": "FIRST-EVER DEBUT / OPENING SET — FULL SET AVAILABLE",
+      "slot": "exosphere-002",
+      "tone": "amber",
+      "role": "DEBUT / OPENING SET",
+      "timelineFormat": "FIRST DEBUT / OPENING",
+      "lineup": "DOSEN",
+      "duration": "0:59:08",
+      "artwork": {
+        "vinylCover": "/media/dossiers/exosphere-002-sky-lounge-cover.png",
+        "eventPoster": null
+      },
+      "featureVideo": null,
+      "story": "The first public DOSEN set: opening EXOSPHERE 002 at Sky Lounge in Ottawa and introducing the project in a live room for the first time.",
+      "sound": "A summer-leaning opening set rooted in tech house and house—bright, warm, and paced to bring the room in without rushing it.",
+      "recordingUrl": "https://soundcloud.com/user-278640203/sky-lounge-set",
+      "secondaryUrl": null,
+      "libraryEventId": null,
+      "player": {
+        "kind": "file",
+        "src": "/audio/exosphere-002-sky-lounge.mp3",
+        "durationSeconds": 3548.686009,
+        "accent": "#ff9933",
+        "dockTitle": "EXOSPHERE 002 / SKY LOUNGE"
+      }
+    }
+  ]
+}

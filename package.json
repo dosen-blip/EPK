@@ -15,7 +15,9 @@
     "verify:sot": "node scripts/verify-source-of-truth.mjs",
     "verify:sot:local": "node scripts/verify-source-of-truth.mjs --require-local",
     "verify:sot:remote": "node scripts/verify-source-of-truth.mjs --remote",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "release:check": "node scripts/release.mjs check",
+    "release:cloudflare": "node scripts/release.mjs deploy",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .pages-dist --ignore-pattern .vinext --ignore-pattern .wrangler --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {

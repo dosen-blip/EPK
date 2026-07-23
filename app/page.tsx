@@ -4,12 +4,23 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   createSingleFileSegments,
-  ESCAPADE_SEGMENTS,
   getAudioDuration,
   locateAudioSegment,
 } from "./player-model.mjs";
-
-const MEDIA_ORIGIN = "https://dosen-media.matiadosen.workers.dev";
+import {
+  DEFAULT_FEATURED_SET_SLUG,
+  getEventArtwork,
+  getFeaturedClip,
+  getLibraryEvent,
+  LIBRARY_CLIP_COUNT,
+  LIBRARY_EVENTS,
+  MEDIA_ORIGIN,
+  playableSets,
+  timeline,
+  transmissions,
+  type LibraryClip,
+  type PlayableSet,
+} from "./content";
 
 function mediaUrl(path: string) {
   if (/^https?:\/\//i.test(path)) {
@@ -19,164 +30,6 @@ function mediaUrl(path: string) {
   return `${MEDIA_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-type LibraryClip = {
-  title: string;
-  orientation: "landscape" | "portrait";
-  src: string;
-  poster: string;
-};
-
-const LIBRARY_EVENTS: Array<{
-  id: string;
-  title: string;
-  set: string;
-  date: string;
-  time: string;
-  location: string;
-  clips: LibraryClip[];
-}> = [
-  {
-    id: "off-grid-1-year",
-    title: "OFF GRID 1 YEAR",
-    set: "DOSEN B2B FASTR",
-    date: "28 MAR 2026",
-    time: "SET TIME / TBC",
-    location: "GRIDWRKS / OTTAWA",
-    clips: [
-      {
-        title: "Anniversary Clip 02",
-        orientation: "landscape",
-        src: "/media/library/off-grid-anniversary-2.mp4",
-        poster: "/media/library/posters/off-grid-anniversary-2.jpg",
-      },
-      {
-        title: "Anniversary Clip 03",
-        orientation: "landscape",
-        src: "/media/library/off-grid-anniversary-3.mp4",
-        poster: "/media/library/posters/off-grid-anniversary-3.jpg",
-      },
-      {
-        title: "Anniversary Clip 04",
-        orientation: "landscape",
-        src: "/media/library/off-grid-anniversary-4.mp4",
-        poster: "/media/library/posters/off-grid-anniversary-4.jpg",
-      },
-      {
-        title: "Anniversary Clip 05",
-        orientation: "landscape",
-        src: "/media/library/off-grid-anniversary-5.mp4",
-        poster: "/media/library/posters/off-grid-anniversary-5.jpg",
-      },
-      {
-        title: "Anniversary Clip 06",
-        orientation: "landscape",
-        src: "/media/library/off-grid-anniversary-6.mp4",
-        poster: "/media/library/posters/off-grid-anniversary-6.jpg",
-      },
-      {
-        title: "Anniversary Clip 07",
-        orientation: "landscape",
-        src: "/media/library/off-grid-anniversary-7.mp4",
-        poster: "/media/library/posters/off-grid-anniversary-7.jpg",
-      },
-      {
-        title: "Anniversary Clip 08",
-        orientation: "landscape",
-        src: "/media/library/off-grid-anniversary-8.mp4",
-        poster: "/media/library/posters/off-grid-anniversary-8.jpg",
-      },
-      {
-        title: "Blue Crowd",
-        orientation: "portrait",
-        src: "/media/library/off-grid-blue-crowd-vertical.mp4",
-        poster: "/media/library/posters/off-grid-blue-crowd-vertical.jpg",
-      },
-      {
-        title: "Blue Room",
-        orientation: "portrait",
-        src: "/media/library/off-grid-blue-room-vertical.mp4",
-        poster: "/media/library/posters/off-grid-blue-room-vertical.jpg",
-      },
-      {
-        title: "Behind the Decks",
-        orientation: "portrait",
-        src: "/media/library/off-grid-red-decks-vertical.mp4",
-        poster: "/media/library/posters/off-grid-red-decks-vertical.jpg",
-      },
-      {
-        title: "Anniversary Clip 09",
-        orientation: "portrait",
-        src: "/media/library/off-grid-anniversary-9.mp4",
-        poster: "/media/library/posters/off-grid-anniversary-9.jpg",
-      },
-    ],
-  },
-  {
-    id: "off-grid-frequency-shift",
-    title: "OFF GRID × FREQUENCY SHIFT",
-    set: "DOSEN / RECORDED SET",
-    date: "03 JAN 2026",
-    time: "SET TIME / TBC",
-    location: "GRIDWRKS / OTTAWA",
-    clips: [
-      {
-        title: "Frequency Shift Clip 01",
-        orientation: "portrait",
-        src: "/media/library/frequency-shift-jan-03-1.mp4",
-        poster: "/media/library/posters/frequency-shift-jan-03-1.jpg",
-      },
-      {
-        title: "Frequency Shift Clip 02",
-        orientation: "portrait",
-        src: "/media/library/frequency-shift-jan-03-2.mp4",
-        poster: "/media/library/posters/frequency-shift-jan-03-2.jpg",
-      },
-      {
-        title: "Frequency Shift Clip 03",
-        orientation: "portrait",
-        src: "/media/library/frequency-shift-jan-03-3.mp4",
-        poster: "/media/library/posters/frequency-shift-jan-03-3.jpg",
-      },
-    ],
-  },
-  {
-    id: "solstice-frequency-shift",
-    title: "SOLSTICE × FREQUENCY SHIFT",
-    set: "DOSEN B2B GAB BALLADELLI",
-    date: "22 MAY 2026",
-    time: "SET TIME / TBC",
-    location: "CITY AT NIGHT / OTTAWA",
-    clips: [
-      {
-        title: "Solstice Clip 01",
-        orientation: "portrait",
-        src: "/media/library/solstice-frequency-1.mp4",
-        poster: "/media/library/posters/solstice-frequency-1.jpg",
-      },
-      {
-        title: "Solstice Clip 02",
-        orientation: "portrait",
-        src: "/media/library/solstice-frequency-2.mp4",
-        poster: "/media/library/posters/solstice-frequency-2.jpg",
-      },
-      {
-        title: "Solstice Clip 04",
-        orientation: "portrait",
-        src: "/media/library/solstice-frequency-4.mp4",
-        poster: "/media/library/posters/solstice-frequency-4.jpg",
-      },
-      {
-        title: "Magenta Room",
-        orientation: "portrait",
-        src: "/media/library/solstice-magenta-room-vertical.mp4",
-        poster: "/media/library/posters/solstice-magenta-room-vertical.jpg",
-      },
-    ],
-  },
-];
-
-const LIBRARY_CLIP_COUNT = LIBRARY_EVENTS.reduce((total, event) => total + event.clips.length, 0);
-
 function formatTime(seconds: number) {
   const safeSeconds = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
   const hours = Math.floor(safeSeconds / 3600);
@@ -185,231 +38,11 @@ function formatTime(seconds: number) {
   return `${hours}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
 }
 
-type Transmission = {
-  id: string;
-  slug: string;
-  date: string;
-  venue: string;
-  title: string;
-  detail: string;
-  slot: string;
-  tone: string;
-  role: string;
-  lineup: string;
-  duration: string;
-  poster: string;
-  cardPoster?: string;
-  eventPoster?: string;
-  audioSrc?: string;
-  featureVideo?: string;
-  story: string;
-  sound: string;
-  recordingUrl: string | null;
-  secondaryUrl: string | null;
-  libraryEventId: string | null;
-};
-
-const transmissions: Transmission[] = [
-  {
-    id: "TR-0626",
-    slug: "escapade-afterparty",
-    date: "26 JUN 2026",
-    venue: "GRIDWRKS / OTTAWA",
-    title: "ESCAPADE OFFICIAL AFTERPARTY",
-    detail: "OPENING SUPPORT — ODD MOB B2B WALKER & ROYCE",
-    slot: "hero-escapade",
-    tone: "violet",
-    role: "OPENING SUPPORT",
-    lineup: "ODD MOB B2B WALKER & ROYCE",
-    duration: "1:31:44",
-    poster: "/media/escapade-ap-cover.png",
-    story: "The opening set for the official Escapade afterparty, setting the room in motion before Odd Mob and Walker & Royce took over.",
-    sound: "Driving tech house moved through a deliberate turn into dubstep before closing on rolling, euphoric techno.",
-    recordingUrl: "https://soundcloud.com/user-278640203/odd-mob-x-walker-royce-x-dosen",
-    secondaryUrl: null,
-    libraryEventId: null,
-  },
-  {
-    id: "OGS-053",
-    slug: "off-grid-1-year",
-    date: "28 MAR 2026",
-    venue: "GRIDWRKS / OTTAWA",
-    title: "OFF GRID 1 YEAR",
-    detail: "DOSEN B2B FASTR — FULL SET AVAILABLE",
-    slot: "offgrid-anniversary",
-    tone: "amber",
-    role: "B2B PERFORMANCE",
-    lineup: "DOSEN B2B FASTR",
-    duration: "1:10:12",
-    poster: "/media/dossiers/off-grid-anniversary-soundcloud.png",
-    eventPoster: "/media/dossiers/off-grid-1-year-poster.jpg",
-    audioSrc: "/audio/off-grid-1-year-dosen-b2b-fastr.mp3",
-    featureVideo: "/media/library/off-grid-anniversary-2.mp4",
-    story: "A full anniversary-room document and the clearest view of DOSEN in an extended B2B format: responsive, physical, and built around shared escalation.",
-    sound: "Rolling tech-house pressure with fast handoffs, redline moments, and enough lift to keep the set moving as one continuous exchange.",
-    recordingUrl: "https://soundcloud.com/user-278640203/offgrid-anniversary-dosen-b2b",
-    secondaryUrl: "https://www.youtube.com/watch?v=8ihwDpYYRiM",
-    libraryEventId: "off-grid-1-year",
-  },
-  {
-    id: "FS-0522",
-    slug: "solstice-frequency-shift",
-    date: "22 MAY 2026",
-    venue: "CITY AT NIGHT / OTTAWA",
-    title: "SOLSTICE X FREQUENCY SHIFT",
-    detail: "DOSEN B2B GAB BALLADELLI",
-    slot: "solstice-frequency",
-    tone: "magenta",
-    role: "B2B PERFORMANCE",
-    lineup: "DOSEN B2B GAB BALLADELLI",
-    duration: "SET RECORDING PENDING",
-    poster: "/media/dossiers/solstice-frequency-poster.png",
-    featureVideo: "/media/library/solstice-frequency-1.mp4",
-    story: "A huge turnout packed City At Night for the Solstice and Frequency Shift crossover—and produced one of the strongest sets in the current run.",
-    sound: "A high-energy B2B set built for a full room, with tech-house foundations opening into heavier pressure and moments of lift.",
-    recordingUrl: null,
-    secondaryUrl: null,
-    libraryEventId: "solstice-frequency-shift",
-  },
-  {
-    id: "FS-0103",
-    slug: "off-grid-frequency-shift",
-    date: "03 JAN 2026",
-    venue: "GRIDWRKS / OTTAWA",
-    title: "OFF GRID X FREQUENCY SHIFT",
-    detail: "TECH HOUSE SET — FULL RECORDING AVAILABLE",
-    slot: "frequency-shift",
-    tone: "violet",
-    role: "RECORDED SET",
-    lineup: "DOSEN",
-    duration: "1:14:52",
-    poster: "/media/dossiers/off-grid-frequency-shift-soundcloud.png",
-    cardPoster: "/media/dossiers/off-grid-frequency-shift-poster.jpg",
-    eventPoster: "/media/dossiers/off-grid-frequency-shift-poster.jpg",
-    audioSrc: "/audio/offgrid-x-frequency-shift.mp3",
-    featureVideo: "/media/library/frequency-shift-jan-03-1.mp4",
-    story: "A January collaboration between OFF GRID and Frequency Shift at GRIDWRKS, documented through a full recording and a focused set of room clips.",
-    sound: "A dedicated tech-house set: direct, club-focused, and built around a steady increase in pressure across the room.",
-    recordingUrl: "https://soundcloud.com/user-278640203/offgrid-x-frequency-shift",
-    secondaryUrl: null,
-    libraryEventId: "off-grid-frequency-shift",
-  },
-  {
-    id: "OGS-032",
-    slug: "off-grid-halloweekend",
-    date: "01 NOV 2025",
-    venue: "GRIDWRKS / OTTAWA",
-    title: "OFF GRID HALLOWEEKEND",
-    detail: "DEBUT / OPENING SET — FULL SET AVAILABLE",
-    slot: "offgrid-halloween",
-    tone: "red",
-    role: "DEBUT / OPENING SET",
-    lineup: "DOSEN",
-    duration: "1:34:42",
-    poster: "/media/dossiers/off-grid-halloweekend-soundcloud.png",
-    cardPoster: "/media/dossiers/off-grid-halloweekend-poster.jpeg",
-    eventPoster: "/media/dossiers/off-grid-halloweekend-poster.jpeg",
-    audioSrc: "/audio/offgrid-032.mp3",
-    story: "The first GRIDWRKS appearance and OFF GRID debut—the opening night that began the current run of performances in the room.",
-    sound: "Tech house from beginning to end: a patient opening arc that steadily increased the room's energy without leaving its lane.",
-    recordingUrl: "https://soundcloud.com/user-278640203/offgrid-halloween",
-    secondaryUrl: "https://www.youtube.com/watch?v=BBwCfF2a7dU",
-    libraryEventId: null,
-  },
-  {
-    id: "EXO-002",
-    slug: "exosphere-002-sky-lounge",
-    date: "SUMMER 2025",
-    venue: "SKY LOUNGE / OTTAWA",
-    title: "EXOSPHERE 002",
-    detail: "FIRST-EVER DEBUT / OPENING SET — FULL SET AVAILABLE",
-    slot: "exosphere-002",
-    tone: "amber",
-    role: "DEBUT / OPENING SET",
-    lineup: "DOSEN",
-    duration: "0:59:08",
-    poster: "/media/dossiers/exosphere-002-sky-lounge-cover.png",
-    audioSrc: "/audio/exosphere-002-sky-lounge.mp3",
-    story: "The first public DOSEN set: opening EXOSPHERE 002 at Sky Lounge in Ottawa and introducing the project in a live room for the first time.",
-    sound: "A summer-leaning opening set rooted in tech house and house—bright, warm, and paced to bring the room in without rushing it.",
-    recordingUrl: "https://soundcloud.com/user-278640203/sky-lounge-set",
-    secondaryUrl: null,
-    libraryEventId: null,
-  },
-];
-
-type AudioSegment = (typeof ESCAPADE_SEGMENTS)[number];
-
-type PlayerSource =
-  | { kind: "segmented"; segments: AudioSegment[] }
-  | { kind: "file"; src: string; duration: number };
-
-type PlayableSet = Transmission & {
-  source: PlayerSource;
-  accent: string;
-  dockTitle: string;
-};
-
-const PLAYER_CONFIG: Record<string, Pick<PlayableSet, "source" | "accent" | "dockTitle">> = {
-  "escapade-afterparty": {
-    source: { kind: "segmented", segments: ESCAPADE_SEGMENTS },
-    accent: "#b748ff",
-    dockTitle: "ESCAPADE AP / OPENING SET",
-  },
-  "off-grid-1-year": {
-    source: { kind: "file", src: "/audio/off-grid-1-year-dosen-b2b-fastr.mp3", duration: 4212.623469 },
-    accent: "#ff9933",
-    dockTitle: "OFF GRID 1 YEAR / DOSEN B2B FASTR",
-  },
-  "off-grid-frequency-shift": {
-    source: { kind: "file", src: "/audio/offgrid-x-frequency-shift.mp3", duration: 4492.417324 },
-    accent: "#d75aff",
-    dockTitle: "OFF GRID × FREQUENCY SHIFT",
-  },
-  "off-grid-halloweekend": {
-    source: { kind: "file", src: "/audio/offgrid-032.mp3", duration: 5682.410975 },
-    accent: "#ff4938",
-    dockTitle: "OFF GRID / HALLOWEEKEND",
-  },
-  "exosphere-002-sky-lounge": {
-    source: { kind: "file", src: "/audio/exosphere-002-sky-lounge.mp3", duration: 3548.686009 },
-    accent: "#ff9933",
-    dockTitle: "EXOSPHERE 002 / SKY LOUNGE",
-  },
-};
-
-const playableSets: PlayableSet[] = transmissions.flatMap((transmission) => {
-  const config = PLAYER_CONFIG[transmission.slug];
-  return config ? [{ ...transmission, ...config }] : [];
-});
-
-function getEventArtwork(set: Transmission) {
-  return set.eventPoster ?? set.cardPoster ?? set.poster;
-}
-
-function getLibraryEvent(set: Transmission) {
-  return LIBRARY_EVENTS.find((event) => event.id === set.libraryEventId) ?? null;
-}
-
-function getFeaturedClip(set: Transmission) {
-  if (!set.featureVideo) return null;
-  return getLibraryEvent(set)?.clips.find((clip) => clip.src === set.featureVideo) ?? null;
-}
-
 function getSetSegments(set: PlayableSet) {
   return set.source.kind === "segmented"
     ? set.source.segments
     : createSingleFileSegments(set.source.src, set.source.duration);
 }
-
-const timeline = [
-  ["26 JUN 2026", "ESCAPADE OFFICIAL AFTERPARTY", "GRIDWRKS", "OPENING SUPPORT", "escapade-afterparty"],
-  ["22 MAY 2026", "SOLSTICE X FREQUENCY SHIFT", "CITY AT NIGHT", "B2B BALLADELLI", "solstice-frequency-shift"],
-  ["28 MAR 2026", "OFF GRID 1 YEAR", "GRIDWRKS", "B2B FASTR", "off-grid-1-year"],
-  ["03 JAN 2026", "OFF GRID X FREQUENCY SHIFT", "GRIDWRKS", "RECORDED SET", "off-grid-frequency-shift"],
-  ["01 NOV 2025", "OFF GRID HALLOWEEKEND", "GRIDWRKS", "DEBUT / OPENING", "off-grid-halloweekend"],
-  ["SUMMER 2025", "EXOSPHERE 002", "SKY LOUNGE", "FIRST DEBUT / OPENING", "exosphere-002-sky-lounge"],
-];
 
 function OrientationClipRow({
   eventId,
@@ -654,13 +287,13 @@ function DossierVinylPlayer({
           <div className="dossier-vinyl-record" ref={recordRef}>
             <span className="dossier-vinyl-shine" />
             <span className="dossier-vinyl-label">
-              <img src={mediaUrl(set.poster)} alt="" />
+              <img src={mediaUrl(set.artwork.vinylCover)} alt="" />
               <i />
             </span>
           </div>
         </div>
         <div className="dossier-vinyl-sleeve" aria-hidden="true">
-          <img src={mediaUrl(set.poster)} alt="" />
+          <img src={mediaUrl(set.artwork.vinylCover)} alt="" />
           <span />
         </div>
         <button
@@ -702,7 +335,7 @@ function DossierVinylPlayer({
 
 export default function Home() {
   const [transmitting, setTransmitting] = useState(false);
-  const [activeSetSlug, setActiveSetSlug] = useState("escapade-afterparty");
+  const [activeSetSlug, setActiveSetSlug] = useState(DEFAULT_FEATURED_SET_SLUG);
   const [playerStatus, setPlayerStatus] = useState<"ready" | "loading" | "error">("ready");
   const [mobileHero, setMobileHero] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -1472,7 +1105,7 @@ export default function Home() {
               <div className="vinyl-record" ref={vinylRef}>
                 <div className="vinyl-record-shine" />
                 <div className="vinyl-label">
-                  <img src={mediaUrl(activeSet.poster)} alt="" />
+                  <img src={mediaUrl(activeSet.artwork.vinylCover)} alt="" />
                   <span className="vinyl-spindle" />
                 </div>
               </div>
@@ -1480,7 +1113,7 @@ export default function Home() {
 
             <div className="vinyl-sleeve">
               <div className="vinyl-sleeve-art">
-                <img src={mediaUrl(activeSet.poster)} alt={`${activeSet.title} official set artwork`} />
+                <img src={mediaUrl(activeSet.artwork.vinylCover)} alt={`${activeSet.title} official set artwork`} />
               </div>
               <span className="vinyl-sleeve-grain" aria-hidden="true" />
               <span className="vinyl-sleeve-edge" aria-hidden="true" />
@@ -1524,7 +1157,7 @@ export default function Home() {
                   key={set.slug}
                 >
                   <span className="set-selector-cover">
-                    <img src={mediaUrl(set.poster)} alt="" />
+                    <img src={mediaUrl(set.artwork.vinylCover)} alt="" />
                     <span className="set-selector-number mono">{String(index + 1).padStart(2, "0")}</span>
                     <span className="set-selector-active mono">{isActive ? "ON AIR" : "SELECT"}</span>
                   </span>
@@ -1585,19 +1218,19 @@ export default function Home() {
           <span className="coordinate mono">45.4215° N / 75.6972° W</span>
         </div>
         <div className="timeline-list">
-          {timeline.map(([date, event, venue, format, slug], index) => (
+          {timeline.map((item, index) => (
             <button
               className="timeline-row"
               type="button"
               aria-haspopup="dialog"
-              onClick={() => openSetDossier(slug)}
-              key={event}
+              onClick={() => openSetDossier(item.slug)}
+              key={item.slug}
             >
               <span className="row-number mono">{String(index + 1).padStart(2, "0")}</span>
-              <time className="mono">{date}</time>
-              <strong>{event}</strong>
-              <span>{venue}</span>
-              <span className="mono format">{format}</span>
+              <time className="mono">{item.date}</time>
+              <strong>{item.title}</strong>
+              <span>{item.venue.split(" / ")[0]}</span>
+              <span className="mono format">{item.timelineFormat}</span>
             </button>
           ))}
         </div>

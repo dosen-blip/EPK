@@ -1,0 +1,4 @@
+interface:
+  display_name: "DOSEN Site Operator"
+  short_description: "Safely maintain and release the DOSEN EPK"
+  default_prompt: "Use $dosen-site-operator to update, validate, or release the DOSEN EPK safely."

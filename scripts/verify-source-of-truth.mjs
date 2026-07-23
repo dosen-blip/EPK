@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const manifest = JSON.parse(await readFile(join(root, "source-of-truth", "media-manifest.json"), "utf8"));
+const content = JSON.parse(await readFile(join(root, "source-of-truth", "content-manifest.json"), "utf8"));
 const routing = JSON.parse(await readFile(join(root, "source-of-truth", "production-routing.json"), "utf8"));
 const requireLocal = process.argv.includes("--require-local");
 const verifyRemote = process.argv.includes("--remote");
@@ -18,6 +19,83 @@ assert.equal(manifest.objectCount, manifest.objects.length);
 assert.equal(manifest.totalBytes, manifest.objects.reduce((sum, object) => sum + object.bytes, 0));
 assert.equal(new Set(manifest.objects.map((object) => object.key)).size, manifest.objectCount);
 assert.equal(manifest.objectCount, 120);
+
+assert.equal(content.schemaVersion, 1);
+assert.equal(content.mediaOrigin, manifest.origin);
+assert.equal(content.transmissionCount, content.transmissions.length);
+assert.equal(content.playableSetCount, content.transmissions.filter((item) => item.player).length);
+assert.equal(
+  content.libraryClipCount,
+  content.libraryEvents.reduce((total, event) => total + event.clips.length, 0),
+);
+assert.equal(new Set(content.transmissions.map((item) => item.id)).size, content.transmissionCount);
+assert.equal(new Set(content.transmissions.map((item) => item.slug)).size, content.transmissionCount);
+assert.equal(new Set(content.transmissions.map((item) => item.slot)).size, content.transmissionCount);
+assert.equal(new Set(content.libraryEvents.map((event) => event.id)).size, content.libraryEvents.length);
+assert.equal(content.timelineOrder.length, content.transmissionCount);
+assert.deepEqual(
+  new Set(content.timelineOrder),
+  new Set(content.transmissions.map((item) => item.slug)),
+  "timeline must contain every transmission exactly once",
+);
+
+const transmissionBySlug = new Map(content.transmissions.map((item) => [item.slug, item]));
+const libraryEventById = new Map(content.libraryEvents.map((event) => [event.id, event]));
+assert.ok(transmissionBySlug.get(content.defaultFeaturedSetSlug)?.player, "default featured set must be playable");
+for (const event of content.libraryEvents) {
+  assert.ok(
+    content.transmissions.some((item) => item.libraryEventId === event.id),
+    `${event.id}: library event must belong to a transmission`,
+  );
+}
+
+const contentMediaPaths = new Set();
+for (const event of content.libraryEvents) {
+  assert.ok(event.clips.length > 0, `${event.id}: library event must contain clips`);
+  for (const clip of event.clips) {
+    assert.ok(["landscape", "portrait"].includes(clip.orientation), `${clip.src}: invalid orientation`);
+    assert.ok(!contentMediaPaths.has(clip.src), `${clip.src}: duplicate clip source`);
+    contentMediaPaths.add(clip.src);
+    contentMediaPaths.add(clip.poster);
+  }
+}
+
+for (const transmission of content.transmissions) {
+  const { artwork, featureVideo, libraryEventId, player } = transmission;
+  assert.ok(artwork.vinylCover, `${transmission.slug}: vinyl cover is required`);
+  contentMediaPaths.add(artwork.vinylCover);
+  if (artwork.eventPoster) contentMediaPaths.add(artwork.eventPoster);
+
+  const libraryEvent = libraryEventId ? libraryEventById.get(libraryEventId) : null;
+  if (libraryEventId) assert.ok(libraryEvent, `${transmission.slug}: unknown library event`);
+  if (featureVideo) {
+    assert.ok(libraryEvent, `${transmission.slug}: featured video requires a library event`);
+    assert.ok(
+      libraryEvent.clips.some((clip) => clip.src === featureVideo),
+      `${transmission.slug}: featured video must belong to its library event`,
+    );
+  }
+
+  if (player?.kind === "file") {
+    assert.ok(player.durationSeconds > 0, `${transmission.slug}: player duration must be positive`);
+    contentMediaPaths.add(player.src);
+  } else if (player?.kind === "segmented") {
+    assert.equal(player.model, "escapade-62-segment");
+    for (let index = 0; index < 62; index += 1) {
+      contentMediaPaths.add(`/audio/dosen-escapade-ap-${String(index).padStart(3, "0")}.mp3`);
+    }
+  }
+}
+
+const mediaKeys = new Set(manifest.objects.map((object) => object.key));
+for (const path of contentMediaPaths) {
+  assert.ok(path.startsWith("/"), `${path}: content media path must be origin-relative`);
+  assert.ok(mediaKeys.has(path.slice(1)), `${path}: missing from media manifest`);
+}
+console.log(
+  `Content verified: ${content.transmissionCount} transmissions, `
+  + `${content.playableSetCount} playable sets, ${content.libraryClipCount} clips`,
+);
 
 assert.deepEqual(routing, {
   schemaVersion: 1,
