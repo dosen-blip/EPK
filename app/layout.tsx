@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 
 const title = "DOSEN — Electronic Press Kit";
-const description = "DOSEN is an Ottawa-based DJ moving through minimal, gritty tech house, trance lift, and late-hour pressure.";
+const description = "Ottawa DJ playing tech house, house, trance, and techno.";
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";

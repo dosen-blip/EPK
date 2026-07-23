@@ -1181,8 +1181,7 @@ export default function Home() {
           <h1 className="hero-mark">DOSEN</h1>
           <div className="hero-bottom">
             <p className="hero-statement">
-              Ottawa DJ moving through tech house, trance lift, and the point
-              where the room stops checking the time.
+              Ottawa DJ playing tech house, house, trance, and techno.
             </p>
             <div className="hero-actions">
               <button
