@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-07-23T02:00:48Z",
+  "reason": "Refined the persistent playback bar across desktop and mobile",
+  "sourceCommit": "54ebb6fab01d285fd2c495cc570b38f42daed3bf",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "b80bb8c0-f57e-47fd-9a9a-5dec74ab4547",
+    "deploymentUrl": "https://b80bb8c0.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "4951e42c062436c1dd22cbe5a928e3ef63a23135b8c442b64d7a391d4f96da7c",
+  "verification": {
+    "unitAndRenderTests": "6 passed",
+    "remoteMediaObjects": "120 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/",
+    "livePersistentPlayer": "present"
+  }
+}
