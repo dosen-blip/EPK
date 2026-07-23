@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-07-23T01:18:20Z",
+  "reason": "Updated the DOSEN positioning line across the hero and site metadata",
+  "sourceCommit": "3f591d6cca5731e85b699cc9880e9496c04e535b",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "755ee75a-baa8-41fc-94b7-0372a8eab27c",
+    "deploymentUrl": "https://755ee75a.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "4951e42c062436c1dd22cbe5a928e3ef63a23135b8c442b64d7a391d4f96da7c",
+  "verification": {
+    "unitAndRenderTests": "6 passed",
+    "remoteMediaObjects": "120 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/",
+    "livePositioningLine": "present in hero and metadata"
+  }
+}
