@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-07-24T15:09:49Z",
+  "reason": "Refine mobile hero pacing and heading spacing",
+  "sourceCommit": "31d1eaec381ddc4301144b58e488da9489e198be",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "394a07df-927e-4526-a5f9-71e226727cdf",
+    "deploymentUrl": "https://394a07df.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "7d3a3656251651409930f445bd64b9fb91165c426c4e92d020cb91237f913695",
+  "verification": {
+    "unitAndRenderTests": "passed via npm test",
+    "remoteMediaObjects": "121 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/release-check?source=codex",
+    "livePersistentPlayer": "present"
+  }
+}
