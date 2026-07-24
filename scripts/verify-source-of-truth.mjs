@@ -18,7 +18,7 @@ assert.equal(manifest.origin, "https://dosen-media.matiadosen.workers.dev");
 assert.equal(manifest.objectCount, manifest.objects.length);
 assert.equal(manifest.totalBytes, manifest.objects.reduce((sum, object) => sum + object.bytes, 0));
 assert.equal(new Set(manifest.objects.map((object) => object.key)).size, manifest.objectCount);
-assert.equal(manifest.objectCount, 120);
+assert.equal(manifest.objectCount, 121);
 
 assert.equal(content.schemaVersion, 1);
 assert.equal(content.mediaOrigin, manifest.origin);

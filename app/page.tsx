@@ -785,7 +785,7 @@ export default function Home() {
             ref={heroVideoRef}
             key={mobileHero ? "mobile-hero" : "desktop-hero"}
             className="hero-video"
-            src={mediaUrl(mobileHero ? "/media/hero/hero-mobile-v1.mp4" : "/media/hero/hero-desktop-v1.mp4")}
+            src={mediaUrl(mobileHero ? "/media/hero/hero-mobile-v3.mp4" : "/media/hero/hero-desktop-v1.mp4")}
             autoPlay
             muted
             loop

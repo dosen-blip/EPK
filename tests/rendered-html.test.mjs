@@ -138,7 +138,7 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /autoPlay/);
   assert.match(page, /playsInline/);
   assert.match(page, /\/media\/hero\/hero-desktop-v1\.mp4/);
-  assert.match(page, /\/media\/hero\/hero-mobile-v1\.mp4/);
+  assert.match(page, /\/media\/hero\/hero-mobile-v3\.mp4/);
   assert.match(page, /hero-film-matte hero-film-matte-top/);
   assert.match(page, /hero-film-matte hero-film-matte-bottom/);
   assert.match(page, /backdropFilter: "blur\(13px\)"/);

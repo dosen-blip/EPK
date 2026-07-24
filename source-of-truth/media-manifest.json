@@ -5,8 +5,8 @@
   "deliveryWorker": "dosen-media",
   "origin": "https://dosen-media.matiadosen.workers.dev",
   "cacheControl": "public, max-age=31536000, immutable",
-  "objectCount": 120,
-  "totalBytes": 1407833804,
+  "objectCount": 121,
+  "totalBytes": 1435903212,
   "hashAlgorithm": "sha256",
   "objects": [
     {
@@ -575,6 +575,13 @@
       "sha256": "dd8daa9e6d557e36905f65f3a574c6503ab8d20dc89c59ee1b647bd2daa4f16e",
       "contentType": "video/mp4",
       "url": "https://dosen-media.matiadosen.workers.dev/media/hero/hero-mobile-v1.mp4"
+    },
+    {
+      "key": "media/hero/hero-mobile-v3.mp4",
+      "bytes": 28069408,
+      "sha256": "17639d449218916b54beaf78388db3b95072641d8cf334ed1d18a6069d346cf7",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/hero/hero-mobile-v3.mp4"
     },
     {
       "key": "media/library/frequency-shift-jan-03-1.mp4",

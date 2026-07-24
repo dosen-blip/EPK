@@ -393,7 +393,7 @@ footer p, footer a { font-size: .62rem; }
   .site-header nav a:not(.nav-cta) { display: none; }
   .hero { min-height: 100svh; padding-top: 100px; }
   .hero-copy { padding-bottom: calc(5vh + 74px); }
-  .hero-mark { font-size: 14.8vw; }
+  .hero-mark { font-size: 14.8vw; transform: translateY(clamp(20px, 4vw, 36px)); }
   .hero-bottom { align-items: flex-start; flex-direction: column; }
   .hero-actions { justify-content: flex-start; }
   .scroll-note { display: none; }
