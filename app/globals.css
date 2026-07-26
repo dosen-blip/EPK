@@ -543,7 +543,7 @@ footer p, footer a { font-size: .62rem; }
   .hero { min-height: 100svh; padding: 92px 16px 28px; }
   .hero-kicker span:last-child { display: none; }
   .hero-copy { min-width: 0; padding-bottom: calc(3vh + 34px); }
-  .hero-mark { width: max-content; max-width: none; font-size: clamp(5.2rem, 23vw, 7rem); letter-spacing: -.02em; transform: translateX(-.045em); }
+  .hero-mark { width: 100%; max-width: 100%; font-size: clamp(3.75rem, 18.8vw, 5.1rem); letter-spacing: -.03em; transform: none; }
   .hero-bottom { width: 100%; gap: 24px; }
   .hero-statement { max-width: 34rem; font-size: 1rem; }
   .hero-actions { width: 100%; display: grid; grid-template-columns: 1fr; }
