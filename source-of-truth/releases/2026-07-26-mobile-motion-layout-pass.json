@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-07-26T22:39:57Z",
+  "reason": "Mobile motion rebuild, compact player refinements, and reviewed mobile layout corrections",
+  "sourceCommit": "890796694b80c1b9d8f3c82dcfb4ed05c18c5968",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "85a601ed-26d0-4ee6-b5c5-448001741a56",
+    "deploymentUrl": "https://85a601ed.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "7d3a3656251651409930f445bd64b9fb91165c426c4e92d020cb91237f913695",
+  "verification": {
+    "unitAndRenderTests": "passed via npm test",
+    "remoteMediaObjects": "121 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/release-check?source=codex",
+    "livePersistentPlayer": "present"
+  }
+}
