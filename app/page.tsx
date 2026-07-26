@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type TransitionEvent } from "react";
 import {
   createSingleFileSegments,
   getAudioDuration,
@@ -341,6 +341,7 @@ const MOBILE_CHAPTERS = [
 ] as const;
 
 type MobileChapterId = (typeof MOBILE_CHAPTERS)[number]["id"];
+type MobileDockPhase = "expanded" | "collapsing" | "compact" | "expanding";
 
 function MobileChapterMarker({ number, label }: { number: string; label: string }) {
   return (
@@ -363,7 +364,7 @@ export default function Home() {
   const [mobileLayout, setMobileLayout] = useState(false);
   const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
   const [activeMobileChapter, setActiveMobileChapter] = useState<MobileChapterId>("signal");
-  const [mobileDockCompact, setMobileDockCompact] = useState(false);
+  const [mobileDockPhase, setMobileDockPhase] = useState<MobileDockPhase>("expanded");
   const [eventVisualOpen, setEventVisualOpen] = useState(false);
   const [pendingLibraryEvent, setPendingLibraryEvent] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -382,7 +383,10 @@ export default function Home() {
   const mobileIndexRef = useRef<HTMLDivElement>(null);
   const mobileIndexButtonRef = useRef<HTMLButtonElement>(null);
   const dockRef = useRef<HTMLDivElement>(null);
+  const dockMorphSurfaceRef = useRef<HTMLDivElement>(null);
+  const dockCoverRef = useRef<HTMLImageElement>(null);
   const dockScrollFrameRef = useRef<number | null>(null);
+  const mobileDockPhaseRef = useRef<MobileDockPhase>("expanded");
   const activeSet = playableSets.find((item) => item.slug === activeSetSlug) ?? playableSets[0];
   const activeSegments = getSetSegments(activeSet);
   const duration = getAudioDuration(activeSegments);
@@ -391,6 +395,8 @@ export default function Home() {
   const selectedLibraryEvent = selectedSet ? getLibraryEvent(selectedSet) : null;
   const selectedHighlightClips = selectedLibraryEvent?.clips.slice(0, 3) ?? [];
   const activeMobileChapterNumber = MOBILE_CHAPTERS.find((chapter) => chapter.id === activeMobileChapter)?.number ?? "01";
+  const mobileDockCompact = mobileDockPhase === "collapsing" || mobileDockPhase === "compact";
+  const mobileDockMorphing = mobileDockPhase === "collapsing" || mobileDockPhase === "expanding";
   const playerStateLabel = playerStatus === "error"
     ? "AUDIO ERROR"
     : playerStatus === "loading"
@@ -398,6 +404,27 @@ export default function Home() {
       : transmitting
         ? "PLAYING"
         : "READY";
+
+  useEffect(() => {
+    mobileDockPhaseRef.current = mobileDockPhase;
+  }, [mobileDockPhase]);
+
+  const requestMobileDockCompact = useCallback((compact: boolean) => {
+    setMobileDockPhase((current) => {
+      const currentlyTargetsCompact = current === "collapsing" || current === "compact";
+      if (compact === currentlyTargetsCompact) return current;
+      return compact ? "collapsing" : "expanding";
+    });
+  }, []);
+
+  const handleDockMorphEnd = (event: TransitionEvent<HTMLDivElement>) => {
+    if (event.target !== dockMorphSurfaceRef.current || event.propertyName !== "transform") return;
+    setMobileDockPhase((current) => {
+      if (current === "collapsing") return "compact";
+      if (current === "expanding") return "expanded";
+      return current;
+    });
+  };
 
   useEffect(() => {
     const mobileQuery = window.matchMedia("(max-width: 700px) and (orientation: portrait)");
@@ -409,7 +436,7 @@ export default function Home() {
       setMobileLayout(mobileLayoutQuery.matches);
       if (!mobileLayoutQuery.matches) {
         setMobileIndexOpen(false);
-        setMobileDockCompact(false);
+        setMobileDockPhase("expanded");
       }
     };
 
@@ -422,6 +449,34 @@ export default function Home() {
       mobileLayoutQuery.removeEventListener("change", updateMobileLayout);
     };
   }, []);
+
+  useEffect(() => {
+    if (!mobileLayout) return;
+    const dock = dockRef.current;
+    if (!dock) return;
+
+    const updateDockScale = () => {
+      const expandedWidth = dock.getBoundingClientRect().width;
+      if (expandedWidth <= 0) return;
+      const compactWidth = Math.min(window.innerWidth * 0.46, 190);
+      dock.style.setProperty("--dock-compact-scale-x", String(compactWidth / expandedWidth));
+    };
+
+    updateDockScale();
+    const resizeObserver = new ResizeObserver(updateDockScale);
+    resizeObserver.observe(dock);
+    window.addEventListener("resize", updateDockScale, { passive: true });
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateDockScale);
+    };
+  }, [mobileLayout]);
+
+  useEffect(() => {
+    const cover = dockCoverRef.current;
+    if (!cover) return;
+    void cover.decode().catch(() => undefined);
+  }, [activeSetSlug]);
 
   useEffect(() => {
     const hero = heroSectionRef.current;
@@ -529,7 +584,7 @@ export default function Home() {
       if (nextScrollY <= 120) {
         downwardTravel = 0;
         upwardTravel = 0;
-        setMobileDockCompact(false);
+        requestMobileDockCompact(false);
         return;
       }
 
@@ -539,14 +594,14 @@ export default function Home() {
         downwardTravel += delta;
         upwardTravel = 0;
         if (downwardTravel >= 64) {
-          setMobileDockCompact(true);
+          requestMobileDockCompact(true);
           downwardTravel = 0;
         }
       } else if (delta < 0) {
         upwardTravel += Math.abs(delta);
         downwardTravel = 0;
         if (upwardTravel >= 32) {
-          setMobileDockCompact(false);
+          requestMobileDockCompact(false);
           upwardTravel = 0;
         }
       }
@@ -565,13 +620,13 @@ export default function Home() {
         dockScrollFrameRef.current = null;
       }
     };
-  }, [mobileLayout]);
+  }, [mobileLayout, requestMobileDockCompact]);
 
   useEffect(() => {
     if (!mobileLayout) return;
-    const frame = window.requestAnimationFrame(() => setMobileDockCompact(false));
+    const frame = window.requestAnimationFrame(() => requestMobileDockCompact(false));
     return () => window.cancelAnimationFrame(frame);
-  }, [activeSetSlug, mobileLayout, transmitting]);
+  }, [activeSetSlug, mobileLayout, requestMobileDockCompact, transmitting]);
 
   useEffect(() => {
     const vinyl = vinylRef.current;
@@ -728,10 +783,21 @@ export default function Home() {
       return;
     }
 
+    let frame: number | null = null;
     const updateCue = () => setDossierScrollCueVisible(dossier.scrollTop < 120);
+    const handleScroll = () => {
+      if (frame !== null) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = null;
+        updateCue();
+      });
+    };
     updateCue();
-    dossier.addEventListener("scroll", updateCue, { passive: true });
-    return () => dossier.removeEventListener("scroll", updateCue);
+    dossier.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      dossier.removeEventListener("scroll", handleScroll);
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
   }, [selectedHighlightClips.length, selectedSetSlug]);
 
   useEffect(() => {
@@ -1362,9 +1428,11 @@ export default function Home() {
             setTransmitting(false);
           }}
           onEnded={handleSegmentEnded}
-          onTimeUpdate={(event) =>
-            setCurrentTime((activeSegments[segmentIndex]?.offset ?? 0) + event.currentTarget.currentTime)
-          }
+          onTimeUpdate={(event) => {
+            const dockPhase = mobileDockPhaseRef.current;
+            if (dockPhase === "collapsing" || dockPhase === "expanding") return;
+            setCurrentTime((activeSegments[segmentIndex]?.offset ?? 0) + event.currentTarget.currentTime);
+          }}
         />
 
         <MobileChapterMarker number="01" label="LISTEN" />
@@ -1573,7 +1641,7 @@ export default function Home() {
       </footer>
 
       <div
-        className={`signal-dock ${transmitting ? "is-playing" : ""} ${mobileDockCompact ? "is-compact" : ""}`}
+        className={`signal-dock ${transmitting ? "is-playing" : ""} ${mobileDockCompact ? "is-compact" : ""} ${mobileDockMorphing ? "is-morphing" : ""} dock-${mobileDockPhase}`}
         style={{
           "--dock-accent": activeSet.accent,
           "--dock-progress": `${duration > 0 ? Math.min((currentTime / duration) * 100, 100) : 0}%`,
@@ -1581,15 +1649,19 @@ export default function Home() {
         role="region"
         aria-label="Persistent set player"
         ref={dockRef}
-        onFocusCapture={() => setMobileDockCompact(false)}
-        onPointerDownCapture={() => setMobileDockCompact(false)}
+        onFocusCapture={() => requestMobileDockCompact(false)}
+        onPointerDownCapture={() => requestMobileDockCompact(false)}
+        onTransitionEnd={handleDockMorphEnd}
       >
+        <div className="dock-morph-surface" ref={dockMorphSurfaceRef} aria-hidden="true" />
         <div className="dock-visual">
           <img
             className="dock-cover"
+            ref={dockCoverRef}
             src={mediaUrl(activeSet.artwork.vinylCover)}
             alt=""
             aria-hidden="true"
+            decoding="async"
           />
           <button
             className="dock-toggle"
