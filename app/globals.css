@@ -367,8 +367,10 @@ button { color: inherit; }
 footer { min-height: 160px; padding: 42px clamp(18px, 3vw, 48px); display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--ink); background: var(--paper); color: var(--ink); }
 footer p, footer a { font-size: .62rem; }
 
-.signal-dock { position: fixed; z-index: 60; right: clamp(10px, 2vw, 30px); bottom: max(12px, env(safe-area-inset-bottom)); left: clamp(10px, 2vw, 30px); min-height: 74px; padding: 10px 16px 10px 10px; border: 1px solid rgba(238,234,225,.22); border-radius: 23px; display: grid; grid-template-columns: 50px minmax(0, 1fr); align-items: center; gap: 14px; background: rgba(10,10,11,.9); box-shadow: 0 18px 55px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.045); backdrop-filter: blur(20px) saturate(135%); -webkit-backdrop-filter: blur(20px) saturate(135%); transition: --dock-progress .18s linear, opacity .24s ease, transform .42s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .3s ease; }
+.signal-dock { position: fixed; z-index: 60; right: clamp(10px, 2vw, 30px); bottom: max(12px, env(safe-area-inset-bottom)); left: clamp(10px, 2vw, 30px); min-height: 74px; padding: 10px 16px 10px 10px; border: 1px solid rgba(238,234,225,.22); border-radius: 23px; display: grid; grid-template-columns: 50px minmax(0, 1fr); align-items: center; gap: 14px; background: rgba(10,10,11,.9); box-shadow: 0 18px 55px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.045); backdrop-filter: blur(20px) saturate(135%); -webkit-backdrop-filter: blur(20px) saturate(135%); transform-origin: left bottom; transition: --dock-progress .18s linear, width .46s cubic-bezier(.16,1,.3,1), min-height .46s cubic-bezier(.16,1,.3,1), padding .46s cubic-bezier(.16,1,.3,1), border-radius .46s cubic-bezier(.16,1,.3,1), grid-template-columns .46s cubic-bezier(.16,1,.3,1), gap .46s cubic-bezier(.16,1,.3,1), opacity .24s ease, transform .46s cubic-bezier(.16,1,.3,1), border-color .3s ease, box-shadow .3s ease; }
 .signal-dock.is-playing { border-color: color-mix(in srgb, var(--dock-accent) 48%, rgba(238,234,225,.2)); box-shadow: 0 20px 60px rgba(0,0,0,.56), 0 0 34px color-mix(in srgb, var(--dock-accent) 9%, transparent), inset 0 1px 0 rgba(255,255,255,.05); }
+.dock-visual { position: relative; width: 50px; height: 50px; overflow: hidden; border-radius: 50%; transition: width .46s cubic-bezier(.16,1,.3,1), height .46s cubic-bezier(.16,1,.3,1), border-radius .46s cubic-bezier(.16,1,.3,1); }
+.dock-cover { display: none; width: 100%; height: 100%; object-fit: cover; }
 .dock-toggle { width: 50px; height: 50px; padding: 0; border: 1px solid rgba(238,234,225,.68); border-radius: 50%; display: grid; place-items: center; background: var(--paper); color: var(--ink); cursor: pointer; transition: background .24s ease, border-color .24s ease, color .24s ease, transform .34s cubic-bezier(.16,1,.3,1); }
 .dock-toggle:hover { border-color: var(--dock-accent); background: var(--dock-accent); transform: scale(1.045); }
 .dock-player { min-width: 0; }
@@ -632,8 +634,12 @@ footer p, footer a { font-size: .62rem; }
   footer { align-items: flex-start; gap: 28px; flex-direction: column; }
   footer p { max-width: 100%; line-height: 1.5; overflow-wrap: anywhere; }
   .site-shell { padding-bottom: 86px; }
-  .signal-dock { right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); left: 8px; min-height: 66px; padding: 8px 12px 8px 8px; border-radius: 21px; grid-template-columns: 46px minmax(0, 1fr); gap: 10px; background: rgba(8,8,9,.94); backdrop-filter: blur(16px) saturate(125%); -webkit-backdrop-filter: blur(16px) saturate(125%); }
-  .dock-toggle { width: 46px; height: 46px; }
+  .signal-dock { right: auto; bottom: max(8px, env(safe-area-inset-bottom)); left: 8px; width: calc(100% - 16px); min-height: 66px; padding: 8px 12px 8px 8px; border-radius: 21px; grid-template-columns: 46px minmax(0, 1fr); gap: 10px; background: rgba(8,8,9,.94); backdrop-filter: blur(16px) saturate(125%); -webkit-backdrop-filter: blur(16px) saturate(125%); }
+  .dock-visual { width: 46px; height: 46px; border-radius: 15px; }
+  .dock-cover { display: block; }
+  .dock-toggle { position: absolute; top: 50%; left: 50%; width: 34px; height: 34px; border-color: rgba(238,234,225,.82); background: rgba(238,234,225,.92); transform: translate(-50%, -50%); }
+  .dock-toggle:hover { transform: translate(-50%, -50%) scale(1.045); }
+  .dock-player { overflow: hidden; opacity: 1; transform: translateX(0); transition: opacity .2s ease .12s, transform .36s cubic-bezier(.16,1,.3,1) .08s; }
   .dock-heading { margin-bottom: 3px; gap: 10px; }
   .dock-identification { gap: 8px; }
   .dock-identification strong { font-size: .59rem; letter-spacing: .055em; }
@@ -644,15 +650,11 @@ footer p, footer a { font-size: .62rem; }
   .progress::-webkit-slider-runnable-track, .progress::-moz-range-track, .progress::-moz-range-progress { height: 5px; }
   .progress::-webkit-slider-thumb { width: 11px; height: 11px; margin-top: -3px; }
 
-  .signal-dock.is-compact { min-height: 48px; padding: 4px 9px 4px 4px; border-radius: 16px; grid-template-columns: 38px minmax(0, 1fr); gap: 8px; }
-  .signal-dock.is-compact .dock-toggle { width: 38px; height: 38px; }
-  .signal-dock.is-compact .dock-heading { margin: 0; }
-  .signal-dock.is-compact .dock-state { display: none; }
-  .signal-dock.is-compact .dock-identification strong { font-size: .56rem; }
-  .signal-dock.is-compact .dock-time span:not(:first-child) { display: none; }
-  .signal-dock.is-compact .progress { position: absolute; right: 10px; bottom: 1px; left: 50px; width: calc(100% - 60px); height: 9px; }
-  .signal-dock.is-compact .progress::-webkit-slider-runnable-track, .signal-dock.is-compact .progress::-moz-range-track, .signal-dock.is-compact .progress::-moz-range-progress { height: 2px; }
-  .signal-dock.is-compact .progress::-webkit-slider-thumb { width: 7px; height: 7px; margin-top: -2px; }
+  .signal-dock.is-compact { width: min(46vw, 190px); min-height: 58px; padding: 4px; border-radius: 18px; grid-template-columns: minmax(0, 1fr) 0fr; gap: 0; }
+  .signal-dock.is-compact .dock-visual { width: 100%; height: 48px; border-radius: 14px; }
+  .signal-dock.is-compact .dock-cover { filter: brightness(.72) saturate(.9); }
+  .signal-dock.is-compact .dock-toggle { left: 24px; width: 34px; height: 34px; }
+  .signal-dock.is-compact .dock-player { opacity: 0; pointer-events: none; transform: translateX(-12px); transition-delay: 0s; }
 }
 
 @media (max-width: 340px) {

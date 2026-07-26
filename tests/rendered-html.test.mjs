@@ -190,7 +190,11 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(css, /\.archive-grid \{[^}]*grid-auto-columns: min\(86vw, 360px\)[^}]*scroll-snap-type: x mandatory/);
   assert.match(css, /\.archive-card,[^}]*\{[^}]*grid-column: auto/);
   assert.match(css, /\.set-dossier-highlights-grid \{[^}]*grid-auto-flow: column[^}]*scroll-snap-type: x mandatory/);
-  assert.match(css, /\.signal-dock\.is-compact \{[^}]*min-height: 48px/);
+  assert.match(page, /className="dock-cover"/);
+  assert.match(page, /disabled=\{mobileDockCompact\}/);
+  assert.match(css, /\.signal-dock\.is-compact \{[^}]*width: min\(46vw, 190px\)[^}]*min-height: 58px/);
+  assert.match(css, /\.signal-dock\.is-compact \.dock-player \{[^}]*opacity: 0[^}]*pointer-events: none/);
+  assert.doesNotMatch(css, /\.signal-dock\.is-compact \.progress/);
   assert.match(css, /\.mobile-index-panel nav a\.is-active/);
   assert.match(css, /\.mobile-reveal\.is-mobile-reveal-pending/);
   assert.equal(

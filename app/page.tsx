@@ -1584,14 +1584,22 @@ export default function Home() {
         onFocusCapture={() => setMobileDockCompact(false)}
         onPointerDownCapture={() => setMobileDockCompact(false)}
       >
-        <button
-          className="dock-toggle"
-          type="button"
-          onClick={() => void togglePlayback()}
-          aria-label={transmitting ? `Pause ${activeSet.title}` : `Play ${activeSet.title}`}
-        >
-          <PlaybackIcon playing={transmitting} />
-        </button>
+        <div className="dock-visual">
+          <img
+            className="dock-cover"
+            src={mediaUrl(activeSet.artwork.vinylCover)}
+            alt=""
+            aria-hidden="true"
+          />
+          <button
+            className="dock-toggle"
+            type="button"
+            onClick={() => void togglePlayback()}
+            aria-label={transmitting ? `Pause ${activeSet.title}` : `Play ${activeSet.title}`}
+          >
+            <PlaybackIcon playing={transmitting} />
+          </button>
+        </div>
         <div className="dock-player">
           <div className="dock-heading">
             <div className="dock-identification">
@@ -1611,6 +1619,7 @@ export default function Home() {
             max={duration}
             step="1"
             value={Math.min(currentTime, duration)}
+            disabled={mobileDockCompact}
             aria-label={`Seek through ${activeSet.title}`}
             onChange={(event) => {
               const nextTime = Number(event.currentTarget.value);
