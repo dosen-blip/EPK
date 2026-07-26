@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-07-26T21:31:50Z",
+  "reason": "Publish the complete mobile EPK pass and streamlined selected-set experience",
+  "sourceCommit": "59d2eb94b75ebee9bb1338323abc0d99e135ddf0",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "073cf91d-33ba-45a7-b5ff-483041c4532c",
+    "deploymentUrl": "https://073cf91d.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "7d3a3656251651409930f445bd64b9fb91165c426c4e92d020cb91237f913695",
+  "verification": {
+    "unitAndRenderTests": "passed via npm test",
+    "remoteMediaObjects": "121 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/release-check?source=codex",
+    "livePersistentPlayer": "present",
+    "liveMobileBundle": "mobile index, adaptive dock, featured clips, scroll cue, marquee, and view-more markers present",
+    "heroMediaRange": "HTTP 206 bytes 0-1023/28069408"
+  }
+}
