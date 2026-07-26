@@ -40,6 +40,7 @@ export type Transmission = {
   venue: string;
   title: string;
   detail: string;
+  featuredLabel?: string;
   slot: string;
   tone: string;
   role: string;

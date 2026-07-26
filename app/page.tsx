@@ -10,7 +10,6 @@ import {
 import {
   DEFAULT_FEATURED_SET_SLUG,
   getEventArtwork,
-  getFeaturedClip,
   getLibraryEvent,
   LIBRARY_CLIP_COUNT,
   LIBRARY_EVENTS,
@@ -333,6 +332,25 @@ function DossierVinylPlayer({
   );
 }
 
+const MOBILE_CHAPTERS = [
+  { id: "signal", number: "01", label: "LISTEN" },
+  { id: "archive", number: "02", label: "SELECTED SETS" },
+  { id: "dates", number: "03", label: "DATES" },
+  { id: "press", number: "04", label: "PROFILE" },
+  { id: "contact", number: "05", label: "BOOK" },
+] as const;
+
+type MobileChapterId = (typeof MOBILE_CHAPTERS)[number]["id"];
+
+function MobileChapterMarker({ number, label }: { number: string; label: string }) {
+  return (
+    <div className="mobile-chapter-marker mono mobile-reveal" data-number={number} aria-hidden="true">
+      <span>{number}</span>
+      <span>{label}</span>
+    </div>
+  );
+}
+
 export default function Home() {
   const [transmitting, setTransmitting] = useState(false);
   const [activeSetSlug, setActiveSetSlug] = useState(DEFAULT_FEATURED_SET_SLUG);
@@ -341,6 +359,11 @@ export default function Home() {
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [archiveLibraryOpen, setArchiveLibraryOpen] = useState(false);
   const [selectedSetSlug, setSelectedSetSlug] = useState<string | null>(null);
+  const [dossierScrollCueVisible, setDossierScrollCueVisible] = useState(false);
+  const [mobileLayout, setMobileLayout] = useState(false);
+  const [mobileIndexOpen, setMobileIndexOpen] = useState(false);
+  const [activeMobileChapter, setActiveMobileChapter] = useState<MobileChapterId>("signal");
+  const [mobileDockCompact, setMobileDockCompact] = useState(false);
   const [eventVisualOpen, setEventVisualOpen] = useState(false);
   const [pendingLibraryEvent, setPendingLibraryEvent] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -356,13 +379,18 @@ export default function Home() {
   const switchRequestRef = useRef(0);
   const libraryRef = useRef<HTMLDivElement>(null);
   const dossierRef = useRef<HTMLDivElement>(null);
+  const mobileIndexRef = useRef<HTMLDivElement>(null);
+  const mobileIndexButtonRef = useRef<HTMLButtonElement>(null);
+  const dockRef = useRef<HTMLDivElement>(null);
+  const dockScrollFrameRef = useRef<number | null>(null);
   const activeSet = playableSets.find((item) => item.slug === activeSetSlug) ?? playableSets[0];
   const activeSegments = getSetSegments(activeSet);
   const duration = getAudioDuration(activeSegments);
   const selectedSet = transmissions.find((item) => item.slug === selectedSetSlug) ?? null;
   const selectedPlayableSet = playableSets.find((item) => item.slug === selectedSetSlug) ?? null;
   const selectedLibraryEvent = selectedSet ? getLibraryEvent(selectedSet) : null;
-  const selectedFeaturedClip = selectedSet ? getFeaturedClip(selectedSet) : null;
+  const selectedHighlightClips = selectedLibraryEvent?.clips.slice(0, 3) ?? [];
+  const activeMobileChapterNumber = MOBILE_CHAPTERS.find((chapter) => chapter.id === activeMobileChapter)?.number ?? "01";
   const playerStateLabel = playerStatus === "error"
     ? "AUDIO ERROR"
     : playerStatus === "loading"
@@ -373,13 +401,26 @@ export default function Home() {
 
   useEffect(() => {
     const mobileQuery = window.matchMedia("(max-width: 700px) and (orientation: portrait)");
+    const mobileLayoutQuery = window.matchMedia("(max-width: 620px)");
     const updateHeroSource = () => {
       setMobileHero(mobileQuery.matches);
     };
+    const updateMobileLayout = () => {
+      setMobileLayout(mobileLayoutQuery.matches);
+      if (!mobileLayoutQuery.matches) {
+        setMobileIndexOpen(false);
+        setMobileDockCompact(false);
+      }
+    };
 
     updateHeroSource();
+    updateMobileLayout();
     mobileQuery.addEventListener("change", updateHeroSource);
-    return () => mobileQuery.removeEventListener("change", updateHeroSource);
+    mobileLayoutQuery.addEventListener("change", updateMobileLayout);
+    return () => {
+      mobileQuery.removeEventListener("change", updateHeroSource);
+      mobileLayoutQuery.removeEventListener("change", updateMobileLayout);
+    };
   }, []);
 
   useEffect(() => {
@@ -416,6 +457,121 @@ export default function Home() {
     observer.observe(section);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!mobileLayout) return;
+
+    const targets = MOBILE_CHAPTERS
+      .map((chapter) => document.getElementById(chapter.id))
+      .filter((target): target is HTMLElement => Boolean(target));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const activeEntry = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (!activeEntry) return;
+        setActiveMobileChapter(activeEntry.target.id as MobileChapterId);
+      },
+      { rootMargin: "-18% 0px -70% 0px", threshold: 0 },
+    );
+
+    targets.forEach((target) => observer.observe(target));
+    return () => observer.disconnect();
+  }, [mobileLayout]);
+
+  useEffect(() => {
+    if (!mobileLayout) return;
+
+    const elements = Array.from(document.querySelectorAll<HTMLElement>(".mobile-reveal"));
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      elements.forEach((element) => element.classList.add("is-revealed"));
+      return () => elements.forEach((element) => element.classList.remove("is-revealed"));
+    }
+
+    elements.forEach((element) => element.classList.add("is-mobile-reveal-pending"));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-revealed");
+          entry.target.classList.remove("is-mobile-reveal-pending");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -12% 0px", threshold: 0.04 },
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => {
+      observer.disconnect();
+      elements.forEach((element) => {
+        element.classList.remove("is-mobile-reveal-pending");
+        element.classList.remove("is-revealed");
+      });
+    };
+  }, [mobileLayout]);
+
+  useEffect(() => {
+    if (!mobileLayout) return;
+
+    let lastScrollY = window.scrollY;
+    let downwardTravel = 0;
+    let upwardTravel = 0;
+
+    const updateDock = () => {
+      dockScrollFrameRef.current = null;
+      const nextScrollY = window.scrollY;
+      const delta = nextScrollY - lastScrollY;
+      lastScrollY = nextScrollY;
+
+      if (nextScrollY <= 120) {
+        downwardTravel = 0;
+        upwardTravel = 0;
+        setMobileDockCompact(false);
+        return;
+      }
+
+      if (dockRef.current?.contains(document.activeElement)) return;
+
+      if (delta > 0) {
+        downwardTravel += delta;
+        upwardTravel = 0;
+        if (downwardTravel >= 64) {
+          setMobileDockCompact(true);
+          downwardTravel = 0;
+        }
+      } else if (delta < 0) {
+        upwardTravel += Math.abs(delta);
+        downwardTravel = 0;
+        if (upwardTravel >= 32) {
+          setMobileDockCompact(false);
+          upwardTravel = 0;
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (dockScrollFrameRef.current !== null) return;
+      dockScrollFrameRef.current = window.requestAnimationFrame(updateDock);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (dockScrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(dockScrollFrameRef.current);
+        dockScrollFrameRef.current = null;
+      }
+    };
+  }, [mobileLayout]);
+
+  useEffect(() => {
+    if (!mobileLayout) return;
+    const frame = window.requestAnimationFrame(() => setMobileDockCompact(false));
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeSetSlug, mobileLayout, transmitting]);
 
   useEffect(() => {
     const vinyl = vinylRef.current;
@@ -496,7 +652,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!libraryOpen && !archiveLibraryOpen && !selectedSetSlug) return;
+    if (!libraryOpen && !archiveLibraryOpen && !selectedSetSlug && !mobileIndexOpen) return;
 
     const previousOverflow = document.body.style.overflow;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -513,6 +669,10 @@ export default function Home() {
         setArchiveLibraryOpen(false);
         return;
       }
+      if (mobileIndexOpen) {
+        setMobileIndexOpen(false);
+        return;
+      }
 
       const url = new URL(window.location.href);
       url.searchParams.delete("set");
@@ -526,7 +686,53 @@ export default function Home() {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [archiveLibraryOpen, eventVisualOpen, libraryOpen, selectedSetSlug]);
+  }, [archiveLibraryOpen, eventVisualOpen, libraryOpen, mobileIndexOpen, selectedSetSlug]);
+
+  useEffect(() => {
+    if (!mobileIndexOpen) return;
+
+    const panel = mobileIndexRef.current;
+    const trigger = mobileIndexButtonRef.current;
+    if (!panel) return;
+
+    const focusable = Array.from(
+      panel.querySelectorAll<HTMLElement>("button, a[href], [tabindex]:not([tabindex='-1'])"),
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const frame = window.requestAnimationFrame(() => first?.focus());
+
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || focusable.length === 0) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+
+    panel.addEventListener("keydown", trapFocus);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      panel.removeEventListener("keydown", trapFocus);
+      trigger?.focus();
+    };
+  }, [mobileIndexOpen]);
+
+  useEffect(() => {
+    const dossier = dossierRef.current;
+    if (!selectedSetSlug || !dossier || selectedHighlightClips.length === 0) {
+      setDossierScrollCueVisible(false);
+      return;
+    }
+
+    const updateCue = () => setDossierScrollCueVisible(dossier.scrollTop < 120);
+    updateCue();
+    dossier.addEventListener("scroll", updateCue, { passive: true });
+    return () => dossier.removeEventListener("scroll", updateCue);
+  }, [selectedHighlightClips.length, selectedSetSlug]);
 
   useEffect(() => {
     if (!libraryOpen || !pendingLibraryEvent) return;
@@ -736,6 +942,13 @@ export default function Home() {
     });
   }
 
+  function handleDossierClipPlay(activeVideo: HTMLVideoElement) {
+    audioRef.current?.pause();
+    dossierRef.current?.querySelectorAll("video").forEach((video) => {
+      if (video !== activeVideo) video.pause();
+    });
+  }
+
   function openSetDossier(slug: string) {
     audioRef.current?.pause();
     setEventVisualOpen(false);
@@ -763,7 +976,7 @@ export default function Home() {
   }
 
   return (
-    <main className={`site-shell ${libraryOpen ? "library-is-open" : ""} ${archiveLibraryOpen ? "archive-library-is-open" : ""} ${selectedSet ? "dossier-is-open" : ""}`}>
+    <main className={`site-shell ${libraryOpen ? "library-is-open" : ""} ${archiveLibraryOpen ? "archive-library-is-open" : ""} ${selectedSet ? "dossier-is-open" : ""} ${mobileIndexOpen ? "mobile-index-is-open" : ""}`}>
       <header className="site-header">
         <Link className="mini-mark" href="/" aria-label="DOSEN home">
           <span className="wordmark wordmark-small">DOSEN</span>
@@ -777,7 +990,59 @@ export default function Home() {
           <a href="#press">Press</a>
           <a className="nav-cta" href="#contact">Book</a>
         </nav>
+        <div className="mobile-header-actions">
+          <button
+            className="mobile-index-trigger mono"
+            type="button"
+            aria-expanded={mobileIndexOpen}
+            aria-controls="mobile-index"
+            ref={mobileIndexButtonRef}
+            onClick={() => setMobileIndexOpen(true)}
+          >
+            INDEX <span>/ {activeMobileChapterNumber}</span>
+          </button>
+          <a className="nav-cta mono" href="#contact">BOOK</a>
+        </div>
       </header>
+
+      {mobileIndexOpen && (
+        <div
+          className="mobile-index"
+          id="mobile-index"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="mobile-index-title"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setMobileIndexOpen(false);
+          }}
+        >
+          <div className="mobile-index-panel" ref={mobileIndexRef}>
+            <header>
+              <div>
+                <p className="mono">DOSEN / MOBILE INDEX</p>
+                <h2 id="mobile-index-title">Choose a chapter.</h2>
+              </div>
+              <button className="mono" type="button" onClick={() => setMobileIndexOpen(false)}>
+                CLOSE <span aria-hidden="true">×</span>
+              </button>
+            </header>
+            <nav aria-label="Mobile chapter index">
+              {MOBILE_CHAPTERS.map((chapter) => (
+                <a
+                  className={activeMobileChapter === chapter.id ? "is-active" : ""}
+                  href={`#${chapter.id}`}
+                  onClick={() => setMobileIndexOpen(false)}
+                  key={chapter.id}
+                >
+                  <span className="mono">{chapter.number}</span>
+                  <strong>{chapter.label}</strong>
+                  <span aria-hidden="true">↘</span>
+                </a>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
 
       <section className="hero" id="top" ref={heroSectionRef}>
         <div className="hero-film">
@@ -918,54 +1183,26 @@ export default function Home() {
           <header className="set-dossier-header">
             <div>
               <span className="wordmark wordmark-small">DOSEN</span>
-              <p className="mono">SET DOSSIER / {selectedSet.id}</p>
+              <p className="mono">SET DETAILS / {selectedSet.id}</p>
             </div>
             <button type="button" onClick={closeSetDossier} aria-label="Close set dossier">
               CLOSE <span aria-hidden="true">×</span>
             </button>
           </header>
 
-          <div className="set-dossier-hero">
-            <div className="set-dossier-heading">
+          <div className="set-dossier-primary">
+            <div className="set-dossier-primary-heading">
               <p className="eyebrow">SELECTED SET / {selectedSet.date}</p>
               <h2 id="set-dossier-title">{selectedSet.title}</h2>
               <p>{selectedSet.detail}</p>
             </div>
 
-            <figure className={`set-dossier-media ${selectedFeaturedClip ? `is-${selectedFeaturedClip.orientation}` : "is-artwork"}`}>
-              {selectedSet.featureVideo ? (
-                <video
-                  controls
-                  playsInline
-                  preload="metadata"
-                  aria-label={`${selectedSet.title} featured event clip`}
-                  onPlay={() => audioRef.current?.pause()}
-                >
-                  <source src={mediaUrl(selectedSet.featureVideo)} type="video/mp4" />
-                </video>
-              ) : (
-                <img src={mediaUrl(getEventArtwork(selectedSet))} alt={`${selectedSet.title} event artwork`} />
-              )}
-              <div className="set-dossier-media-footer">
-                <figcaption className="mono">
-                  {selectedSet.featureVideo ? "FEATURED EVENT CLIP / ORIGINAL AUDIO" : "EVENT ARTWORK / ARCHIVE VISUAL"}
-                </figcaption>
-                {selectedSet.featureVideo && selectedLibraryEvent && (
-                  <button className="mono" type="button" onClick={() => openSetMedia(selectedLibraryEvent.id)}>
-                    VIEW ALL {selectedLibraryEvent.clips.length} EVENT VIDEOS <span aria-hidden="true">↗</span>
-                  </button>
-                )}
-              </div>
-            </figure>
-          </div>
-
-          <div className="set-dossier-body">
             <dl className="set-dossier-facts mono">
-              <div><dt>ROLE</dt><dd>{selectedSet.role}</dd></div>
-              <div><dt>LINEUP</dt><dd>{selectedSet.lineup}</dd></div>
-              <div><dt>DATE</dt><dd>{selectedSet.date}</dd></div>
-              <div><dt>LOCATION</dt><dd>{selectedSet.venue}</dd></div>
-              <div><dt>RUN TIME</dt><dd>{selectedSet.duration}</dd></div>
+              <div className="fact-role"><dt>ROLE</dt><dd>{selectedSet.role}</dd></div>
+              <div className="fact-date"><dt>DATE</dt><dd>{selectedSet.date}</dd></div>
+              <div className="fact-lineup"><dt>LINEUP</dt><dd>{selectedSet.lineup}</dd></div>
+              <div className="fact-location"><dt>LOCATION</dt><dd>{selectedSet.venue}</dd></div>
+              <div className="fact-runtime"><dt>RUN TIME</dt><dd>{selectedSet.duration}</dd></div>
             </dl>
 
             <div className="set-dossier-main">
@@ -1013,6 +1250,48 @@ export default function Home() {
             </div>
           </div>
 
+          {selectedHighlightClips.length > 0 && (
+            <div
+              className={`set-dossier-scroll-cue mono ${dossierScrollCueVisible ? "is-visible" : ""}`}
+              aria-hidden="true"
+            >
+              <span>SCROLL FOR MORE</span>
+              <span aria-hidden="true">↓</span>
+            </div>
+          )}
+
+          {selectedHighlightClips.length > 0 && selectedLibraryEvent && (
+            <section className="set-dossier-highlights" aria-labelledby="set-dossier-highlights-title">
+              <div className="set-dossier-highlights-heading">
+                <div>
+                  <p className="eyebrow">FEATURED CLIPS / {selectedHighlightClips.length} OF {selectedLibraryEvent.clips.length}</p>
+                  <h3 id="set-dossier-highlights-title">Inside the room.</h3>
+                </div>
+                <button className="mono" type="button" onClick={() => openSetMedia(selectedLibraryEvent.id)}>
+                  VIEW ALL {selectedLibraryEvent.clips.length} EVENT VIDEOS <span aria-hidden="true">↗</span>
+                </button>
+              </div>
+
+              <div className="set-dossier-highlights-grid">
+                {selectedHighlightClips.map((clip, index) => (
+                  <article className={`set-dossier-highlight is-${clip.orientation}`} key={clip.src}>
+                    <video
+                      controls
+                      playsInline
+                      preload="metadata"
+                      poster={mediaUrl(clip.poster)}
+                      aria-label={`${selectedSet.title} highlight clip ${index + 1}`}
+                      onPlay={(event) => handleDossierClipPlay(event.currentTarget)}
+                    >
+                      <source src={mediaUrl(clip.src)} type="video/mp4" />
+                    </video>
+                    <p className="mono">HIGHLIGHT {String(index + 1).padStart(2, "0")} / {clip.title}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
           {eventVisualOpen && (
             <div
               className="event-visual-lightbox"
@@ -1053,12 +1332,12 @@ export default function Home() {
       <div className="marquee" aria-label="DOSEN sound description">
         <div className="marquee-track">
           <div className="marquee-group">
-            <span>TECH HOUSE</span><i>◆</i><span>MINIMAL GRIT</span><i>◆</i>
-            <span>TRANCE-LIT HORIZON</span><i>◆</i><span>AFTER HOURS</span><i>◆</i>
+            <span>TECH HOUSE</span><i>◆</i><span>TRANCE</span><i>◆</i><span>BASS</span><i>◆</i>
+            <span>TECHNO</span><i>◆</i><span>HOUSE</span><i>◆</i><span>DUBSTEP</span><i>◆</i>
           </div>
           <div className="marquee-group" aria-hidden="true">
-            <span>TECH HOUSE</span><i>◆</i><span>MINIMAL GRIT</span><i>◆</i>
-            <span>TRANCE-LIT HORIZON</span><i>◆</i><span>AFTER HOURS</span><i>◆</i>
+            <span>TECH HOUSE</span><i>◆</i><span>TRANCE</span><i>◆</i><span>BASS</span><i>◆</i>
+            <span>TECHNO</span><i>◆</i><span>HOUSE</span><i>◆</i><span>DUBSTEP</span><i>◆</i>
           </div>
         </div>
       </div>
@@ -1089,7 +1368,9 @@ export default function Home() {
           }
         />
 
-        <div className="signal-feature-grid">
+        <MobileChapterMarker number="01" label="LISTEN" />
+
+        <div className="signal-feature-grid mobile-reveal">
           <div className="signal-intro" key={`${activeSet.slug}-copy`}>
             <p className="eyebrow">FEATURED SET / {activeSet.date}</p>
             <h2>{activeSet.title}</h2>
@@ -1139,7 +1420,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="set-selector" aria-labelledby="set-selector-title">
+        <div className="set-selector mobile-reveal" aria-labelledby="set-selector-title">
           <div className="set-selector-heading mono">
             <span id="set-selector-title">SELECT A SET</span>
             <span>{String(playableSets.length).padStart(2, "0")} LOCAL RECORDINGS</span>
@@ -1173,7 +1454,9 @@ export default function Home() {
       </section>
 
       <section className="archive section" id="archive">
-        <div className="section-heading">
+        <MobileChapterMarker number="02" label="SELECTED SETS" />
+
+        <div className="section-heading mobile-reveal">
           <div>
             <p className="eyebrow">SELECTED PERFORMANCES / 2025—2026</p>
             <h2>Selected sets</h2>
@@ -1183,7 +1466,7 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="archive-grid">
+        <div className="archive-grid mobile-reveal">
           {transmissions.map((item, index) => (
             <article className={`archive-card tone-${item.tone}`} key={item.id}>
               <button
@@ -1195,11 +1478,12 @@ export default function Home() {
                 <div className="archive-media media-slot" data-media-slot={item.slot}>
                   <img className="archive-poster" src={mediaUrl(getEventArtwork(item))} alt="" />
                   <span className="archive-index mono">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="placeholder-label mono">OPEN DOSSIER / {item.id}</span>
+                  <span className="placeholder-label mono">VIEW MORE / {item.id}</span>
                 </div>
                 <div className="archive-meta mono">
                   <span>{item.id}</span><span>{item.date}</span>
                 </div>
+                {item.featuredLabel && <p className="archive-featured mono">{item.featuredLabel}</p>}
                 <h3>{item.title}</h3>
                 <p>{item.detail}</p>
                 <span className="venue mono">{item.venue}</span>
@@ -1207,17 +1491,20 @@ export default function Home() {
             </article>
           ))}
         </div>
+
       </section>
 
-      <section className="timeline section" aria-labelledby="timeline-title">
-        <div className="section-heading compact">
+      <section className="timeline section" id="dates" aria-labelledby="timeline-title">
+        <MobileChapterMarker number="03" label="DATES" />
+
+        <div className="section-heading compact mobile-reveal">
           <div>
             <p className="eyebrow">SELECTED DATES / VERIFIED</p>
             <h2 id="timeline-title">Recent dates</h2>
           </div>
           <span className="coordinate mono">45.4215° N / 75.6972° W</span>
         </div>
-        <div className="timeline-list">
+        <div className="timeline-list mobile-reveal">
           {timeline.map((item, index) => (
             <button
               className="timeline-row"
@@ -1237,7 +1524,9 @@ export default function Home() {
       </section>
 
       <section className="press section" id="press">
-        <div className="press-profile">
+        <MobileChapterMarker number="04" label="PROFILE" />
+
+        <div className="press-profile mobile-reveal">
           <div className="press-label mono">ARTIST PROFILE / OFFICIAL BIO</div>
           <figure className="press-headshot">
             <img
@@ -1247,7 +1536,7 @@ export default function Home() {
             <figcaption className="mono">DOSEN / ARTIST PORTRAIT</figcaption>
           </figure>
         </div>
-        <div className="press-copy">
+        <div className="press-copy mobile-reveal">
           <p className="drop-cap">
             DOSEN is an Ottawa-based DJ with a sound rooted in minimal, gritty
             tech house and sharpened by shades of trance, house, and techno.
@@ -1259,7 +1548,7 @@ export default function Home() {
             official Escapade afterparty for Odd Mob B2B Walker &amp; Royce.
           </p>
         </div>
-        <aside className="press-facts">
+        <aside className="press-facts mobile-reveal">
           <div><span>BASE</span><strong>OTTAWA, CANADA</strong></div>
           <div><span>CORE</span><strong>TECH HOUSE</strong></div>
           <div><span>EDGE</span><strong>TRANCE / HOUSE / TECHNO</strong></div>
@@ -1268,9 +1557,10 @@ export default function Home() {
       </section>
 
       <section className="contact section" id="contact">
+        <MobileChapterMarker number="05" label="BOOK" />
         <p className="eyebrow">BOOKINGS / PRESS / COLLABORATION</p>
-        <h2>Make a night of it.</h2>
-        <div className="contact-actions">
+        <h2 className="mobile-reveal">Make a night of it.</h2>
+        <div className="contact-actions mobile-reveal">
           <a href="mailto:matiadosen@outlook.com">matiadosen@outlook.com ↗</a>
           <a href="https://www.instagram.com/matia_dosen/" target="_blank" rel="noreferrer">Instagram ↗</a>
           <a href="https://soundcloud.com/user-278640203" target="_blank" rel="noreferrer">SoundCloud ↗</a>
@@ -1284,13 +1574,16 @@ export default function Home() {
       </footer>
 
       <div
-        className={`signal-dock ${transmitting ? "is-playing" : ""}`}
+        className={`signal-dock ${transmitting ? "is-playing" : ""} ${mobileDockCompact ? "is-compact" : ""}`}
         style={{
           "--dock-accent": activeSet.accent,
           "--dock-progress": `${duration > 0 ? Math.min((currentTime / duration) * 100, 100) : 0}%`,
         } as CSSProperties}
         role="region"
         aria-label="Persistent set player"
+        ref={dockRef}
+        onFocusCapture={() => setMobileDockCompact(false)}
+        onPointerDownCapture={() => setMobileDockCompact(false)}
       >
         <button
           className="dock-toggle"

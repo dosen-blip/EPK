@@ -118,7 +118,7 @@ test("keeps production media and visual treatments explicit", async () => {
   }
 
   assert.match(page, /Open video library/);
-  assert.match(page, /SET DOSSIER/);
+  assert.match(page, /SET DETAILS/);
   assert.match(page, /DossierVinylPlayer/);
   assert.match(page, /dossier-vinyl-player/);
   assert.match(page, /selectedPlayableSet &&/);
@@ -128,6 +128,7 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /archiveLibraryOpen/);
   assert.doesNotMatch(page, /ArchiveMode|mode-switch|LOOSE \/|COMPACT \/|setMode/);
   assert.match(page, /VIEW ALL \{selectedLibraryEvent\.clips\.length\} EVENT VIDEOS/);
+  assert.doesNotMatch(page, /archive-featured-clips/);
   assert.match(page, /window\.history\.pushState/);
   assert.ok(transmissions.has("off-grid-1-year"));
   assert.equal(
@@ -176,6 +177,22 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /IntersectionObserver/);
   assert.match(page, /set-selector-track/);
   assert.match(page, /aria-pressed=\{isActive\}/);
+  assert.match(page, /const MOBILE_CHAPTERS/);
+  assert.match(page, /className="mobile-index-trigger mono"/);
+  assert.match(page, /id="mobile-index"/);
+  assert.match(page, /MobileChapterMarker number="01" label="LISTEN"/);
+  assert.match(page, /MobileChapterMarker number="05" label="BOOK"/);
+  assert.match(page, /id="dates"/);
+  assert.match(page, /mobileDockCompact \? "is-compact"/);
+  assert.match(page, /downwardTravel >= 64/);
+  assert.match(page, /upwardTravel >= 32/);
+  assert.match(css, /@media \(max-width: 620px\)/);
+  assert.match(css, /\.archive-grid \{[^}]*grid-auto-columns: min\(86vw, 360px\)[^}]*scroll-snap-type: x mandatory/);
+  assert.match(css, /\.archive-card,[^}]*\{[^}]*grid-column: auto/);
+  assert.match(css, /\.set-dossier-highlights-grid \{[^}]*grid-auto-flow: column[^}]*scroll-snap-type: x mandatory/);
+  assert.match(css, /\.signal-dock\.is-compact \{[^}]*min-height: 48px/);
+  assert.match(css, /\.mobile-index-panel nav a\.is-active/);
+  assert.match(css, /\.mobile-reveal\.is-mobile-reveal-pending/);
   assert.equal(
     transmissions.get("off-grid-frequency-shift").artwork.vinylCover,
     "/media/dossiers/off-grid-frequency-shift-soundcloud.png",
@@ -198,8 +215,11 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /mediaUrl\(getEventArtwork\(selectedSet\)\)/);
   assert.match(page, /mediaUrl\(set\.artwork\.vinylCover\)/);
   assert.doesNotMatch(page, /mediaUrl\(set\.artwork\.eventPoster\)/);
-  assert.match(page, /selectedFeaturedClip\.orientation/);
-  assert.match(css, /\.set-dossier-media\.is-portrait video/);
+  assert.match(page, /selectedHighlightClips/);
+  assert.match(page, /FEATURED CLIPS/);
+  assert.match(page, /SCROLL FOR MORE/);
+  assert.match(css, /\.set-dossier-scroll-cue/);
+  assert.match(css, /\.set-dossier-highlight\.is-portrait video/);
   assert.match(page, /event-visual-lightbox/);
   assert.match(page, /setEventVisualOpen\(true\)/);
   assert.match(page, /Close \$\{selectedSet\.title\} event visual/);
