@@ -193,6 +193,8 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /className="dock-cover"/);
   assert.match(page, /disabled=\{mobileDockCompact\}/);
   assert.match(css, /\.signal-dock\.is-compact \{[^}]*width: min\(46vw, 190px\)[^}]*min-height: 58px/);
+  assert.match(css, /\.dock-cover \{[^}]*opacity: 0[^}]*transform: scale\(1\.08\)/);
+  assert.match(css, /\.signal-dock\.is-compact \.dock-cover \{[^}]*opacity: 1[^}]*transform: scale\(1\)/);
   assert.match(css, /\.signal-dock\.is-compact \.dock-player \{[^}]*opacity: 0[^}]*pointer-events: none/);
   assert.doesNotMatch(css, /\.signal-dock\.is-compact \.progress/);
   assert.match(css, /\.mobile-index-panel nav a\.is-active/);
