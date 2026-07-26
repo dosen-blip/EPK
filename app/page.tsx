@@ -1036,7 +1036,6 @@ export default function Home() {
                 >
                   <span className="mono">{chapter.number}</span>
                   <strong>{chapter.label}</strong>
-                  <span aria-hidden="true">↘</span>
                 </a>
               ))}
             </nav>

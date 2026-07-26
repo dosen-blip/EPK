@@ -486,7 +486,7 @@ footer p, footer a { font-size: .62rem; }
   .mobile-index-panel nav a {
     min-height: 74px;
     display: grid;
-    grid-template-columns: 34px minmax(0, 1fr) auto;
+    grid-template-columns: 34px minmax(0, 1fr);
     align-items: center;
     gap: 10px;
     border-top: 1px solid var(--line);
@@ -495,10 +495,8 @@ footer p, footer a { font-size: .62rem; }
   .mobile-index-panel nav a:last-child { border-bottom: 1px solid var(--line); }
   .mobile-index-panel nav a > span:first-child { color: var(--muted); font-size: .62rem; }
   .mobile-index-panel nav a strong { font-size: clamp(1.8rem, 9vw, 2.55rem); line-height: .9; letter-spacing: -.035em; }
-  .mobile-index-panel nav a > span:last-child { color: var(--violet); font-size: 1.1rem; transition: transform .2s ease; }
   .mobile-index-panel nav a.is-active { color: var(--violet); }
   .mobile-index-panel nav a.is-active > span:first-child { color: var(--paper); }
-  .mobile-index-panel nav a.is-active > span:last-child { transform: translate(3px, 3px); }
   .mobile-index-is-open .signal-dock { opacity: 0; pointer-events: none; transform: translateY(14px); }
   .nav-cta { padding: 9px 13px; }
   .section { padding: 68px 16px; }
