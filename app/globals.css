@@ -602,9 +602,9 @@ footer p, footer a { font-size: .62rem; }
   .set-library-grid { padding: 20px 16px 72px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; }
   .set-library-card > strong, .archive-card h3 { max-width: 100%; overflow-wrap: anywhere; }
   .set-library-card:hover .set-library-media, .archive-card:hover .archive-media, .archive-card:hover .archive-poster { transform: none; }
-  .archive-grid { margin-inline: -16px; padding: 18px 16px 34px; display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: min(86vw, 360px); gap: 18px; align-items: start; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .archive-grid { --archive-card-width: min(86vw, 360px); --archive-card-gutter: max(16px, calc((100vw - var(--archive-card-width)) / 2)); margin-inline: -16px; padding: 18px var(--archive-card-gutter) 34px; display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: var(--archive-card-width); gap: 18px; align-items: start; overflow-x: auto; overscroll-behavior-inline: contain; scroll-padding-inline: var(--archive-card-gutter); scroll-snap-type: x mandatory; scrollbar-width: none; }
   .archive-grid::-webkit-scrollbar { display: none; }
-  .archive-card, .archive-card:nth-child(2), .archive-card:nth-child(3), .archive-card:nth-child(4), .archive-card:nth-child(5), .archive-card:nth-child(6) { grid-column: auto; margin: 0; scroll-snap-align: start; transform: none; }
+  .archive-card, .archive-card:nth-child(2), .archive-card:nth-child(3), .archive-card:nth-child(4), .archive-card:nth-child(5), .archive-card:nth-child(6) { grid-column: auto; margin: 0; scroll-snap-align: center; scroll-snap-stop: always; transform: none; }
   .archive-card:nth-child(even) { transform: none; }
   .signal-feature-grid { grid-template-columns: 1fr; gap: 46px; }
   .signal-intro h2 { width: 100%; max-width: 100%; font-size: clamp(2.9rem, 13.5vw, 4.6rem); overflow-wrap: anywhere; }
@@ -737,6 +737,7 @@ footer p, footer a { font-size: .62rem; }
     left: 64px;
     overflow: hidden;
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
     will-change: opacity, transform;
     transform: translateX(0);
@@ -754,15 +755,16 @@ footer p, footer a { font-size: .62rem; }
 
   .signal-dock.is-compact .dock-morph-surface {
     opacity: 0;
+    visibility: hidden;
     transform: scaleX(var(--dock-compact-scale-x)) scaleY(.878788);
-    transition-delay: 0s, .34s, 0s;
+    transition: transform .56s cubic-bezier(.22,1,.36,1), opacity .16s ease .34s, border-color .24s ease, visibility 0s linear .56s;
   }
   .signal-dock.is-compact .dock-visual::after { opacity: 1; transition-delay: .14s; }
   .signal-dock.is-playing.is-compact .dock-visual::after { border-color: color-mix(in srgb, var(--dock-accent) 48%, rgba(238,234,225,.2)); }
   .signal-dock.is-compact .dock-cover { opacity: 1; transform: scale(1); transition-delay: .08s, 0s; }
   .signal-dock.is-compact .dock-toggle { transform: translate(-50%, -50%); }
   .signal-dock.is-compact .dock-toggle:hover { transform: translate(-50%, -50%) scale(1.045); }
-  .signal-dock.is-compact .dock-player { opacity: 0; pointer-events: none; transform: translateX(-10px); transition-delay: 0s; }
+  .signal-dock.is-compact .dock-player { opacity: 0; visibility: hidden; pointer-events: none; transform: translateX(-10px); transition: opacity .25s ease, transform .42s cubic-bezier(.22,1,.36,1), visibility 0s linear .25s; }
 }
 
 @media (max-width: 340px) {
