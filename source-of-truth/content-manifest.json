@@ -1,6 +1,11 @@
 {
   "schemaVersion": 1,
   "mediaOrigin": "https://dosen-media.matiadosen.workers.dev",
+  "pressKit": {
+    "label": "DOWNLOAD EPK / PDF",
+    "path": "/media/press/dosen-epk-2026-07-signal-sky-lounge.pdf",
+    "filename": "DOSEN-EPK-2026.pdf"
+  },
   "defaultFeaturedSetSlug": "escapade-afterparty",
   "transmissionCount": 6,
   "playableSetCount": 5,

@@ -15,6 +15,7 @@ import {
   LIBRARY_EVENTS,
   MEDIA_ORIGIN,
   playableSets,
+  PRESS_KIT,
   timeline,
   transmissions,
   type LibraryClip,
@@ -1628,6 +1629,14 @@ export default function Home() {
         <p className="eyebrow">BOOKINGS / PRESS / COLLABORATION</p>
         <h2 className="mobile-reveal">Make a night of it.</h2>
         <div className="contact-actions mobile-reveal">
+          <a
+            className="contact-download"
+            href={mediaUrl(PRESS_KIT.path)}
+            download={PRESS_KIT.filename}
+            aria-label="Download the DOSEN electronic press kit PDF"
+          >
+            {PRESS_KIT.label} ↓
+          </a>
           <a href="mailto:matiadosen@outlook.com">matiadosen@outlook.com ↗</a>
           <a href="https://www.instagram.com/matia_dosen/" target="_blank" rel="noreferrer">Instagram ↗</a>
           <a href="https://soundcloud.com/user-278640203" target="_blank" rel="noreferrer">SoundCloud ↗</a>

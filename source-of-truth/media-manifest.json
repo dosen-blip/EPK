@@ -5,8 +5,8 @@
   "deliveryWorker": "dosen-media",
   "origin": "https://dosen-media.matiadosen.workers.dev",
   "cacheControl": "public, max-age=31536000, immutable",
-  "objectCount": 121,
-  "totalBytes": 1435903212,
+  "objectCount": 122,
+  "totalBytes": 1436807755,
   "hashAlgorithm": "sha256",
   "objects": [
     {
@@ -834,6 +834,13 @@
       "sha256": "33ba04e5a9f8bb15aff65a2622fc164835b8f5745662df8be78b0d8902ec6a95",
       "contentType": "video/mp4",
       "url": "https://dosen-media.matiadosen.workers.dev/media/library/solstice-magenta-room-vertical.mp4"
+    },
+    {
+      "key": "media/press/dosen-epk-2026-07-signal-sky-lounge.pdf",
+      "bytes": 904543,
+      "sha256": "cead99e16091f19a79b137ad29a6a9b9820dff5e2653927ca1fdffde9496d0f5",
+      "contentType": "application/pdf",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/press/dosen-epk-2026-07-signal-sky-lounge.pdf"
     },
     {
       "key": "media/profile/dosen-headshot-2026.jpeg",

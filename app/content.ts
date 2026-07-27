@@ -63,6 +63,11 @@ export type Transmission = {
 type ContentManifest = {
   schemaVersion: 1;
   mediaOrigin: string;
+  pressKit: {
+    label: string;
+    path: string;
+    filename: string;
+  };
   defaultFeaturedSetSlug: string;
   transmissionCount: number;
   playableSetCount: number;
@@ -87,6 +92,7 @@ export type PlayableSet = Transmission & {
 
 export const contentManifest = rawContentManifest as ContentManifest;
 export const MEDIA_ORIGIN = contentManifest.mediaOrigin;
+export const PRESS_KIT = contentManifest.pressKit;
 export const DEFAULT_FEATURED_SET_SLUG = contentManifest.defaultFeaturedSetSlug;
 export const LIBRARY_EVENTS = contentManifest.libraryEvents;
 export const LIBRARY_CLIP_COUNT = LIBRARY_EVENTS.reduce((total, event) => total + event.clips.length, 0);

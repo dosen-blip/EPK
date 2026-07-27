@@ -16,6 +16,7 @@ const contentTypes = {
   ".mp3": "audio/mpeg",
   ".mp4": "video/mp4",
   ".otf": "font/otf",
+  ".pdf": "application/pdf",
   ".png": "image/png",
   ".svg": "image/svg+xml",
 };

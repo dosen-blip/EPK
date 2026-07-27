@@ -364,6 +364,8 @@ button { color: inherit; }
 .contact-actions > * { padding: 14px 18px; border: 1px solid currentColor; border-radius: 999px; font: 700 .63rem/1 "SFMono-Regular", Consolas, monospace; letter-spacing: .07em; }
 .contact-actions a { transition: .2s ease; }
 .contact-actions a:hover { background: var(--ink); color: var(--paper); }
+.contact-actions .contact-download { background: var(--ink); color: var(--paper); }
+.contact-actions .contact-download:hover { background: transparent; color: var(--ink); }
 footer { min-height: 160px; padding: 42px clamp(18px, 3vw, 48px); display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--ink); background: var(--paper); color: var(--ink); }
 footer p, footer a { font-size: .62rem; }
 

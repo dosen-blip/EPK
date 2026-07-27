@@ -27,6 +27,9 @@ test("server-renders the DOSEN EPK scaffold", async () => {
   assert.match(html, /Ottawa DJ playing tech house, house, trance, and techno\./);
   assert.match(html, /Recent dates/);
   assert.match(html, /Make a night of it\./);
+  assert.match(html, /DOWNLOAD EPK \/ PDF/);
+  assert.match(html, /href="https:\/\/dosen-media\.matiadosen\.workers\.dev\/media\/press\/dosen-epk-2026-07-signal-sky-lounge\.pdf"/);
+  assert.match(html, /download="DOSEN-EPK-2026\.pdf"/);
   assert.ok(html.indexOf("SELECT A SET") < html.indexOf("Selected sets"));
   assert.ok(html.indexOf('href="#signal">Listen') < html.indexOf('href="#archive">Sets'));
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
@@ -148,7 +151,13 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.doesNotMatch(page, /PERFORMANCE REEL|LOADING FILM|hero-film-placeholder/);
   assert.match(page, /FULL CLIP LIBRARY \/ ORIGINAL AUDIO/);
   assert.equal(content.mediaOrigin, "https://dosen-media.matiadosen.workers.dev");
+  assert.equal(content.pressKit.path, "/media/press/dosen-epk-2026-07-signal-sky-lounge.pdf");
+  assert.equal(content.pressKit.filename, "DOSEN-EPK-2026.pdf");
   assert.match(contentAdapter, /MEDIA_ORIGIN = contentManifest\.mediaOrigin/);
+  assert.match(contentAdapter, /PRESS_KIT = contentManifest\.pressKit/);
+  assert.match(page, /className="contact-download"/);
+  assert.match(page, /download=\{PRESS_KIT\.filename\}/);
+  assert.match(css, /\.contact-actions \.contact-download \{/);
   assert.match(page, /audio\.src = mediaUrl\(segment\.src\)/);
   assert.match(page, /src=\{mediaUrl\(activeSegments\[0\]\.src\)\}/);
   assert.match(page, /PROFESSIONAL MEDIA/);
@@ -266,6 +275,7 @@ test("keeps production media and visual treatments explicit", async () => {
     "media/dossiers/off-grid-frequency-shift-soundcloud.png",
     "media/dossiers/off-grid-frequency-shift-poster.jpg",
     "media/dossiers/exosphere-002-sky-lounge-cover.png",
+    "media/press/dosen-epk-2026-07-signal-sky-lounge.pdf",
     "audio/offgrid-032.mp3",
     "audio/off-grid-1-year-dosen-b2b-fastr.mp3",
     "audio/offgrid-x-frequency-shift.mp3",

@@ -18,7 +18,7 @@ assert.equal(manifest.origin, "https://dosen-media.matiadosen.workers.dev");
 assert.equal(manifest.objectCount, manifest.objects.length);
 assert.equal(manifest.totalBytes, manifest.objects.reduce((sum, object) => sum + object.bytes, 0));
 assert.equal(new Set(manifest.objects.map((object) => object.key)).size, manifest.objectCount);
-assert.equal(manifest.objectCount, 121);
+assert.equal(manifest.objectCount, 122);
 
 assert.equal(content.schemaVersion, 1);
 assert.equal(content.mediaOrigin, manifest.origin);
@@ -50,6 +50,9 @@ for (const event of content.libraryEvents) {
 }
 
 const contentMediaPaths = new Set();
+assert.equal(content.pressKit.label, "DOWNLOAD EPK / PDF");
+assert.equal(content.pressKit.filename, "DOSEN-EPK-2026.pdf");
+contentMediaPaths.add(content.pressKit.path);
 for (const event of content.libraryEvents) {
   assert.ok(event.clips.length > 0, `${event.id}: library event must contain clips`);
   for (const clip of event.clips) {
