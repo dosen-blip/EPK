@@ -89,6 +89,8 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(releaseScript, /const PROJECT = "dosen-epk"/);
   assert.match(releaseScript, /const PRODUCTION_BRANCH = "main"/);
   assert.match(releaseScript, /--commit-dirty=false/);
+  assert.match(releaseScript, /fetchDeploymentWithRetry/);
+  assert.match(releaseScript, /attempt <= 6/);
   assert.match(releaseScript, /writeFile\(receiptPath,[\s\S]*flag: "wx"/);
   assert.doesNotMatch(releaseScript, /pages", "project", "create/);
   assert.match(packageJson, /"release:check": "node scripts\/release\.mjs check"/);

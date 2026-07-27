@@ -176,7 +176,7 @@ function verifyPagesProject() {
 
 async function verifyProduction(deploymentUrl, mediaObjectCount) {
   const [deployment, pages, canonical, apex] = await Promise.all([
-    fetch(deploymentUrl, { redirect: "manual", signal: AbortSignal.timeout(30_000) }),
+    fetchDeploymentWithRetry(deploymentUrl),
     fetch(PAGES_URL, { redirect: "manual", signal: AbortSignal.timeout(30_000) }),
     fetch(CANONICAL_URL, { redirect: "manual", signal: AbortSignal.timeout(30_000) }),
     fetch(`${APEX_URL}/release-check?source=codex`, {
@@ -212,6 +212,16 @@ async function verifyProduction(deploymentUrl, mediaObjectCount) {
     apexRedirect: `HTTP 301 to ${CANONICAL_URL}/release-check?source=codex`,
     livePersistentPlayer: "present",
   };
+}
+
+async function fetchDeploymentWithRetry(url) {
+  let response;
+  for (let attempt = 1; attempt <= 6; attempt += 1) {
+    response = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(30_000) });
+    if (response.status === 200 || attempt === 6) return response;
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 5_000));
+  }
+  return response;
 }
 
 function git(...gitArgs) {
