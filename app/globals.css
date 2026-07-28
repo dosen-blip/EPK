@@ -347,7 +347,7 @@ button { color: inherit; }
 .timeline-row strong { font-size: clamp(1.08rem, 1.8vw, 1.7rem); letter-spacing: -.035em; }
 .timeline-row > span:not(.row-number, .format) { color: var(--muted); font-size: .8rem; }
 
-.press { border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 800px) minmax(220px, 300px); column-gap: clamp(36px, 4vw, 72px); row-gap: clamp(44px, 6vw, 80px); align-items: start; justify-content: center; }
+.press { border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(240px, 364px) minmax(0, 800px) minmax(220px, 300px); column-gap: clamp(36px, 4vw, 72px); row-gap: clamp(44px, 6vw, 80px); align-items: start; justify-content: center; }
 .press-profile { min-width: 0; }
 .press-label { color: var(--violet); font-size: .68rem; font-weight: 800; letter-spacing: .1em; }
 .press-headshot { width: 100%; margin: 28px 0 0; }
