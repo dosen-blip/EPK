@@ -171,6 +171,8 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /mailto:matiadosen@outlook\.com/);
   assert.match(page, /ARTIST PROFILE \/ OFFICIAL BIO/);
   assert.match(css, /\.press \{[^}]*grid-template-columns: minmax\(240px, 364px\) minmax\(0, 800px\) minmax\(220px, 300px\)[^}]*justify-content: center/);
+  assert.match(css, /\.press-label \{[^}]*position: absolute[^}]*bottom: calc\(100% \+ 18px\)/);
+  assert.match(css, /@media \(max-width: 900px\) \{[\s\S]*?\.press-label \{ position: static; \}/);
   assert.match(css, /\.press-copy \{ min-width: 0; \}/);
   assert.doesNotMatch(page, /WORKING COPY|DRAFT|FINAL APPROVAL|ADD BEFORE LAUNCH|EPK PREVIEW|IN PROGRESS/);
   assert.match(playerModel, /Array\.from\(\{ length: 62 \}/);
