@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-07-29T00:00:03Z",
+  "reason": "Enlarge artist profile portrait to match biography height",
+  "sourceCommit": "40ebf32e0d1837bf18a2d8b4d38ccd7884920a54",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "20820335-59c7-4c78-ac40-a34d83022ffe",
+    "deploymentUrl": "https://20820335.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "44564e8e3aac0ce12370cf2f1813c6f0fbbb1c0d36e7356de38bb295059e59b1",
+  "verification": {
+    "unitAndRenderTests": "passed via npm test",
+    "remoteMediaObjects": "122 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/release-check?source=codex",
+    "livePersistentPlayer": "present"
+  }
+}
