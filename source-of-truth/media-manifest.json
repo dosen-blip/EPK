@@ -5,8 +5,8 @@
   "deliveryWorker": "dosen-media",
   "origin": "https://dosen-media.matiadosen.workers.dev",
   "cacheControl": "public, max-age=31536000, immutable",
-  "objectCount": 122,
-  "totalBytes": 1436807755,
+  "objectCount": 125,
+  "totalBytes": 1623979437,
   "hashAlgorithm": "sha256",
   "objects": [
     {
@@ -451,6 +451,13 @@
       "url": "https://dosen-media.matiadosen.workers.dev/audio/exosphere-002-sky-lounge.mp3"
     },
     {
+      "key": "audio/instinct-block-party-opening-set.mp3",
+      "bytes": 185568812,
+      "sha256": "77d22da25c199a81c53c1848846725ea1c25176e60e3e5c160b157a55037e1d8",
+      "contentType": "audio/mpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/audio/instinct-block-party-opening-set.mp3"
+    },
+    {
       "key": "audio/off-grid-1-year-dosen-b2b-fastr.mp3",
       "bytes": 168507603,
       "sha256": "ac2b0f23671eac7e9b1544d2a12b79925bb530ad9e7c9c692a0fd83bedf0a9ce",
@@ -498,6 +505,20 @@
       "sha256": "b2cced406ad0895f356ffbf58c8f13edcdfea7d313f7a3f1686297f0b4590e57",
       "contentType": "image/png",
       "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/exosphere-002-sky-lounge-cover.png"
+    },
+    {
+      "key": "media/dossiers/instinct-block-party-cover.png",
+      "bytes": 1348922,
+      "sha256": "670927f28f336177c419fe4338996749c6a893b77dbd54a974d7d15e48eff9de",
+      "contentType": "image/png",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/instinct-block-party-cover.png"
+    },
+    {
+      "key": "media/dossiers/instinct-block-party-poster.jpg",
+      "bytes": 253948,
+      "sha256": "b4775ee183e22fe6984e2dbeb6e9d23d107dc7ba6d262fecbb7c18465458e1a1",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/instinct-block-party-poster.jpg"
     },
     {
       "key": "media/dossiers/off-grid-1-year-poster.jpg",

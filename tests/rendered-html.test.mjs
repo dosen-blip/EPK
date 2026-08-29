@@ -104,8 +104,8 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(css, /\.signal-dock \{[^}]*border-radius: 23px/);
   assert.match(css, /\.progress::\-webkit-slider-runnable-track \{[^}]*border-radius: 999px/);
   assert.equal(content.schemaVersion, 1);
-  assert.equal(content.transmissionCount, 6);
-  assert.equal(content.playableSetCount, 5);
+  assert.equal(content.transmissionCount, 7);
+  assert.equal(content.playableSetCount, 6);
   assert.equal(content.libraryClipCount, 18);
   assert.equal(content.defaultFeaturedSetSlug, "escapade-afterparty");
   assert.match(contentAdapter, /rawContentManifest/);
@@ -115,6 +115,7 @@ test("keeps production media and visual treatments explicit", async () => {
   for (const slot of [
     "hero-escapade",
     "offgrid-anniversary",
+    "instinct-block-party",
     "solstice-frequency",
     "frequency-shift",
     "offgrid-halloween",
@@ -141,6 +142,23 @@ test("keeps production media and visual treatments explicit", async () => {
     "/audio/off-grid-1-year-dosen-b2b-fastr.mp3",
   );
   assert.ok(transmissions.has("escapade-afterparty"));
+  assert.ok(transmissions.has("instinct-block-party"));
+  assert.equal(
+    transmissions.get("instinct-block-party").player.src,
+    "/audio/instinct-block-party-opening-set.mp3",
+  );
+  assert.equal(
+    transmissions.get("instinct-block-party").artwork.vinylCover,
+    "/media/dossiers/instinct-block-party-cover.png",
+  );
+  assert.equal(
+    transmissions.get("instinct-block-party").artwork.eventPoster,
+    "/media/dossiers/instinct-block-party-poster.jpg",
+  );
+  assert.deepEqual(
+    content.transmissions.slice(0, 3).map((item) => item.slug),
+    ["escapade-afterparty", "off-grid-1-year", "instinct-block-party"],
+  );
   assert.match(page, /autoPlay/);
   assert.match(page, /playsInline/);
   assert.match(page, /\/media\/hero\/hero-desktop-v1\.mp4/);

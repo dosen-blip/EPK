@@ -7,10 +7,11 @@
     "filename": "DOSEN-EPK-2026.pdf"
   },
   "defaultFeaturedSetSlug": "escapade-afterparty",
-  "transmissionCount": 6,
-  "playableSetCount": 5,
+  "transmissionCount": 7,
+  "playableSetCount": 6,
   "libraryClipCount": 18,
   "timelineOrder": [
+    "instinct-block-party",
     "escapade-afterparty",
     "solstice-frequency-shift",
     "off-grid-1-year",
@@ -220,6 +221,37 @@
         "durationSeconds": 4212.623469,
         "accent": "#ff9933",
         "dockTitle": "OFF GRID 1 YEAR / DOSEN B2B FASTR"
+      }
+    },
+    {
+      "id": "INS-0814",
+      "slug": "instinct-block-party",
+      "date": "14 AUG 2026",
+      "venue": "SNIDER PARK / OTTAWA",
+      "title": "INSTINCT X BLOCK PARTY",
+      "detail": "OPENING SET — FULL SET AVAILABLE",
+      "slot": "instinct-block-party",
+      "tone": "red",
+      "role": "OPENING SET",
+      "timelineFormat": "OPENING SET",
+      "lineup": "DOSEN / TONE A / COMFORT + G3LIO",
+      "duration": "1:17:19",
+      "artwork": {
+        "vinylCover": "/media/dossiers/instinct-block-party-cover.png",
+        "eventPoster": "/media/dossiers/instinct-block-party-poster.jpg"
+      },
+      "featureVideo": null,
+      "story": "DOSEN opened Instinct X Block Party at Snider Park, taking the first 7:00–8:20 PM slot before Tone A and Comfort + G3lio.",
+      "sound": "An outdoor opening set built around minimal, gritty tech-house grooves, gradually adding weight while leaving room for the night to build.",
+      "recordingUrl": null,
+      "secondaryUrl": null,
+      "libraryEventId": null,
+      "player": {
+        "kind": "file",
+        "src": "/audio/instinct-block-party-opening-set.mp3",
+        "durationSeconds": 4639.150023,
+        "accent": "#eef20b",
+        "dockTitle": "INSTINCT X BLOCK PARTY / OPENING SET"
       }
     },
     {
