@@ -5,8 +5,8 @@
   "deliveryWorker": "dosen-media",
   "origin": "https://dosen-media.matiadosen.workers.dev",
   "cacheControl": "public, max-age=31536000, immutable",
-  "objectCount": 125,
-  "totalBytes": 1623979437,
+  "objectCount": 134,
+  "totalBytes": 1680854705,
   "hashAlgorithm": "sha256",
   "objects": [
     {
@@ -507,6 +507,13 @@
       "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/exosphere-002-sky-lounge-cover.png"
     },
     {
+      "key": "media/dossiers/frequency-shift-techno-special-poster.png",
+      "bytes": 2264125,
+      "sha256": "796119b7dd21a16878eef6fe15aaaaa4c395b639e3620720e27dd3ec9ee1f992",
+      "contentType": "image/png",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/dossiers/frequency-shift-techno-special-poster.png"
+    },
+    {
       "key": "media/dossiers/instinct-block-party-cover.png",
       "bytes": 1348922,
       "sha256": "670927f28f336177c419fe4338996749c6a893b77dbd54a974d7d15e48eff9de",
@@ -626,6 +633,34 @@
       "url": "https://dosen-media.matiadosen.workers.dev/media/library/frequency-shift-jan-03-3.mp4"
     },
     {
+      "key": "media/library/frequency-shift-techno-special-1.mp4",
+      "bytes": 22611483,
+      "sha256": "eb4f89b92a2ebfb153bf30c31aacf613e836d47783adb19569676ca4564e2900",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/frequency-shift-techno-special-1.mp4"
+    },
+    {
+      "key": "media/library/frequency-shift-techno-special-2.mp4",
+      "bytes": 9533476,
+      "sha256": "318e33e3fd77ab039b5d22b8432c7a54f157d50bf9a352b3175d5861fdc5ec7e",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/frequency-shift-techno-special-2.mp4"
+    },
+    {
+      "key": "media/library/frequency-shift-techno-special-3.mp4",
+      "bytes": 6417221,
+      "sha256": "97addf408e2131df014874ea84656002455cd52bb2fde953574cc4017aecf087",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/frequency-shift-techno-special-3.mp4"
+    },
+    {
+      "key": "media/library/frequency-shift-techno-special-4.mp4",
+      "bytes": 15529825,
+      "sha256": "ccee0c9c52bcde95de6be129a5960ef6b69aedd7932bf9cf6b35273b35a17bf5",
+      "contentType": "video/mp4",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/frequency-shift-techno-special-4.mp4"
+    },
+    {
       "key": "media/library/off-grid-anniversary-2.mp4",
       "bytes": 45370022,
       "sha256": "7ff45ce41e2aa814f6d43de1e613ea6a1ea39f79a95bc7d3a82fb04803b4e9b8",
@@ -722,6 +757,34 @@
       "sha256": "a6d7edd46804675d210ba44512411ceddb2a9d00e00878a7c4265ab35071cec2",
       "contentType": "image/jpeg",
       "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/frequency-shift-jan-03-3.jpg"
+    },
+    {
+      "key": "media/library/posters/frequency-shift-techno-special-1.jpg",
+      "bytes": 82050,
+      "sha256": "59f9da74e0e8b56f124edebd7f818e8961ad468f63099ea3f478288dc9bf3d0a",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/frequency-shift-techno-special-1.jpg"
+    },
+    {
+      "key": "media/library/posters/frequency-shift-techno-special-2.jpg",
+      "bytes": 192177,
+      "sha256": "c0b95cfd10de976b1cd8723bc9fee0f4ed5f87eab4a50ff920b127e0a3070de8",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/frequency-shift-techno-special-2.jpg"
+    },
+    {
+      "key": "media/library/posters/frequency-shift-techno-special-3.jpg",
+      "bytes": 128935,
+      "sha256": "b69bdcef35c52cc754e8b404f5fcc4ffae8ae7d82d152874294e3151ded88fb0",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/frequency-shift-techno-special-3.jpg"
+    },
+    {
+      "key": "media/library/posters/frequency-shift-techno-special-4.jpg",
+      "bytes": 115976,
+      "sha256": "98d7f986f7e8985e7204858243aec10741e1554babbb9dc42e06769d970b1a6b",
+      "contentType": "image/jpeg",
+      "url": "https://dosen-media.matiadosen.workers.dev/media/library/posters/frequency-shift-techno-special-4.jpg"
     },
     {
       "key": "media/library/posters/off-grid-anniversary-2.jpg",

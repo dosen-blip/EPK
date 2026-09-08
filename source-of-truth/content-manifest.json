@@ -7,10 +7,11 @@
     "filename": "DOSEN-EPK-2026.pdf"
   },
   "defaultFeaturedSetSlug": "escapade-afterparty",
-  "transmissionCount": 7,
+  "transmissionCount": 8,
   "playableSetCount": 6,
-  "libraryClipCount": 18,
+  "libraryClipCount": 22,
   "timelineOrder": [
+    "frequency-shift-techno-special",
     "instinct-block-party",
     "escapade-afterparty",
     "solstice-frequency-shift",
@@ -20,6 +21,40 @@
     "exosphere-002-sky-lounge"
   ],
   "libraryEvents": [
+    {
+      "id": "frequency-shift-techno-special",
+      "title": "FREQUENCY SHIFT TECHNO SPECIAL",
+      "set": "DOSEN / LIVE PERFORMANCE",
+      "date": "04 SEP 2026",
+      "time": "SET TIME / TBC",
+      "location": "GRIDWRKS / OTTAWA",
+      "clips": [
+        {
+          "title": "Techno Special Clip 01",
+          "orientation": "landscape",
+          "src": "/media/library/frequency-shift-techno-special-1.mp4",
+          "poster": "/media/library/posters/frequency-shift-techno-special-1.jpg"
+        },
+        {
+          "title": "Techno Special Clip 02",
+          "orientation": "landscape",
+          "src": "/media/library/frequency-shift-techno-special-2.mp4",
+          "poster": "/media/library/posters/frequency-shift-techno-special-2.jpg"
+        },
+        {
+          "title": "Techno Special Clip 03",
+          "orientation": "landscape",
+          "src": "/media/library/frequency-shift-techno-special-3.mp4",
+          "poster": "/media/library/posters/frequency-shift-techno-special-3.jpg"
+        },
+        {
+          "title": "Techno Special Clip 04",
+          "orientation": "landscape",
+          "src": "/media/library/frequency-shift-techno-special-4.mp4",
+          "poster": "/media/library/posters/frequency-shift-techno-special-4.jpg"
+        }
+      ]
+    },
     {
       "id": "off-grid-1-year",
       "title": "OFF GRID 1 YEAR",
@@ -222,6 +257,31 @@
         "accent": "#ff9933",
         "dockTitle": "OFF GRID 1 YEAR / DOSEN B2B FASTR"
       }
+    },
+    {
+      "id": "FS-0904",
+      "slug": "frequency-shift-techno-special",
+      "date": "04 SEP 2026",
+      "venue": "GRIDWRKS / OTTAWA",
+      "title": "FREQUENCY SHIFT TECHNO SPECIAL",
+      "detail": "DOSEN — LIVE PERFORMANCE CLIPS",
+      "slot": "frequency-shift-techno-special",
+      "tone": "magenta",
+      "role": "LIVE PERFORMANCE",
+      "timelineFormat": "SOLO PERFORMANCE",
+      "lineup": "G SUTTY / ZAK BLACK / ENKO B2B DJ GABBY / DOSEN",
+      "duration": "LIVE CLIPS",
+      "artwork": {
+        "vinylCover": "/media/dossiers/frequency-shift-techno-special-poster.png",
+        "eventPoster": "/media/dossiers/frequency-shift-techno-special-poster.png"
+      },
+      "featureVideo": "/media/library/frequency-shift-techno-special-1.mp4",
+      "story": "Frequency Shift returned to GRIDWRKS on September 4, with DOSEN alongside G Sutty, Zak Black and Enko B2B DJ Gabby.",
+      "sound": "A night dedicated to techno, documented through four clips from the booth and the room with their original live audio.",
+      "recordingUrl": null,
+      "secondaryUrl": null,
+      "libraryEventId": "frequency-shift-techno-special",
+      "player": null
     },
     {
       "id": "INS-0814",

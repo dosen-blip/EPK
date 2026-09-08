@@ -104,9 +104,9 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(css, /\.signal-dock \{[^}]*border-radius: 23px/);
   assert.match(css, /\.progress::\-webkit-slider-runnable-track \{[^}]*border-radius: 999px/);
   assert.equal(content.schemaVersion, 1);
-  assert.equal(content.transmissionCount, 7);
+  assert.equal(content.transmissionCount, 8);
   assert.equal(content.playableSetCount, 6);
-  assert.equal(content.libraryClipCount, 18);
+  assert.equal(content.libraryClipCount, 22);
   assert.equal(content.defaultFeaturedSetSlug, "escapade-afterparty");
   assert.match(contentAdapter, /rawContentManifest/);
   assert.match(contentAdapter, /contentManifest\.transmissions/);
@@ -156,8 +156,8 @@ test("keeps production media and visual treatments explicit", async () => {
     "/media/dossiers/instinct-block-party-poster.jpg",
   );
   assert.deepEqual(
-    content.transmissions.slice(0, 3).map((item) => item.slug),
-    ["escapade-afterparty", "off-grid-1-year", "instinct-block-party"],
+    content.transmissions.slice(0, 4).map((item) => item.slug),
+    ["escapade-afterparty", "off-grid-1-year", "frequency-shift-techno-special", "instinct-block-party"],
   );
   assert.match(page, /autoPlay/);
   assert.match(page, /playsInline/);
