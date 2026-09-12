@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-09-12T23:58:58Z",
+  "reason": "Roll back the unfinished mobile selected-set stack and restore the previous production layout",
+  "sourceCommit": "3092d9ccafccbf4256d396c94edb0a1d501eca8a",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "239f655f-b718-418c-9892-340e76e8a66d",
+    "deploymentUrl": "https://239f655f.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "2c02ab276129d12e87dc70d3278a92ea0c030b900c08a5e245317d645890d5bd",
+  "verification": {
+    "unitAndRenderTests": "passed via npm test",
+    "remoteMediaObjects": "134 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/release-check?source=codex",
+    "livePersistentPlayer": "present"
+  }
+}
