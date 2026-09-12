@@ -375,6 +375,7 @@ export default function Home() {
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const heroSectionRef = useRef<HTMLElement>(null);
   const signalSectionRef = useRef<HTMLElement>(null);
+  const archiveGridRef = useRef<HTMLDivElement>(null);
   const vinylRef = useRef<HTMLDivElement>(null);
   const spinAnimationRef = useRef<Animation | null>(null);
   const spinRampRef = useRef<number | null>(null);
@@ -409,6 +410,26 @@ export default function Home() {
   useEffect(() => {
     mobileDockPhaseRef.current = mobileDockPhase;
   }, [mobileDockPhase]);
+
+  useEffect(() => {
+    const grid = archiveGridRef.current;
+    if (!mobileLayout || !grid) return;
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>(".archive-card"));
+    // Natural poster heights differ. Extend the shared sticky boundary just enough
+    // to retain every earlier title until the final card has had its hold distance.
+    const measureStack = () => {
+      const bottoms = cards.map((card) => parseFloat(getComputedStyle(card).top) + card.offsetHeight);
+      const lastBottom = bottoms.at(-1) ?? 0;
+      grid.style.setProperty("--stack-tail", `${Math.max(0, ...bottoms.map((bottom) => bottom - lastBottom))}px`);
+    };
+    const observer = new ResizeObserver(measureStack);
+    cards.forEach((card) => observer.observe(card));
+    measureStack();
+    return () => {
+      observer.disconnect();
+      grid.style.removeProperty("--stack-tail");
+    };
+  }, [mobileLayout]);
 
   const requestMobileDockCompact = useCallback((compact: boolean) => {
     setMobileDockPhase((current) => {
@@ -1534,13 +1555,18 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="archive-grid mobile-reveal">
+        <div className="archive-grid" ref={archiveGridRef}>
           {transmissions.map((item, index) => (
-            <article className={`archive-card tone-${item.tone}`} key={item.id}>
+            <article
+              className={`archive-card tone-${item.tone}`}
+              style={{ "--stack-index": index } as CSSProperties}
+              key={item.id}
+            >
               <button
                 className="archive-card-trigger"
                 type="button"
                 aria-haspopup="dialog"
+                aria-label={`Open ${item.title} set details`}
                 onClick={() => openSetDossier(item.slug)}
               >
                 <div className="archive-media media-slot" data-media-slot={item.slot}>
