@@ -220,8 +220,8 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /downwardTravel >= 64/);
   assert.match(page, /upwardTravel >= 32/);
   assert.match(css, /@media \(max-width: 620px\)/);
-  assert.match(css, /\.archive-grid \{[^}]*--stack-strip: clamp\(32px, 5.5svh, 44px\)[^}]*flex-direction: column/);
-  assert.match(css, /\.archive-card,[^}]*\{[^}]*position: sticky[^}]*top: calc\(var\(--stack-top\) \+ var\(--stack-index\) \* var\(--stack-strip\)\)/);
+  assert.match(css, /\.archive-grid \{[^}]*--archive-card-width: min\(86vw, 360px\)[^}]*grid-auto-columns: var\(--archive-card-width\)[^}]*scroll-padding-inline: var\(--archive-card-gutter\)[^}]*scroll-snap-type: x mandatory/);
+  assert.match(css, /\.archive-card,[^}]*\{[^}]*grid-column: auto[^}]*scroll-snap-align: center[^}]*scroll-snap-stop: always/);
   assert.match(css, /\.set-dossier-highlights-grid \{[^}]*grid-auto-flow: column[^}]*scroll-snap-type: x mandatory/);
   assert.match(page, /className="dock-cover"/);
   assert.match(page, /disabled=\{mobileDockCompact\}/);
