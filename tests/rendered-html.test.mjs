@@ -273,7 +273,14 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /fadeAudio\(audio, 0, 180/);
   assert.match(page, /fadeAudio\(audio, 1, 320/);
   assert.doesNotMatch(page, /PLACEHOLDER AUDIO|Pause placeholder player|Play placeholder player/);
-  assert.match(page, /className="hero-mark">DOSEN<\/h1>/);
+  assert.match(page, /className=\{`hero-mark neon-mark\$\{phase\}`\}/);
+  assert.match(page, /<span className="neon-mark-text">DOSEN<\/span>/);
+  assert.match(page, /from "\.\/_hero\/neon-timeline\.mjs"/);
+  assert.match(page, /import\("\.\/_hero\/neon-sign-scene"\)/);
+  assert.doesNotMatch(page, /from "three"/);
+  assert.match(page, /data-sign=\{sign\}/);
+  assert.match(css, /\.neon-canvas \{[^}]*pointer-events: none/);
+  assert.match(css, /\.neon-mark-text \{ color: transparent; \}/);
   assert.doesNotMatch(page, /dosen-wordmark|wordmark-on-dark|wordmark-on-light/);
   assert.match(layout, /openGraph/);
   assert.match(layout, /\/og-dosen-wordmark\.png/);

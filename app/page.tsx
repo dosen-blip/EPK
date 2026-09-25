@@ -1,12 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useEdgeGlow } from "./edge-glow";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type TransitionEvent } from "react";
 import {
   createSingleFileSegments,
   getAudioDuration,
   locateAudioSegment,
 } from "./player-model.mjs";
+import {
+  NEON_FAULT_HOLD_MS,
+  NEON_LETTERS,
+  NEON_LIT_DELAY_MS,
+  neonLitAt,
+  planNeonIgnition,
+  type NeonClock,
+  type NeonFaultKind,
+  type NeonTube,
+} from "./_hero/neon-timeline.mjs";
+import type { NeonSignScene } from "./_hero/neon-sign-scene";
 import {
   DEFAULT_FEATURED_SET_SLUG,
   getEventArtwork,
@@ -353,7 +365,171 @@ function MobileChapterMarker({ number, label }: { number: string; label: string 
   );
 }
 
+type NeonFault = { index: number; kind: NeonFaultKind };
+
+// The transparent text keeps the wordmark's exact size and accessible name; the tubes are paint only.
+// Once WebGL is ready a 3D sign (app/_hero/neon-sign-scene.ts) takes over from the CSS tubes, reading
+// the same ignition plan through `clock`. The tubes keep running underneath as the fallback.
+function NeonWordmark() {
+  const markRef = useRef<HTMLHeadingElement>(null);
+  const clockRef = useRef<NeonClock>({ still: false, tubes: null, start: null, lit: null, fault: null });
+  const [tubes, setTubes] = useState<NeonTube[] | null>(null);
+  const [lit, setLit] = useState(false);
+  const [fault, setFault] = useState<NeonFault | null>(null);
+  const [sign, setSign] = useState<"css" | "3d">("css");
+
+  useEffect(() => {
+    const clock = clockRef.current;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      clock.still = true;
+      return;
+    }
+
+    const plan = planNeonIgnition();
+    const litAt = neonLitAt(plan);
+    clock.tubes = plan;
+    let faultTimer = 0;
+    let resetTimer = 0;
+    let litTimer = 0;
+
+    const scheduleFault = () => {
+      faultTimer = window.setTimeout(() => {
+        if (!document.hidden) {
+          const kind: NeonFaultKind = Math.random() < 0.25 ? "dropout" : "blip";
+          const next = { index: Math.floor(Math.random() * NEON_LETTERS.length), kind };
+          clock.fault = { ...next, at: performance.now() };
+          setFault(next);
+          resetTimer = window.setTimeout(() => setFault(null), NEON_FAULT_HOLD_MS[kind]);
+        }
+        scheduleFault();
+      }, 5200 + Math.random() * 7800);
+    };
+
+    const frame = window.requestAnimationFrame(() => {
+      clock.start = performance.now();
+      setTubes(plan);
+      litTimer = window.setTimeout(() => {
+        clock.lit = performance.now();
+        setLit(true);
+        scheduleFault();
+      }, litAt * 1000 + NEON_LIT_DELAY_MS);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(litTimer);
+      window.clearTimeout(faultTimer);
+      window.clearTimeout(resetTimer);
+    };
+  }, []);
+
+  // Pin the shared clock to the moment the browser actually started the CSS ignition.
+  useEffect(() => {
+    const tube = markRef.current?.querySelector(".neon-tube");
+    const animation = tube?.getAnimations().find((item) => item instanceof CSSAnimation);
+    if (!tubes || !animation) return;
+    let current = true;
+    animation.ready
+      .then(() => {
+        if (current && typeof animation.startTime === "number") clockRef.current.start = animation.startTime;
+      })
+      .catch(() => undefined);
+    return () => {
+      current = false;
+    };
+  }, [tubes]);
+
+  // The 3D sign loads off the critical path and never blocks the CSS version.
+  useEffect(() => {
+    const mark = markRef.current;
+    const text = mark?.querySelector<HTMLElement>(".neon-mark-text");
+    const section = mark?.closest<HTMLElement>(".hero");
+    if (!mark || !text || !section || typeof WebGL2RenderingContext === "undefined") return;
+
+    const canvas = document.createElement("canvas");
+    canvas.className = "neon-canvas";
+    canvas.setAttribute("aria-hidden", "true");
+    section.append(canvas);
+    let disposed = false;
+    let scene: NeonSignScene | null = null;
+
+    const fallBack = () => {
+      scene?.dispose();
+      scene = null;
+      canvas.remove();
+      if (!disposed) setSign("css");
+    };
+
+    const load = () => {
+      if (disposed) return;
+      import("./_hero/neon-sign-scene")
+        .then(({ NeonSignScene }) =>
+          NeonSignScene.create({
+            canvas,
+            section,
+            text,
+            clock: clockRef.current,
+            reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+            onReady: () => {
+              if (disposed) return;
+              canvas.classList.add("is-ready");
+              setSign("3d");
+            },
+            onLost: fallBack,
+          }),
+        )
+        .then((created) => {
+          if (disposed) return created.dispose();
+          scene = created;
+          if (window.location.search.includes("neon-debug")) Object.assign(window, { __dosenNeonSign: created });
+        })
+        .catch(() => fallBack());
+    };
+
+    const viaIdle = typeof window.requestIdleCallback === "function";
+    const idle = viaIdle ? window.requestIdleCallback(load, { timeout: 900 }) : window.setTimeout(load, 250);
+
+    return () => {
+      disposed = true;
+      if (viaIdle) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
+      scene?.dispose();
+      canvas.remove();
+    };
+  }, []);
+
+  const litAt = tubes ? neonLitAt(tubes) : 0;
+  const phase = lit ? " is-lit" : tubes ? " is-powering" : "";
+
+  return (
+    <h1
+      ref={markRef}
+      className={`hero-mark neon-mark${phase}`}
+      data-sign={sign}
+      style={tubes ? ({ "--neon-lit-at": `${litAt.toFixed(2)}s` } as CSSProperties) : undefined}
+    >
+      <span className="neon-mark-text">DOSEN</span>
+      <span className="neon-tubes" aria-hidden="true">
+        {NEON_LETTERS.map((letter, index) => {
+          const tube = tubes?.[index];
+          return (
+            <span
+              className={`neon-tube${fault?.index === index ? ` is-${fault.kind}` : ""}`}
+              data-ignition={tube?.ignition}
+              style={tube ? ({ "--neon-delay": `${tube.delay.toFixed(2)}s`, "--neon-duration": `${tube.duration.toFixed(2)}s` } as CSSProperties) : undefined}
+              key={letter}
+            >
+              {letter}
+            </span>
+          );
+        })}
+      </span>
+    </h1>
+  );
+}
+
 export default function Home() {
+  useEdgeGlow();
   const [transmitting, setTransmitting] = useState(false);
   const [activeSetSlug, setActiveSetSlug] = useState(DEFAULT_FEATURED_SET_SLUG);
   const [playerStatus, setPlayerStatus] = useState<"ready" | "loading" | "error">("ready");
@@ -1142,7 +1318,7 @@ export default function Home() {
         </div>
 
         <div className="hero-copy">
-          <h1 className="hero-mark">DOSEN</h1>
+          <NeonWordmark />
           <div className="hero-bottom">
             <p className="hero-statement">
               Ottawa DJ playing tech house, house, trance, and techno.
