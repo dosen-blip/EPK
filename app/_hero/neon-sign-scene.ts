@@ -3,7 +3,10 @@
    and every light term (the lit faces, bloom, the per-letter light pools and the dust caught in them)
    is written as premultiplied colour whose coverage is its own brightness, so it lays onto the
    video like a screen blend.
-   Letter levels come from the shared neon timeline, so this picks up exactly where the CSS tubes are. */
+   Letter levels come from the shared neon timeline, so this picks up exactly where the CSS tubes are.
+   The sign also reads the video behind it (see ambience-model.mjs): it meters the room's brightness,
+   leans its halo toward the room's colour, sags on strobes, reflects the room in its glass and lets
+   its spill fade over bright film. Each of those can be switched off independently. */
 
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -11,6 +14,18 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { toCreasedNormals } from "three/addons/utils/BufferGeometryUtils.js";
+import {
+  AMBIENCE_IDS,
+  createStrobeDetector,
+  exposureAmount,
+  hueShift,
+  roomTint,
+  strobeBlip,
+  strobeSag,
+  type AmbienceToggles,
+  type FrameStats,
+} from "./ambience-model.mjs";
+import { VideoAmbience, type AmbienceReading, type Rect } from "./neon-ambience";
 import { readNeonLevels, type NeonClock } from "./neon-timeline.mjs";
 import { gaussianBlur, traceNeonWordmark, type NeonTrace, type Point } from "./neon-trace";
 
@@ -21,6 +36,10 @@ export type NeonSignOptions = {
   /** The real, transparent heading text: size authority and glyph positions. */
   text: HTMLElement;
   clock: NeonClock;
+  /** The hero video behind the sign (it is replaced when the viewport crosses the mobile breakpoint). */
+  video: () => HTMLVideoElement | null;
+  /** Live effect switches; the scene reads them every frame. */
+  ambience: AmbienceToggles;
   reducedMotion: boolean;
   onReady: () => void;
   /** WebGL went away or cannot keep up: the CSS tubes take back over. */
@@ -51,6 +70,10 @@ const SHADOW_STRENGTH = 0.34;
 const VIOLET = new THREE.Color("#2f5bff");
 const HOT = new THREE.Color("#2fa8ff");
 const CORE = new THREE.Color("#eef7ff");
+const DUST = new THREE.Color("#9ad0ff");
+const BASE_GLOW_GAIN = 0.19;
+const BASE_POOL_GAIN = 0.018;
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const damp = (current: number, target: number, rate: number, dt: number) => current + (target - current) * (1 - Math.exp(-rate * dt));
@@ -102,6 +125,13 @@ const letterFragment = /* glsl */ `
   uniform vec3 uHot;
   uniform vec3 uCore;
   uniform float uDepth;
+  uniform float uExposure;
+  uniform float uGlassAlpha;
+  uniform vec3 uHaloViolet;
+  uniform vec3 uHaloHot;
+  uniform sampler2D uRoom;
+  uniform vec4 uRoomMap;
+  uniform float uReflect;
   varying vec3 vPos;
   varying vec3 vObjectNormal;
   varying vec3 vNormal;
@@ -137,12 +167,12 @@ const letterFragment = /* glsl */ `
     vec3 faceEmit = mix(uHot * 1.3, uCore * 1.65, core);
     vec3 bevelEmit = mix(uHot * 1.7, uCore * 1.2, 0.3);
     vec3 sideEmit = mix(uViolet * 0.05, uHot * 0.8, along * along * along);
-    vec3 emit = (faceEmit * face + bevelEmit * bevel + sideEmit * side) * level;
+    vec3 emit = (faceEmit * face + bevelEmit * bevel + sideEmit * side) * level * uExposure;
 
 #ifdef GLOW
     // The halo is coloured gas light, not the white-hot core: magenta close in, violet in the returns.
-    vec3 halo = mix(uViolet, uHot, 0.3 + 0.5 * face + 0.2 * bevel);
-    gl_FragColor = vec4(halo * level * (0.55 * face + 0.9 * bevel + 0.5 * side), 1.0);
+    vec3 halo = mix(uHaloViolet, uHaloHot, 0.3 + 0.5 * face + 0.2 * bevel);
+    gl_FragColor = vec4(halo * level * uExposure * (0.42 * face + 0.75 * bevel + 0.4 * side), 1.0);
 #else
     // Unlit: smoked violet glass with a faint dead tube down each stroke, a fresnel rim, two glints
     // from fixed lights and a soft overhead sheen that slide across the bevels as the sign moves.
@@ -157,9 +187,16 @@ const letterFragment = /* glsl */ `
     vec3 sheen = vec3(0.78, 0.85, 0.96) * (key * 0.85 + kick * 0.6) * (0.35 + 0.65 * (1.0 - face))
       + mix(vec3(0.04, 0.05, 0.075), uViolet * 0.1, 0.5) * sky * (0.25 + 0.75 * (1.0 - face));
     vec3 rim = mix(vec3(0.46, 0.54, 0.66), uViolet, 0.45) * fres * 0.5;
-    float alpha = mix(0.6, 0.92, 1.0 - face);
+    float alpha = mix(0.6, 0.92, 1.0 - face) * uGlassAlpha;
     alpha = mix(alpha, 1.0, face * level);
     vec3 col = glass * alpha + (sheen + rim) * (1.0 - 0.65 * face * level) + emit;
+    // The room: a blurred copy of the video, bent by the glass normal, strongest at grazing angles.
+    vec2 roomUv = vec2(gl_FragCoord.x * uRoomMap.x + uRoomMap.y, gl_FragCoord.y * uRoomMap.z + uRoomMap.w);
+    vec2 bent = roomUv + n.xy * vec2(0.08, 0.13);
+    vec3 room = (texture2D(uRoom, clamp(bent, 0.0, 1.0)).rgb * 0.5
+      + texture2D(uRoom, clamp(bent + vec2(0.0, 0.05), 0.0, 1.0)).rgb * 0.25
+      + texture2D(uRoom, clamp(bent - vec2(0.0, 0.05), 0.0, 1.0)).rgb * 0.25);
+    col += room * uReflect * (0.14 + fres * 1.0 + bevel * 0.45 + side * 0.5) * (1.0 - 0.6 * face * level);
     gl_FragColor = vec4(col, alpha);
 #endif
   }
@@ -179,10 +216,19 @@ const poolFragment = /* glsl */ `
   uniform float uGain;
   uniform float uShadow;
   uniform vec2 uShadowShift;
+  uniform sampler2D uRoom;
+  uniform vec4 uRoomWorld;
+  uniform float uSpillAdapt;
   varying vec2 vUv;
   ${lightGLSL}
   void main() {
     float light = neonLight(vUv);
+    // Light carries over dark film and washes out where the video is already bright (linear luma).
+    vec2 world = uLightRect.xy + vUv * uLightRect.zw;
+    vec2 roomUv = clamp(vec2(world.x * uRoomWorld.x + uRoomWorld.y, world.y * uRoomWorld.z + uRoomWorld.w), 0.0, 1.0);
+    float roomLuma = dot(texture2D(uRoom, roomUv).rgb, vec3(0.2126, 0.7152, 0.0722));
+    float adapt = (1.0 - 0.85 * smoothstep(0.02, 0.2, roomLuma)) * (1.0 + 0.5 * (1.0 - smoothstep(0.002, 0.015, roomLuma)));
+    light *= mix(1.0, adapt, uSpillAdapt);
     vec2 e = smoothstep(vec2(0.0), vec2(0.14), vUv) * smoothstep(vec2(0.0), vec2(0.14), 1.0 - vUv);
     float fade = e.x * e.y;
     float shadow = texture2D(uLightA, vUv + uShadowShift).a * uShadow * fade;
@@ -230,7 +276,7 @@ const finalShader = {
   uniforms: {
     tDiffuse: { value: null as THREE.Texture | null },
     uGlow: { value: null as THREE.Texture | null },
-    uGlowGain: { value: 0.28 },
+    uGlowGain: { value: BASE_GLOW_GAIN },
     uSeed: { value: 0 },
   },
   vertexShader: /* glsl */ `
@@ -437,6 +483,25 @@ export class NeonSignScene {
   private levels = new Float32Array(MAX_LETTERS);
   private debugPose: DebugPose | null = null;
 
+  // Ambience: what the sign reads from the video and how it answers.
+  private room: VideoAmbience;
+  private roomTexture: THREE.CanvasTexture;
+  private band: Rect | null = null;
+  private stats: FrameStats | null = null;
+  private nextSample = 0;
+  private lastSample = 0;
+  private detectStrobe = createStrobeDetector();
+  private strobeAt = 0;
+  private strobeDepth = 0;
+  private blipLetter = -1;
+  private blipSecond = -1;
+  private gain = { emit: 1, bloom: 1, pool: 1, glass: 1 };
+  private exposure = 0;
+  private shift = 0;
+  private reflect = 0;
+  private spill = 0;
+  private baseHsl = { violet: { h: 0, s: 0, l: 0 }, hot: { h: 0, s: 0, l: 0 }, dust: { h: 0, s: 0, l: 0 } };
+
   private levelUniform = { value: this.levels };
   private lightUniforms: Record<string, THREE.IUniform>;
   private letterUniforms: Record<string, THREE.IUniform>;
@@ -488,26 +553,47 @@ export class NeonSignScene {
       uLevelsB: { value: new THREE.Vector3() },
     };
     const colors = { uViolet: { value: VIOLET.clone() }, uHot: { value: HOT.clone() }, uCore: { value: CORE.clone() } };
+    this.room = new VideoAmbience(options.video, options.section);
+    this.roomTexture = this.track(new THREE.CanvasTexture(this.room.canvas));
+    this.roomTexture.colorSpace = THREE.SRGBColorSpace;
+    this.roomTexture.minFilter = THREE.LinearFilter;
+    this.roomTexture.magFilter = THREE.LinearFilter;
+    this.roomTexture.generateMipmaps = false;
+    const room = { value: this.roomTexture };
+    VIOLET.getHSL(this.baseHsl.violet);
+    HOT.getHSL(this.baseHsl.hot);
+    DUST.getHSL(this.baseHsl.dust);
     this.letterUniforms = {
       ...colors,
       uLevels: this.levelUniform,
       uField: { value: null },
       uFieldRect: { value: new THREE.Vector4() },
       uDepth: { value: DEPTH },
+      uExposure: { value: 1 },
+      uGlassAlpha: { value: 1 },
+      uHaloViolet: { value: VIOLET.clone() },
+      uHaloHot: { value: HOT.clone() },
+      uRoom: room,
+      uRoomMap: { value: new THREE.Vector4() },
+      uReflect: { value: 0 },
     };
     this.poolUniforms = {
       ...this.lightUniforms,
-      ...colors,
-      uGain: { value: 0.025 },
+      uViolet: { value: VIOLET.clone() },
+      uHot: { value: HOT.clone() },
+      uGain: { value: BASE_POOL_GAIN },
       uShadow: { value: SHADOW_STRENGTH },
       uShadowShift: { value: new THREE.Vector2() },
+      uRoom: room,
+      uRoomWorld: { value: new THREE.Vector4() },
+      uSpillAdapt: { value: 0 },
     };
     this.dustUniforms = {
       ...this.lightUniforms,
       uTime: { value: 0 },
       uPixel: { value: 1 },
       uBox: { value: new THREE.Vector4() },
-      uTint: { value: new THREE.Color("#9ad0ff") },
+      uTint: { value: DUST.clone() },
       uGain: { value: 0.55 },
     };
 
@@ -540,7 +626,7 @@ export class NeonSignScene {
     this.glowComposer.renderToScreen = false;
     this.glowComposer.setPixelRatio(this.glowDpr());
     this.glowComposer.addPass(new RenderPass(this.scene, this.camera));
-    this.glowComposer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), 0.5, 0.08, 0.0));
+    this.glowComposer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), 0.42, 0.05, 0.0));
 
     this.composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
     this.composer.setPixelRatio(this.dpr);
@@ -772,6 +858,15 @@ export class NeonSignScene {
     );
     this.dustUniforms.uPixel.value = this.renderer.getPixelRatio() * clamp(fontPx / 200, 0.55, 1.2);
 
+    // The area behind the wordmark that the exposure meters, in section CSS px.
+    this.band = {
+      left: penX + (trace.ink.minX - 0.15) * fontPx,
+      right: penX + (trace.ink.maxX + 0.15) * fontPx,
+      top: baseY - (trace.ink.maxY + 0.2) * fontPx,
+      bottom: baseY - (trace.ink.minY - 0.2) * fontPx,
+    };
+    this.updateRoomMaps();
+
     this.sectionTop = frame.top + window.scrollY;
     this.onScroll();
     this.updateCamera();
@@ -861,11 +956,13 @@ export class NeonSignScene {
     const hum = readNeonLevels(clock, at, this.raw);
     const t = now / 1000;
     const count = Math.min(this.raw.length, MAX_LETTERS);
+    const { sag, blip, blipSecond } = this.updateAmbience(now, dt);
     let sum = 0;
     for (let i = 0; i < count; i++) {
       let level = this.raw[i];
       // A faint mains shimmer and the CSS hum ride on the gas, never on the glass.
       if (!reducedMotion && level > 0) level *= hum * (0.988 + 0.012 * Math.sin(t * 47 + i * 2.3) * Math.sin(t * 2.9 + i * 1.1));
+      if (level > 0) level *= sag * (i === this.blipLetter ? blip : i === this.blipSecond ? blipSecond : 1);
       this.levels[i] = level;
       sum += level;
     }
@@ -908,6 +1005,104 @@ export class NeonSignScene {
       this.readyAt = now;
       this.options.onReady();
     }
+  }
+
+  /** Samples the video on its own cadence and eases every ambience response toward its target. */
+  private updateAmbience(now: number, dt: number) {
+    const toggles = this.options.ambience;
+    const reducedMotion = this.options.reducedMotion;
+    const step = dt > 0 ? dt : 1 / 60;
+    if (this.band && now >= this.nextSample && AMBIENCE_IDS.some((id) => toggles[id])) {
+      this.nextSample = now + (this.coarse ? 100 : 66);
+      const stats = this.room.sample(this.band);
+      if (stats) {
+        const gap = this.lastSample ? (now - this.lastSample) / 1000 : 0;
+        this.lastSample = now;
+        this.stats = stats;
+        this.roomTexture.needsUpdate = true;
+        this.updateRoomMaps();
+        const hit = this.detectStrobe(stats.luma, now / 1000, gap);
+        if (hit > 0 && toggles.strobe && !reducedMotion) {
+          this.strobeAt = now;
+          this.strobeDepth = 0.3 + 0.45 * hit;
+          const letters = Math.min(this.raw.length, MAX_LETTERS);
+          this.blipLetter = Math.floor(Math.random() * letters);
+          this.blipSecond = Math.random() < 0.4 ? (this.blipLetter + 1 + Math.floor(Math.random() * (letters - 1))) % letters : -1;
+        }
+      }
+    }
+    const stats = this.stats;
+
+    // 1. Auto-exposure: a brighter room gets a hotter core, stronger bloom and clearer glass.
+    this.exposure = stats ? exposureAmount(stats.bandLuma) : 0;
+    const metered = toggles.exposure && !!stats;
+    const e = this.exposure;
+    this.gain.emit = damp(this.gain.emit, metered ? lerp(0.84, 1.4, e) : 1, 4, step);
+    this.gain.bloom = damp(this.gain.bloom, metered ? lerp(0.7, 1.6, e) : 1, 4, step);
+    this.gain.pool = damp(this.gain.pool, metered ? lerp(0.8, 1.35, e) : 1, 4, step);
+    this.gain.glass = damp(this.gain.glass, metered ? lerp(1, 0.66, e) : 1, 4, step);
+    this.letterUniforms.uExposure.value = this.gain.emit;
+    this.letterUniforms.uGlassAlpha.value = this.gain.glass;
+    this.finalPass.uniforms.uGlowGain.value = BASE_GLOW_GAIN * this.gain.bloom;
+    this.poolUniforms.uGain.value = BASE_POOL_GAIN * this.gain.pool;
+
+    // 2. Colour pickup: halo, spill and dust lean toward the room's hue; the letters stay blue.
+    const tint = stats ? roomTint(stats.hueX, stats.hueY) : null;
+    const target = toggles.hue && tint ? hueShift(this.baseHsl.hot.h, tint.hue, tint.strength) : 0;
+    this.shift = damp(this.shift, target, 2.2, step);
+    const { violet, hot, dust } = this.baseHsl;
+    const turn = (h: number) => ((h + this.shift) % 1 + 1) % 1;
+    (this.letterUniforms.uHaloViolet.value as THREE.Color).setHSL(turn(violet.h), violet.s, violet.l);
+    (this.letterUniforms.uHaloHot.value as THREE.Color).setHSL(turn(hot.h), hot.s, hot.l);
+    (this.poolUniforms.uViolet.value as THREE.Color).setHSL(turn(violet.h), violet.s, violet.l);
+    (this.poolUniforms.uHot.value as THREE.Color).setHSL(turn(hot.h), hot.s, hot.l);
+    (this.dustUniforms.uTint.value as THREE.Color).setHSL(turn(dust.h), dust.s, dust.l);
+
+    // 4 and 5. Reflections and spill adaptation fade in and out rather than switching.
+    this.reflect = damp(this.reflect, toggles.reflection && stats ? 1 : 0, 4, step);
+    this.spill = damp(this.spill, toggles.spill && stats ? 1 : 0, 4, step);
+    this.letterUniforms.uReflect.value = this.reflect * 1.25;
+    this.poolUniforms.uSpillAdapt.value = this.spill;
+
+    // 3. Strobe reaction: the whole sign sags and one letter blips.
+    if (!toggles.strobe || reducedMotion || !this.strobeAt) return { sag: 1, blip: 1, blipSecond: 1 };
+    const since = (now - this.strobeAt) / 1000;
+    return { sag: strobeSag(since, this.strobeDepth), blip: strobeBlip(since - 0.03), blipSecond: strobeBlip(since - 0.09) };
+  }
+
+  /** Maps screen fragments (letters) and video-plane points (spill) to the sampled video frame. */
+  private updateRoomMaps() {
+    const box = this.room.box;
+    if (!box) return;
+    const dpr = this.dpr;
+    (this.letterUniforms.uRoomMap.value as THREE.Vector4).set(
+      1 / (dpr * box.w),
+      -box.x0 / box.w,
+      1 / (dpr * box.h),
+      1 - (this.bandTop + this.bandH - box.y0) / box.h,
+    );
+    (this.poolUniforms.uRoomWorld.value as THREE.Vector4).set(
+      1 / box.w,
+      (this.w / 2 - box.x0) / box.w,
+      1 / box.h,
+      1 - (this.h / 2 - box.y0) / box.h,
+    );
+  }
+
+  /** What the sign currently reads from the room, for the testing panel. */
+  readAmbience(): AmbienceReading {
+    const stats = this.stats;
+    const tint = stats ? roomTint(stats.hueX, stats.hueY) : { hue: 0, strength: 0 };
+    return {
+      sampling: this.room.available && !!stats,
+      luma: stats?.luma ?? 0,
+      bandLuma: stats?.bandLuma ?? 0,
+      hue: tint.hue,
+      strength: tint.strength,
+      exposure: this.exposure,
+      shiftDegrees: this.shift * 360,
+      strobeAgo: this.strobeAt ? (performance.now() - this.strobeAt) / 1000 : Infinity,
+    };
   }
 
   private swapToGlow() {

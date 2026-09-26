@@ -24,7 +24,7 @@ test("server-renders the DOSEN EPK scaffold", async () => {
   assert.match(html, /Selected sets/);
   assert.match(html, /ESCAPADE OFFICIAL AFTERPARTY/);
   assert.match(html, /SELECT A SET/);
-  assert.match(html, /Ottawa DJ playing tech house, house, trance, and techno\./);
+  assert.match(html, /DJ · Electronic press kit/);
   assert.match(html, /Recent dates/);
   assert.match(html, /Make a night of it\./);
   assert.match(html, /DOWNLOAD EPK \/ PDF/);

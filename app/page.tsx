@@ -18,6 +18,7 @@ import {
   type NeonFaultKind,
   type NeonTube,
 } from "./_hero/neon-timeline.mjs";
+import { ambienceToggles } from "./_hero/ambience-store";
 import type { NeonSignScene } from "./_hero/neon-sign-scene";
 import {
   DEFAULT_FEATURED_SET_SLUG,
@@ -40,6 +41,13 @@ function mediaUrl(path: string) {
   }
 
   return `${MEDIA_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+// Media read back through canvas (the hero and clip videos) is requested with CORS. A query of its own keeps
+// those responses in a separate cache entry from any plain request for the same file, which Chrome can
+// otherwise fail to write.
+function corsMediaUrl(path: string) {
+  return `${mediaUrl(path)}?cors=1`;
 }
 
 function formatTime(seconds: number) {
@@ -111,11 +119,12 @@ function OrientationClipRow({
                 controls
                 playsInline
                 preload="metadata"
+                crossOrigin="anonymous"
                 poster={mediaUrl(clip.poster)}
                 aria-label={clipLabel}
                 onPlay={(playEvent) => onPlay(playEvent.currentTarget)}
               >
-                <source src={mediaUrl(clip.src)} type="video/mp4" />
+                <source src={corsMediaUrl(clip.src)} type="video/mp4" />
               </video>
               <div className="clip-card-copy">
                 <span className="mono">{clipNumber}</span>
@@ -452,6 +461,11 @@ function NeonWordmark() {
     section.append(canvas);
     let disposed = false;
     let scene: NeonSignScene | null = null;
+    let unmountPanel: (() => void) | null = null;
+
+    // Which video-ambience effects run: defaults, then saved panel choices, then `?ambience=`.
+    const params = new URLSearchParams(window.location.search);
+    const ambience = ambienceToggles();
 
     const fallBack = () => {
       scene?.dispose();
@@ -469,6 +483,8 @@ function NeonWordmark() {
             section,
             text,
             clock: clockRef.current,
+            video: () => section.querySelector<HTMLVideoElement>(".hero-video"),
+            ambience,
             reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
             onReady: () => {
               if (disposed) return;
@@ -481,7 +497,12 @@ function NeonWordmark() {
         .then((created) => {
           if (disposed) return created.dispose();
           scene = created;
-          if (window.location.search.includes("neon-debug")) Object.assign(window, { __dosenNeonSign: created });
+          if (params.has("neon-debug")) Object.assign(window, { __dosenNeonSign: created, __dosenAmbience: ambience });
+          if (params.has("ambience-panel") || params.has("neon-debug")) {
+            import("./_hero/neon-ambience").then(({ mountAmbiencePanel }) => {
+              if (!disposed) unmountPanel = mountAmbiencePanel(ambience, () => scene?.readAmbience() ?? null);
+            });
+          }
         })
         .catch(() => fallBack());
     };
@@ -493,6 +514,7 @@ function NeonWordmark() {
       disposed = true;
       if (viaIdle) window.cancelIdleCallback(idle);
       else window.clearTimeout(idle);
+      unmountPanel?.();
       scene?.dispose();
       canvas.remove();
     };
@@ -530,6 +552,103 @@ function NeonWordmark() {
 
 export default function Home() {
   useEdgeGlow();
+  const marqueeRef = useRef<HTMLDivElement>(null);
+
+  // The genre ticker reads the hero video too; it loads after the page is idle and only runs on screen.
+  useEffect(() => {
+    const marquee = marqueeRef.current;
+    if (!marquee) return;
+    const stops: (() => void)[] = [];
+    let cancelled = false;
+    const load = () => {
+      import("./ticker-ambience").then(({ startTickerAmbience }) => {
+        if (!cancelled) stops.push(startTickerAmbience(marquee));
+      });
+      import("./video-ambilight").then(({ startVideoAmbilight }) => {
+        if (!cancelled) stops.push(startVideoAmbilight());
+      });
+      import("./poster-light").then(({ startPosterLight }) => {
+        if (!cancelled) stops.push(startPosterLight());
+      });
+      import("./surface-light").then(({ startSurfaceLight }) => {
+        if (!cancelled) stops.push(startSurfaceLight());
+      });
+    };
+    const viaIdle = typeof window.requestIdleCallback === "function";
+    const idle = viaIdle ? window.requestIdleCallback(load, { timeout: 1500 }) : window.setTimeout(load, 400);
+    return () => {
+      cancelled = true;
+      if (viaIdle) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
+      stops.forEach((stop) => stop());
+    };
+  }, []);
+
+  // Ticker ignition: its tubes wait dark, then power on the first time the ticker comes into view once the
+  // sign is lit, as if the two share a circuit. Switched off or under reduced motion, it simply stays lit.
+  useEffect(() => {
+    const marquee = marqueeRef.current;
+    const mark = document.querySelector(".neon-mark");
+    if (!marquee) return;
+    let woke = false;
+    let timer = 0;
+    const wake = (animate: boolean) => {
+      if (woke) return;
+      woke = true;
+      marquee.classList.remove("is-dormant", "is-waiting");
+      if (!animate) return;
+      marquee.classList.add("is-igniting");
+      timer = window.setTimeout(() => marquee.classList.remove("is-igniting"), 1100);
+    };
+    if (!ambienceToggles().circuit || window.matchMedia("(prefers-reduced-motion: reduce)").matches || !mark) {
+      wake(false);
+      return;
+    }
+    marquee.classList.add("is-waiting");
+    let lit = mark.classList.contains("is-lit");
+    let seen = false;
+    const tryWake = () => {
+      if (lit && seen) timer = window.setTimeout(() => wake(true), 180);
+    };
+    const watch = new MutationObserver(() => {
+      if (!mark.classList.contains("is-lit")) return;
+      lit = true;
+      watch.disconnect();
+      tryWake();
+    });
+    watch.observe(mark, { attributes: true, attributeFilter: ["class"] });
+    const view = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      seen = true;
+      view.disconnect();
+      tryWake();
+    }, { threshold: 0.6 });
+    view.observe(marquee);
+    // Never strand it dark if the sign never reports in.
+    const safety = window.setTimeout(() => {
+      lit = true;
+      tryWake();
+    }, 7000);
+    return () => {
+      watch.disconnect();
+      view.disconnect();
+      window.clearTimeout(timer);
+      window.clearTimeout(safety);
+    };
+  }, []);
+
+  // Bookend: the Book section's DOSEN watermark powers on once when you reach it.
+  useEffect(() => {
+    const contact = document.getElementById("contact");
+    if (!contact) return;
+    const view = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      contact.classList.add("is-bookend-lit");
+      view.disconnect();
+    }, { threshold: 0.35 });
+    view.observe(contact);
+    return () => view.disconnect();
+  }, []);
   const [transmitting, setTransmitting] = useState(false);
   const [activeSetSlug, setActiveSetSlug] = useState(DEFAULT_FEATURED_SET_SLUG);
   const [playerStatus, setPlayerStatus] = useState<"ready" | "loading" | "error">("ready");
@@ -1292,7 +1411,8 @@ export default function Home() {
             ref={heroVideoRef}
             key={mobileHero ? "mobile-hero" : "desktop-hero"}
             className="hero-video"
-            src={mediaUrl(mobileHero ? "/media/hero/hero-mobile-v3.mp4" : "/media/hero/hero-desktop-v1.mp4")}
+            src={corsMediaUrl(mobileHero ? "/media/hero/hero-mobile-v3.mp4" : "/media/hero/hero-desktop-v1.mp4")}
+            crossOrigin="anonymous"
             autoPlay
             muted
             loop
@@ -1312,28 +1432,21 @@ export default function Home() {
         </div>
         <div className="hero-shade" aria-hidden="true" />
 
-        <div className="hero-kicker mono">
-          <span>OTTAWA, CANADA</span>
-          <span>DJ / TECH HOUSE</span>
-        </div>
-
         <div className="hero-copy">
           <NeonWordmark />
           <div className="hero-bottom">
-            <p className="hero-statement">
-              Ottawa DJ playing tech house, house, trance, and techno.
-            </p>
+            <p className="hero-tag mono">DJ · Electronic press kit</p>
             <div className="hero-actions">
               <button
-                className="hero-action hero-action-primary"
+                className="hero-action"
                 type="button"
                 aria-haspopup="dialog"
                 aria-expanded={libraryOpen}
+                aria-label="Open video library"
                 onClick={() => openLibrary()}
               >
-                Open video library
+                Library
               </button>
-              <a className="hero-action hero-action-secondary" href="#archive">View performances</a>
             </div>
           </div>
         </div>
@@ -1521,11 +1634,12 @@ export default function Home() {
                       controls
                       playsInline
                       preload="metadata"
+                      crossOrigin="anonymous"
                       poster={mediaUrl(clip.poster)}
                       aria-label={`${selectedSet.title} highlight clip ${index + 1}`}
                       onPlay={(event) => handleDossierClipPlay(event.currentTarget)}
                     >
-                      <source src={mediaUrl(clip.src)} type="video/mp4" />
+                      <source src={corsMediaUrl(clip.src)} type="video/mp4" />
                     </video>
                     <p className="mono">HIGHLIGHT {String(index + 1).padStart(2, "0")} / {clip.title}</p>
                   </article>
@@ -1571,7 +1685,8 @@ export default function Home() {
         </div>
       )}
 
-      <div className="marquee" aria-label="DOSEN sound description">
+      <div className="marquee is-dormant" aria-label="DOSEN sound description" ref={marqueeRef}>
+        <canvas className="marquee-reflection" aria-hidden="true" />
         <div className="marquee-track">
           <div className="marquee-group">
             <span>TECH HOUSE</span><i>◆</i><span>TRANCE</span><i>◆</i><span>BASS</span><i>◆</i>
@@ -1667,10 +1782,9 @@ export default function Home() {
         <div className="set-selector mobile-reveal" aria-labelledby="set-selector-title">
           <div className="set-selector-heading mono">
             <span id="set-selector-title">SELECT A SET</span>
-            <span>{String(playableSets.length).padStart(2, "0")} LOCAL RECORDINGS</span>
           </div>
           <div className="set-selector-track" role="group" aria-label="Playable DOSEN sets">
-            {playableSets.map((set, index) => {
+            {playableSets.map((set) => {
               const isActive = set.slug === activeSet.slug;
               return (
                 <button
@@ -1683,8 +1797,7 @@ export default function Home() {
                 >
                   <span className="set-selector-cover">
                     <img src={mediaUrl(set.artwork.vinylCover)} alt="" />
-                    <span className="set-selector-number mono">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="set-selector-active mono">{isActive ? "ON AIR" : "SELECT"}</span>
+                    {isActive && <span className="set-selector-active mono">ON AIR</span>}
                   </span>
                   <span className="set-selector-meta">
                     <strong>{set.title}</strong>
@@ -1746,7 +1859,6 @@ export default function Home() {
             <p className="eyebrow">SELECTED DATES / VERIFIED</p>
             <h2 id="timeline-title">Recent dates</h2>
           </div>
-          <span className="coordinate mono">45.4215° N / 75.6972° W</span>
         </div>
         <div className="timeline-list mobile-reveal">
           {timeline.map((item, index) => (
@@ -1793,9 +1905,6 @@ export default function Home() {
           </p>
         </div>
         <aside className="press-facts mobile-reveal">
-          <div><span>BASE</span><strong>OTTAWA, CANADA</strong></div>
-          <div><span>CORE</span><strong>TECH HOUSE</strong></div>
-          <div><span>EDGE</span><strong>TRANCE / HOUSE / TECHNO</strong></div>
           <div><span>SETS</span><strong>SOLO / B2B / SUPPORT</strong></div>
         </aside>
       </section>
