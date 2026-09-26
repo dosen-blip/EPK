@@ -967,11 +967,14 @@ footer p, footer a { font-size: .62rem; }
 @property --amb-bottom { syntax: "<color>"; inherits: true; initial-value: transparent; }
 @property --amb-left { syntax: "<color>"; inherits: true; initial-value: transparent; }
 @property --amb-right { syntax: "<color>"; inherits: true; initial-value: transparent; }
-/* The clip row clips sideways to hide the cards past the fold; room above and below lets a clip's glow spread
-   past the row without the row's padding catching clicks meant for the header above it. */
-.event-clip-track { padding-block: 110px; margin-block: -110px; pointer-events: none; }
-.event-clip-track > * { pointer-events: auto; }
-.clip-format-header, .clip-event-expand { position: relative; z-index: 1; }
+/* Clip rows clip sideways (to hide the cards past the fold, or as a swipe strip on phones), which would cut a
+   clip's glow off at the row's edges. Room above and below lets the glow spread past the row; the headings and
+   buttons around it sit above that room so it never catches their taps. */
+.event-clip-track { padding-block: 110px; margin-block: -110px; }
+.clip-format-header, .clip-event-expand, .set-dossier-highlights-heading { position: relative; z-index: 1; }
+@media (max-width: 620px) {
+  .set-dossier-highlights-grid { padding-block: 110px 122px; margin-block: -110px; }
+}
 .clip-card, .set-dossier-highlight { position: relative; isolation: isolate; transition: --amb-top .35s linear, --amb-bottom .35s linear, --amb-left .35s linear, --amb-right .35s linear; }
 .clip-card::before, .set-dossier-highlight::before { content: ""; position: absolute; z-index: -1; top: 0; left: 0; width: 100%; aspect-ratio: 16 / 9; pointer-events: none; background: radial-gradient(70% 60% at 50% 0%, var(--amb-top), transparent 72%), radial-gradient(70% 60% at 50% 100%, var(--amb-bottom), transparent 72%), radial-gradient(55% 75% at 0% 50%, var(--amb-left), transparent 72%), radial-gradient(55% 75% at 100% 50%, var(--amb-right), transparent 72%); transform: scale(1.22); filter: blur(30px); opacity: 0; transition: opacity .7s ease; }
 .clip-card.is-portrait::before, .set-dossier-highlight.is-portrait::before { aspect-ratio: 9 / 16; }
