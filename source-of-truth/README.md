@@ -9,6 +9,7 @@ This directory defines what must remain true for every production release.
 - **Production media:** R2 bucket `dosenepk`, delivered by the `dosen-media` Worker at `https://dosen-media.matiadosen.workers.dev`.
 - **Media identity:** `media-manifest.json`. Every object is pinned by key, byte count, MIME type, and SHA-256.
 - **Deployment shape:** the vinext Worker bundle is adapted to Cloudflare Pages advanced mode by `scripts/prepare-pages.mjs`.
+- **Visual language:** `docs/design-system.md` (V2 "electric flat": tokens, neon-tube buttons, glows, effect framework).
 - **Visual regression contract:** `tests/rendered-html.test.mjs` and `scripts/verify-source-of-truth.mjs`, including the exact desktop hero mattes used to mask source watermarks.
 
 The ignored local `public/` directory is a rollback copy, not deployment input. It can be verified byte-for-byte against the manifest with `npm run verify:sot:local`. A clean clone verifies the live R2 delivery surface with `npm run verify:sot:remote`.

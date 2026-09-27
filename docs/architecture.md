@@ -52,10 +52,32 @@ Owns the page composition and interactive state:
 Keep bounded edits bounded. Extract a component only when the requested work benefits from the
 separation; do not combine an unrelated refactor with a visual fix.
 
+Page-level effects are started from an idle loader in `page.tsx` (dynamic `import()` after
+`requestIdleCallback`) so they never delay first paint. Videos whose pixels are sampled are loaded through
+`corsMediaUrl()` with `crossOrigin="anonymous"`; see `docs/design-system.md`.
+
 ### `app/globals.css`
 
 Owns all visual layout, breakpoints, motion, focus states, media orientation, and reduced-motion
-behavior. Desktop and mobile should be checked independently.
+behavior. Desktop and mobile should be checked independently. The V2 visual language (tokens, neon-tube
+buttons, glows, what was tried and set aside) is documented in `docs/design-system.md`.
+
+### Light and ambience modules (V2)
+
+| Module | Owns |
+| --- | --- |
+| `app/_hero/neon-sign-scene.ts` | The three.js 3D neon wordmark: extrusion, bloom, light pools, power-on, and its reactions to the hero video. Falls back to the CSS `.neon-mark` when WebGL2 is unavailable or the context is lost. |
+| `app/_hero/neon-ambience.ts` | `VideoAmbience`, which samples the hero video (48×36) for brightness, hue and strobes, plus the `?ambience-panel` / `?neon-debug` panel. |
+| `app/_hero/ambience-model.mjs` | The effect registry (`AMBIENCE_EFFECTS`, groups `room` and `site`), URL parsing for `?ambience=`, frame analysis and strobe detection. Pure and unit-tested in `tests/ambience-model.test.mjs`. |
+| `app/_hero/ambience-store.ts` | The shared switch state (`ambienceToggles()`) and the `data-no-<id>` flags on `<html>`. |
+| `app/ticker-ambience.ts` | The genre ticker's glossy video reflection (`GlossyMirror`) and its colour, brightness and strobe response. |
+| `app/video-ambilight.ts` | Glow around playing library and highlight clips, coloured from the clip's edges. |
+| `app/poster-light.ts` | Performance-card glow in each poster's dominant colour. |
+| `app/surface-light.ts` | Vinyl cover tilt (mouse only). |
+| `app/edge-glow.ts` | Cursor-tracking edge light on cards and buttons. |
+
+Every module stops its loops off screen and in hidden tabs, does nothing under reduced motion where it
+animates, and reads its switch from `ambienceToggles()`.
 
 ### `app/player-model.mjs`
 

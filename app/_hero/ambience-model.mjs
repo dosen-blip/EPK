@@ -26,7 +26,7 @@ export const AMBIENCE_EFFECTS = [
   { id: "ambilight", group: "site", label: "Video glow", hint: "A clip you play in the video library or a set's highlights glows around its frame in its own colours." },
   { id: "posters", group: "site", label: "Poster light", hint: "Each performance card glows beneath in its poster's own dominant colour instead of a set tone." },
   { id: "circuit", group: "site", label: "Ticker ignition", hint: "The ticker's tubes power on with a flicker the first time it scrolls into view after the sign is lit." },
-  { id: "tilt", group: "site", label: "Cover tilt", hint: "Vinyl covers tilt gently away wherever the cursor is closest, drawn in depth so people and type slide over the backdrop. Mouse only; off under reduced motion." },
+  { id: "tilt", group: "site", label: "Cover tilt", hint: "Vinyl covers tilt gently away wherever the cursor is closest, with the artwork drifting slightly in its frame. Mouse only; off under reduced motion." },
   { id: "bookend", group: "site", label: "Bookend sign", hint: "The DOSEN watermark in the Book section is a neon outline that powers on once when you reach it." },
 ];
 

@@ -9,6 +9,8 @@ Before changing the site, read:
 1. `source-of-truth/content-manifest.json` for event, set, artwork, audio, and video identity.
 2. `source-of-truth/deployment-contract.md` for production routing and release invariants.
 3. `docs/architecture.md` for component ownership and data flow.
+4. `docs/design-system.md` before any visual, motion or effect change (tokens, buttons, glows, effect rules,
+   and directions already tried and set aside).
 
 For site changes, media ingestion, or releases, also use
 `.agents/skills/dosen-site-operator/SKILL.md`.
@@ -46,6 +48,12 @@ deliberately, and verify the exact checksum and range behavior.
 - Preserve reduced-motion handling, keyboard operation, native media aspect ratios, and visible
   focus.
 - Keep desktop hero matte values from the deployment contract intact.
+- Never change the hero wordmark's typeface (Ethnocentric), size or on-screen position.
+- Keep the hero to the wordmark, one caption and one action; don't reintroduce removed labels or buttons.
+- New light or motion effects must be registered in `app/_hero/ambience-model.mjs`, pause off screen and in
+  hidden tabs, respect reduced motion, and load from the idle loader in `app/page.tsx`.
+- Media whose pixels are read must be CORS-loaded through `corsMediaUrl()`; never add `crossOrigin` to
+  poster `<img>` elements.
 - Avoid broad component refactors during a bounded visual or copy change.
 
 ## Validation

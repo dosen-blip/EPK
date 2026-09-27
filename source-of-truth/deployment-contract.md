@@ -38,7 +38,10 @@ The Pages output contains the application Worker, content-hashed JavaScript/CSS,
 - Radial film grain remains present over the hero.
 - Mobile portrait presentation does not render the desktop watermark mattes.
 
-These details are deliberate watermark masking, not optional decoration. The source checks fail if the browser-compatible blur declarations or matte elements disappear.
+- The hero wordmark is set in Ethnocentric at its established size and position; V2 renders it as a 3D neon sign
+  with the CSS neon wordmark as fallback.
+
+These matte details are deliberate watermark masking, not optional decoration. The source checks fail if the browser-compatible blur declarations or matte elements disappear.
 
 ## Media delivery
 
@@ -48,5 +51,7 @@ These details are deliberate watermark masking, not optional decoration. The sou
 - Immutable cache policy: `public, max-age=31536000, immutable`
 - Streaming: audio/video must return HTTP `206` for range requests.
 - CORS: `Access-Control-Allow-Origin: *`.
+- Query strings must be accepted and ignored for object lookup. The site requests videos whose pixels it samples with
+  `?cors=1` (`corsMediaUrl()`), so CORS responses get their own browser-cache entry.
 
 Never overwrite an existing R2 key merely because a filename matches. Regenerate the manifest, verify the new checksum, upload deliberately, then commit both the source change and updated manifest.

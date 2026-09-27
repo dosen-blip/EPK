@@ -10,8 +10,9 @@ description: Safely maintain, extend, validate, and release the DOSEN EPK reposi
 1. Read `AGENTS.md`.
 2. Read `source-of-truth/content-manifest.json` for content or media work.
 3. Read `docs/architecture.md` when changing interactions, playback, or system boundaries.
-4. Read `source-of-truth/deployment-contract.md` before production or DNS work.
-5. Inspect the working tree and preserve unrelated changes.
+4. Read `docs/design-system.md` before visual, motion, button, glow or effect work.
+5. Read `source-of-truth/deployment-contract.md` before production or DNS work.
+6. Inspect the working tree and preserve unrelated changes.
 
 Treat paths above as relative to the repository root.
 
@@ -26,6 +27,17 @@ Treat paths above as relative to the repository root.
 - Resolve featured video orientation through its matching library clip.
 - Preserve keyboard support, focus visibility, reduced motion, and native media proportions.
 - Avoid unrelated refactors of the page or stylesheet.
+
+For visual work, follow `docs/design-system.md`:
+
+- Buttons are flat at rest and light as a neon tube on hover and focus. Add new buttons to the existing blue or
+  accent (`--tube`) selector lists instead of creating a new style.
+- Keep one loud element per section. Don't add repeated labels, counters or second calls to action.
+- Register new light effects in the ambience framework and test them with `?ambience-panel` and
+  `?ambience=<id>` / `?ambience=-<id>`.
+- Check the hero wordmark's position at 1280×800, 820×1000 and 375×812 before and after hero edits.
+- Effects that only run while media plays (video glow, the sign's video reactions) need the page visible and
+  the media playing; a hidden or background tab pauses them, so don't judge them from a backgrounded preview.
 
 Run:
 
