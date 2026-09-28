@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-09-28T18:24:33Z",
+  "reason": "Fix phone wordmark width and remove the mobile frame cap (b112f19)",
+  "sourceCommit": "b112f19fe94fe2c8d8754247c0ceab6afa5bca9d",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "906aea06-abc8-46b7-a290-58b9f2a70e72",
+    "deploymentUrl": "https://906aea06.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "2c02ab276129d12e87dc70d3278a92ea0c030b900c08a5e245317d645890d5bd",
+  "verification": {
+    "unitAndRenderTests": "passed via npm test",
+    "remoteMediaObjects": "134 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/release-check?source=codex",
+    "livePersistentPlayer": "present"
+  }
+}
