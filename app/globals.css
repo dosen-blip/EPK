@@ -620,10 +620,11 @@ footer p, footer a { font-size: .62rem; }
       transform .5s cubic-bezier(.2, .8, .2, 1);
   }
   .hero { min-height: 100svh; padding: 92px 16px 28px; }
-  .hero-copy { min-width: 0; padding-bottom: calc(3vh + 34px); }
-  /* The word spans the hero's width exactly, margin to margin (it measures 4.57em at this tracking), so it sits
-     centred on any phone rather than stopping at a fixed size and leaving a gap on the right. */
-  .hero-mark { width: 100%; max-width: 100%; font-size: calc((100vw - 32px) / 4.57); letter-spacing: -.03em; transform: translateY(clamp(20px, 6vw, 28px)); }
+  .hero-copy { min-width: 0; container-type: inline-size; padding-bottom: calc(3vh + 34px); }
+  /* Size against the actual content width, excluding any scrollbar. At this tracking the advance is
+     4.57em, but the visible ink spans .063–4.541em: move its centre left by .017em.
+     The heading transform keeps the CSS intro and the DOM-aligned 3D sign together. */
+  .hero-mark { width: 100%; max-width: 100%; font-size: calc(100cqw / 4.57); letter-spacing: -.03em; transform: translate(-.017em, clamp(20px, 6vw, 28px)); }
   .hero-bottom { width: 100%; gap: 24px; margin-top: clamp(28px, 4vh, 48px); }
   .hero-actions { width: 100%; display: grid; grid-template-columns: 1fr; }
   .hero-action { width: 100%; min-width: 0; min-height: 46px; }
