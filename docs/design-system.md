@@ -94,6 +94,9 @@ reacts to the hero video through the "room" effects below.
 
 On phones (≤620px):
 
+- **Size:** the wordmark spans the hero exactly, margin to margin: `font-size: calc((100vw - 32px) / 4.57)`
+  (the word measures 4.57em at its −.03em tracking). Re-measure if the tracking or typeface changes.
+
 - **Intro:** at the top of the page the wordmark powers on slowly in the centre of the screen (`NEON_DRAMATIC_PACE`
   in `app/_hero/neon-timeline.mjs`: a longer dark beat, spaced-out letters, a stubborn last tube; lit in
   about 3.5s), holds a beat once lit, then each letter drops into its resting place left to right with a slight
@@ -110,8 +113,9 @@ On phones (≤620px):
 - **Depth and glass:** the letters extrude 2.6× deeper (`PHONE_DEPTH`, a z-scale behind the front faces, which
   stay on the DOM glyphs), sway 1.7× further (`PHONE_SWAY`), and the glass reflection and highlights run 1.9× and
   1.7× stronger (`PHONE_REFLECT`, `PHONE_SHEEN`), because the sides and glass are easy to miss at this size.
-- **Performance watchdog:** phones are judged against a 24 fps floor (desktop 45), since the sign draws at ~30 fps
-  on phones by design and iPhones in Low Power Mode cap pages at 30 fps. Phones step quality down twice (device
+- **Frame rate and watchdog:** the sign draws every display refresh (up to 120 Hz where the screen and browser
+  allow; there is no phone frame cap). Phones are judged against a 24 fps floor (desktop 45), since iPhones in
+  Low Power Mode cap pages at 30 fps. Phones step quality down twice (device
   pixel ratio 1, then 0.75) before handing back to the CSS tubes.
 - - **Tilt to move (`gyro` effect):** tilting the device sways the sign like the cursor does on desktop, ±18° for a
   full sweep, re-centring on however the phone is held. Android starts straight away; iPhones ask permission on

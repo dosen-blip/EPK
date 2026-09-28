@@ -1049,8 +1049,8 @@ export class NeonSignScene {
     const raw = Math.max(0, (now - this.last) / 1000);
     this.last = now;
     this.watchPerformance(raw);
-    // Phones draw at up to ~30 fps; the flicker tables step far slower than that.
-    if (this.coarse && now - this.lastDrawn < 31) return;
+    // Every display refresh is drawn (120 Hz where the screen and browser allow); the watchdog steps quality down
+    // if a device can't keep up.
     const dt = Math.min(1 / 20, (now - (this.lastDrawn || now)) / 1000);
     this.lastDrawn = now;
     this.draw(now, dt);
@@ -1064,8 +1064,8 @@ export class NeonSignScene {
     const average = this.perfTime / this.perfFrames;
     this.perfTime = 0;
     this.perfFrames = 0;
-    // Phones draw at ~30 fps by design, and iPhones in Low Power Mode run every page at 30 fps, so they are
-    // judged against a 24 fps floor rather than the desktop's 45.
+    // iPhones in Low Power Mode run every page at 30 fps, so phones are judged against a 24 fps floor rather
+    // than the desktop's 45.
     if (average < (this.coarse ? 1 / 24 : 1 / 45)) return;
     if (this.quality > 0 && (this.quality === 2 || this.coarse)) {
       // Step down before giving up: fewer pixels and a cheaper bloom (phones get one more, smaller step).
