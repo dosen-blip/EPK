@@ -82,7 +82,7 @@ button { color: inherit; }
 .neon-tubes { position: absolute; top: 0; left: 0; white-space: nowrap; font-kerning: none; pointer-events: none; user-select: none; }
 /* Ethnocentric kerns O–S by -20/1000; kerning is off inside the split tubes so every browser matches the unsplit text. */
 .neon-tube:nth-child(2) { margin-inline-end: -.02em; }
-.neon-tube { --neon-level: 0; color: color-mix(in srgb, var(--neon-core) calc(var(--neon-level) * 100%), var(--neon-glass)); -webkit-text-stroke: max(1px, .005em) color-mix(in srgb, var(--neon-outline) calc((1 - var(--neon-level)) * 100%), transparent); text-shadow: 0 0 .012em color-mix(in srgb, var(--neon-core) calc(var(--neon-level) * 90%), transparent), 0 0 .04em color-mix(in srgb, var(--neon-hot) calc(var(--neon-level) * 55%), transparent), 0 0 .1em color-mix(in srgb, var(--neon-hot) calc(var(--neon-level) * 42%), transparent), 0 0 .2em color-mix(in srgb, var(--neon) calc(var(--neon-level) * 46%), transparent), 0 0 .4em color-mix(in srgb, var(--neon) calc(var(--neon-level) * 26%), transparent), 0 0 .7em color-mix(in srgb, var(--neon) calc(var(--neon-level) * 13%), transparent); }
+.neon-tube { --neon-level: 0; color: color-mix(in srgb, var(--neon-core) calc(var(--neon-level) * 100%), var(--neon-glass)); -webkit-text-stroke: max(1px, .005em) color-mix(in srgb, var(--neon-outline) calc((1 - var(--neon-level)) * 100%), transparent); text-shadow: 0 0 .012em color-mix(in srgb, var(--neon-core) calc(var(--neon-level) * 90%), transparent), 0 0 .04em color-mix(in srgb, var(--neon-hot) calc(var(--neon-level) * 55%), transparent), 0 0 .1em color-mix(in srgb, var(--neon-hot) calc(var(--neon-level) * 42% * var(--neon-boost, 1)), transparent), 0 0 .2em color-mix(in srgb, var(--neon) calc(var(--neon-level) * 46% * var(--neon-boost, 1)), transparent), 0 0 .4em color-mix(in srgb, var(--neon) calc(var(--neon-level) * 26% * var(--neon-boost, 1)), transparent), 0 0 .7em color-mix(in srgb, var(--neon) calc(var(--neon-level) * 13% * var(--neon-boost, 1)), transparent); }
 .neon-tubes::before { content: ""; position: absolute; z-index: -1; inset: -45% -12%; background: radial-gradient(closest-side, color-mix(in srgb, var(--neon) 12%, transparent), color-mix(in srgb, var(--neon-hot) 4%, transparent) 55%, transparent); opacity: 0; pointer-events: none; }
 .neon-mark:not(.is-powering):not(.is-lit) .neon-tube { animation: neon-fallback 1ms 2.5s both; }
 .neon-mark.is-powering .neon-tube { animation: neon-ignite-snap var(--neon-duration, 1s) step-end var(--neon-delay, 0s) both; }
@@ -107,6 +107,27 @@ button { color: inherit; }
 @keyframes neon-hum { 0%, 100% { opacity: 1; } 47% { opacity: .9; } 48% { opacity: 1; } 73% { opacity: .95; } 74% { opacity: 1; } 88% { opacity: .93; } 88.6% { opacity: 1; } }
 @keyframes neon-spill-rise { from { opacity: 0; } to { opacity: .55; } }
 @keyframes neon-spill-surge { 0% { opacity: .55; } 14% { opacity: 1; } 100% { opacity: .9; } }
+/* Phones: the sign has less area to carry its light, so the tubes throw a stronger glow (the 3D sign boosts its
+   bloom and light pools to match). On load it powers on slowly in the centre of the screen (the dramatic pace in
+   app/_hero/neon-timeline.mjs), holds a beat once lit, then each letter drops into its resting place in turn,
+   left to right, with a soft settle. Only the paint moves; the heading itself never leaves its place, so the
+   layout and the 3D sign's measurements are unaffected. The 3D sign plays the same intro from the shared clock
+   (NEON_DROP in app/_hero/neon-timeline.mjs; keep the timings here in step with it) and takes over as soon as it's
+   ready, so these CSS tubes only show until then or as the fallback. */
+@media (max-width: 620px) {
+  .neon-mark { --neon-boost: 1.45; }
+  .neon-mark .neon-tubes::before { inset: -60% -18%; }
+  .neon-mark .neon-tube { display: inline-block; }
+  .neon-mark.is-intro.is-powering .neon-tube, .neon-mark.is-intro.is-powering .neon-tubes::before { translate: 0 var(--intro-dy, 0px); }
+  .neon-mark.is-intro.is-lit .neon-tube { animation: neon-drop 1.2s linear calc(.65s + var(--i, 0) * .13s) backwards; }
+  .neon-mark.is-intro.is-lit .neon-tubes::before { opacity: .9; animation: neon-spill-surge 1.2s ease-out both, neon-drop 1.2s linear .91s backwards; }
+}
+/* Gathers pace, lands slightly past its mark and eases back up into place. */
+@keyframes neon-drop {
+  from { translate: 0 var(--intro-dy, 0px); animation-timing-function: cubic-bezier(.62, 0, .3, 1); }
+  78% { translate: 0 .07em; animation-timing-function: cubic-bezier(.3, 0, .25, 1); }
+  to { translate: 0 0; }
+}
 /* 3D sign: a transparent band over the film, under the copy. Its light pools and shadow replace the spill and text-shadow. */
 .neon-canvas { position: absolute; z-index: 1; top: 0; left: 0; width: 100%; height: 0; display: block; pointer-events: none; opacity: 0; transition: opacity .45s ease; -webkit-mask-image: linear-gradient(180deg, transparent, rgba(0,0,0,.35) 12%, #000 30%, #000 84%, transparent); mask-image: linear-gradient(180deg, transparent, rgba(0,0,0,.35) 12%, #000 30%, #000 84%, transparent); }
 .neon-canvas.is-ready { opacity: 1; }

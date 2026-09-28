@@ -18,6 +18,7 @@
  *   start: number | null,
  *   lit: number | null,
  *   fault: NeonFault | null,
+ *   intro?: { dy: number } | null,
  * }} NeonClock
  *   Times are `performance.now()` milliseconds. `start` is when the CSS ignition began, `lit` when the
  *   sign settled (`is-lit`). `still` means reduced motion: statically lit.
@@ -60,12 +61,24 @@ export const NEON_LIT_DELAY_MS = 80;
 const cents = (value) => Math.round(value * 100) / 100;
 
 /**
+ * How an ignition is paced: the dark lead-in before the first tube (base + random spread), the gap between
+ * tubes, a stretch on every tube's flicker, and the chance the last tube is the stubborn one.
+ * @typedef {{ lead: [number, number], gap: [number, number], stretch: number, stubborn: number }} NeonPace
+ */
+/** @type {NeonPace} */
+export const NEON_PACE = { lead: [0.35, 0.2], gap: [0.12, 0.26], stretch: 1, stubborn: 0.7 };
+/** The phone intro: a longer dark beat, letters catching one by one, and a last letter that always fights. */
+/** @type {NeonPace} */
+export const NEON_DRAMATIC_PACE = { lead: [0.5, 0.15], gap: [0.16, 0.22], stretch: 1, stubborn: 1 };
+
+/**
  * Random order, personality, delay, and duration for each letter. Values are rounded to the
  * hundredths the CSS custom properties carry, so both renderers use identical numbers.
  * @param {() => number} [random]
+ * @param {NeonPace} [pace]
  * @returns {NeonTube[]}
  */
-export function planNeonIgnition(random = Math.random) {
+export function planNeonIgnition(random = Math.random, pace = NEON_PACE) {
   const order = NEON_LETTERS.map((_, index) => index);
   for (let index = order.length - 1; index > 0; index -= 1) {
     const swap = Math.floor(random() * (index + 1));
@@ -76,20 +89,69 @@ export function planNeonIgnition(random = Math.random) {
   const casual = ["snap", "stutter", "warm"];
   /** @type {NeonTube[]} */
   const tubes = [];
-  let cursor = 0.35 + random() * 0.2;
+  let cursor = pace.lead[0] + random() * pace.lead[1];
   order.forEach((letterIndex, rank) => {
     /** @type {NeonIgnition} */
-    const ignition = rank === order.length - 1 && random() < 0.7
+    const ignition = rank === order.length - 1 && random() < pace.stubborn
       ? "stubborn"
       : casual[Math.floor(random() * casual.length)];
     tubes[letterIndex] = {
       delay: cents(cursor),
-      duration: cents(NEON_IGNITION_SECONDS[ignition] * (0.85 + random() * 0.3)),
+      duration: cents(NEON_IGNITION_SECONDS[ignition] * (0.85 + random() * 0.3) * pace.stretch),
       ignition,
     };
-    cursor += 0.12 + random() * 0.26;
+    cursor += pace.gap[0] + random() * pace.gap[1];
   });
   return tubes;
+}
+
+/**
+ * The phone intro's letter drop, shared by the CSS tubes (`neon-drop` in globals.css) and the 3D sign. Once lit,
+ * the sign holds, then each letter falls from `intro.dy` (CSS px, negative = up) to its place in turn, lands
+ * `NEON_DROP.overshoot` em past it and eases back up.
+ */
+export const NEON_DROP = { hold: 0.65, stagger: 0.13, duration: 1.2, landAt: 0.78, overshoot: 0.07 };
+
+/** A CSS `cubic-bezier(x1, y1, x2, y2)` timing function. */
+function cubicBezier(x1, y1, x2, y2) {
+  const at = (a, b, t) => 3 * a * (1 - t) * (1 - t) * t + 3 * b * (1 - t) * t * t + t * t * t;
+  return (x) => {
+    let lo = 0;
+    let hi = 1;
+    for (let i = 0; i < 24; i += 1) {
+      const mid = (lo + hi) / 2;
+      if (at(x1, x2, mid) < x) lo = mid;
+      else hi = mid;
+    }
+    return at(y1, y2, (lo + hi) / 2);
+  };
+}
+const dropFall = cubicBezier(0.62, 0, 0.3, 1);
+const dropSettle = cubicBezier(0.3, 0, 0.25, 1);
+
+/**
+ * How far (CSS px, down positive) a letter is from its resting place during the phone intro at `now`.
+ * 0 when there is no intro or the letter has landed.
+ * @param {NeonClock} clock
+ * @param {number} now performance.now() ms
+ * @param {number} index letter index
+ * @param {number} fontPx the wordmark's font size, for the em-sized overshoot
+ */
+export function neonDropOffset(clock, now, index, fontPx) {
+  const intro = clock.intro;
+  if (!intro || clock.still) return 0;
+  if (clock.lit === null) return intro.dy;
+  const t = ((now - clock.lit) / 1000 - NEON_DROP.hold - index * NEON_DROP.stagger) / NEON_DROP.duration;
+  if (t <= 0) return intro.dy;
+  if (t >= 1) return 0;
+  const overshoot = NEON_DROP.overshoot * fontPx;
+  if (t < NEON_DROP.landAt) return intro.dy + (overshoot - intro.dy) * dropFall(t / NEON_DROP.landAt);
+  return overshoot * (1 - dropSettle((t - NEON_DROP.landAt) / (1 - NEON_DROP.landAt)));
+}
+
+/** Seconds from `lit` until the last letter of the phone intro has landed. */
+export function neonDropEnd() {
+  return NEON_DROP.hold + (NEON_LETTERS.length - 1) * NEON_DROP.stagger + NEON_DROP.duration;
 }
 
 /**

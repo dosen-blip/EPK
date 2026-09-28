@@ -10,6 +10,7 @@ import {
 } from "./player-model.mjs";
 import {
   NEON_FAULT_HOLD_MS,
+  NEON_DRAMATIC_PACE,
   NEON_LETTERS,
   NEON_LIT_DELAY_MS,
   neonLitAt,
@@ -386,6 +387,11 @@ function NeonWordmark() {
   const [lit, setLit] = useState(false);
   const [fault, setFault] = useState<NeonFault | null>(null);
   const [sign, setSign] = useState<"css" | "3d">("css");
+  // Phones only: the sign powers on slowly in the centre of the screen, then its letters drop into place one by one
+  // (see .neon-mark.is-intro). Decided once, when the page loads visible and at the top, so the ignition can use the
+  // dramatic pace and the 3D sign below knows to wait for it.
+  const introRef = useRef(false);
+  const [intro, setIntro] = useState<{ dy: number } | null>(null);
 
   useEffect(() => {
     const clock = clockRef.current;
@@ -393,8 +399,9 @@ function NeonWordmark() {
       clock.still = true;
       return;
     }
+    introRef.current = window.matchMedia("(max-width: 620px)").matches && window.scrollY < 40 && document.visibilityState === "visible";
 
-    const plan = planNeonIgnition();
+    const plan = introRef.current ? planNeonIgnition(Math.random, NEON_DRAMATIC_PACE) : planNeonIgnition();
     const litAt = neonLitAt(plan);
     clock.tubes = plan;
     let faultTimer = 0;
@@ -416,6 +423,14 @@ function NeonWordmark() {
 
     const frame = window.requestAnimationFrame(() => {
       clock.start = performance.now();
+      if (introRef.current && markRef.current) {
+        // How far up the letters start so the word sits in the centre of the screen.
+        const box = markRef.current.getBoundingClientRect();
+        const next = { dy: Math.round(window.innerHeight / 2 - (box.top + box.height / 2)) };
+        // The 3D sign reads the same offset and drop timing from the shared clock.
+        clock.intro = next;
+        setIntro(next);
+      }
       setTubes(plan);
       litTimer = window.setTimeout(() => {
         clock.lit = performance.now();
@@ -467,11 +482,22 @@ function NeonWordmark() {
     const params = new URLSearchParams(window.location.search);
     const ambience = ambienceToggles();
 
-    const fallBack = () => {
+    // Records why the 3D sign handed back to the CSS tubes; `?neon-debug` also shows it on screen, since a phone
+    // has no console to hand.
+    const fallBack = (reason: string) => {
       scene?.dispose();
       scene = null;
       canvas.remove();
-      if (!disposed) setSign("css");
+      if (disposed) return;
+      setSign("css");
+      mark.dataset.signFallback = reason;
+      console.info(`DOSEN sign: using the CSS fallback (${reason})`);
+      if (params.has("neon-debug")) {
+        const note = document.createElement("p");
+        note.textContent = `3D sign fell back: ${reason}`;
+        note.style.cssText = "position:fixed;z-index:300;left:12px;bottom:96px;margin:0;padding:8px 10px;border-radius:8px;background:#200;color:#fbb;font:600 11px/1.3 ui-monospace,monospace";
+        document.body.append(note);
+      }
     };
 
     const load = () => {
@@ -491,7 +517,7 @@ function NeonWordmark() {
               canvas.classList.add("is-ready");
               setSign("3d");
             },
-            onLost: fallBack,
+            onLost: (reason) => fallBack(reason),
           }),
         )
         .then((created) => {
@@ -504,16 +530,24 @@ function NeonWordmark() {
             });
           }
         })
-        .catch(() => fallBack());
+        .catch((error: unknown) => fallBack(error instanceof Error ? error.message : "failed to start"));
     };
 
     const viaIdle = typeof window.requestIdleCallback === "function";
-    const idle = viaIdle ? window.requestIdleCallback(load, { timeout: 900 }) : window.setTimeout(load, 250);
+    let idle = 0;
+    const queue = () => {
+      if (disposed || idle) return;
+      idle = viaIdle ? window.requestIdleCallback(load, { timeout: 900 }) : window.setTimeout(load, 250);
+    };
+    // On phones the 3D sign plays the intro itself (centred start and letter drop, from the shared clock), so it
+    // loads straight away rather than at idle; the CSS tubes cover the first flickers until it's ready.
+    if (introRef.current) void load();
+    else queue();
 
     return () => {
       disposed = true;
-      if (viaIdle) window.cancelIdleCallback(idle);
-      else window.clearTimeout(idle);
+      if (idle && viaIdle) window.cancelIdleCallback(idle);
+      else if (idle) window.clearTimeout(idle);
       unmountPanel?.();
       scene?.dispose();
       canvas.remove();
@@ -526,9 +560,9 @@ function NeonWordmark() {
   return (
     <h1
       ref={markRef}
-      className={`hero-mark neon-mark${phase}`}
+      className={`hero-mark neon-mark${phase}${intro ? " is-intro" : ""}`}
       data-sign={sign}
-      style={tubes ? ({ "--neon-lit-at": `${litAt.toFixed(2)}s` } as CSSProperties) : undefined}
+      style={tubes ? ({ "--neon-lit-at": `${litAt.toFixed(2)}s`, ...(intro ? { "--intro-dy": `${intro.dy}px` } : {}) } as CSSProperties) : undefined}
     >
       <span className="neon-mark-text">DOSEN</span>
       <span className="neon-tubes" aria-hidden="true">
@@ -538,7 +572,7 @@ function NeonWordmark() {
             <span
               className={`neon-tube${fault?.index === index ? ` is-${fault.kind}` : ""}`}
               data-ignition={tube?.ignition}
-              style={tube ? ({ "--neon-delay": `${tube.delay.toFixed(2)}s`, "--neon-duration": `${tube.duration.toFixed(2)}s` } as CSSProperties) : undefined}
+              style={tube ? ({ "--neon-delay": `${tube.delay.toFixed(2)}s`, "--neon-duration": `${tube.duration.toFixed(2)}s`, "--i": index } as CSSProperties) : undefined}
               key={letter}
             >
               {letter}

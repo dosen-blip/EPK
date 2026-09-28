@@ -26,7 +26,7 @@ import {
   type FrameStats,
 } from "./ambience-model.mjs";
 import { VideoAmbience, type AmbienceReading, type Rect } from "./neon-ambience";
-import { readNeonLevels, type NeonClock } from "./neon-timeline.mjs";
+import { neonDropEnd, neonDropOffset, readNeonLevels, type NeonClock } from "./neon-timeline.mjs";
 import { gaussianBlur, traceNeonWordmark, type NeonTrace, type Point } from "./neon-trace";
 
 export type NeonSignOptions = {
@@ -43,7 +43,7 @@ export type NeonSignOptions = {
   reducedMotion: boolean;
   onReady: () => void;
   /** WebGL went away or cannot keep up: the CSS tubes take back over. */
-  onLost: () => void;
+  onLost: (reason: "slow" | "context-lost") => void;
 };
 
 type DebugPose = { rest?: boolean; pointer?: { x: number; y: number } | null; at?: number };
@@ -73,6 +73,19 @@ const CORE = new THREE.Color("#eef7ff");
 const DUST = new THREE.Color("#9ad0ff");
 const BASE_GLOW_GAIN = 0.19;
 const BASE_POOL_GAIN = 0.018;
+/** Phones: the sign has less area to carry its light, so bloom and the light pools run hotter. */
+const PHONE_WIDTH = 620;
+const PHONE_BLOOM_BOOST = 1.4;
+const PHONE_POOL_BOOST = 1.45;
+/** Phones: at this size the returns and glass are easy to miss, so the letters run deeper, lean further as they
+ * sway, and reflect more. The front faces stay exactly on the DOM glyphs. */
+const PHONE_DEPTH = 2.6;
+const PHONE_SWAY = 1.7;
+const PHONE_REFLECT = 1.9;
+const PHONE_SHEEN = 1.7;
+/** Degrees of device tilt that map to a full cursor sweep, and how fast a new holding angle becomes neutral. */
+const TILT_RANGE = 18;
+const TILT_RECENTRE = 0.25;
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -98,6 +111,7 @@ const lightGLSL = /* glsl */ `
 const letterVertex = /* glsl */ `
   attribute float aLetter;
   uniform float uLevels[${MAX_LETTERS}];
+  uniform float uDrop[${MAX_LETTERS}];
   varying vec3 vPos;
   varying vec3 vObjectNormal;
   varying vec3 vNormal;
@@ -106,7 +120,9 @@ const letterVertex = /* glsl */ `
   varying vec3 vAxisX;
   varying vec3 vAxisY;
   void main() {
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    // Phone intro: each letter rides at its own height until it has dropped into place.
+    vec3 placed = position + vec3(0.0, uDrop[int(aLetter + 0.5)], 0.0);
+    vec4 mv = modelViewMatrix * vec4(placed, 1.0);
     vAxisX = normalMatrix * vec3(1.0, 0.0, 0.0);
     vAxisY = normalMatrix * vec3(0.0, 1.0, 0.0);
     vView = -mv.xyz;
@@ -132,6 +148,7 @@ const letterFragment = /* glsl */ `
   uniform sampler2D uRoom;
   uniform vec4 uRoomMap;
   uniform float uReflect;
+  uniform float uSheen;
   varying vec3 vPos;
   varying vec3 vObjectNormal;
   varying vec3 vNormal;
@@ -189,7 +206,7 @@ const letterFragment = /* glsl */ `
     vec3 rim = mix(vec3(0.46, 0.54, 0.66), uViolet, 0.45) * fres * 0.5;
     float alpha = mix(0.6, 0.92, 1.0 - face) * uGlassAlpha;
     alpha = mix(alpha, 1.0, face * level);
-    vec3 col = glass * alpha + (sheen + rim) * (1.0 - 0.65 * face * level) + emit;
+    vec3 col = glass * alpha + (sheen + rim) * uSheen * (1.0 - 0.65 * face * level) + emit;
     // The room: a blurred copy of the video, bent by the glass normal, strongest at grazing angles.
     vec2 roomUv = vec2(gl_FragCoord.x * uRoomMap.x + uRoomMap.y, gl_FragCoord.y * uRoomMap.z + uRoomMap.w);
     vec2 bent = roomUv + n.xy * vec2(0.08, 0.13);
@@ -477,10 +494,22 @@ export class NeonSignScene {
   private disposed = false;
   private pointer = new THREE.Vector2();
   private pointerSeen = false;
+  /** Phone tilt: the angle the device is held at (slowly re-centred) and the latest reading. */
+  private tiltHome: { x: number; y: number } | null = null;
+  private tiltAt = 0;
+  private glowBoost = { bloom: 1, pool: 1 };
+  private phone = false;
   private offset = new THREE.Vector2();
   private turn = new THREE.Vector2();
   private raw = new Float32Array(5);
   private levels = new Float32Array(MAX_LETTERS);
+  /** Phone intro: each letter's height above its place (object units), the share of the sign that has landed,
+   * how far the drawn band currently reaches up for it, and whether the intro is over. */
+  private drop = new Float32Array(MAX_LETTERS);
+  private landed = 1;
+  private bandLift = 0;
+  private introDone = false;
+  private fontPx = 100;
   private debugPose: DebugPose | null = null;
 
   // Ambience: what the sign reads from the video and how it answers.
@@ -576,6 +605,8 @@ export class NeonSignScene {
       uRoom: room,
       uRoomMap: { value: new THREE.Vector4() },
       uReflect: { value: 0 },
+      uSheen: { value: 1 },
+      uDrop: { value: this.drop },
     };
     this.poolUniforms = {
       ...this.lightUniforms,
@@ -649,7 +680,7 @@ export class NeonSignScene {
   }
 
   private glowDpr() {
-    return Math.min(1, this.dpr * (this.quality === 2 ? 0.5 : 0.38));
+    return Math.min(1, this.dpr * (this.quality === 2 ? 0.5 : this.quality === 1 ? 0.38 : 0.3));
   }
 
   /* ----- construction ----- */
@@ -746,6 +777,7 @@ export class NeonSignScene {
     window.addEventListener("scroll", this.onScroll, { passive: true });
     document.addEventListener("visibilitychange", this.syncRunning);
     this.options.canvas.addEventListener("webglcontextlost", this.onContextLost);
+    this.bindMotion();
     const resize = new ResizeObserver(this.queueLayout);
     resize.observe(this.options.section);
     resize.observe(this.options.text);
@@ -764,6 +796,57 @@ export class NeonSignScene {
     this.pointer.set((event.clientX / window.innerWidth) * 2 - 1, (event.clientY / window.innerHeight) * 2 - 1);
   };
 
+  /**
+   * Phones sway the sign by tilting the device, the way the cursor does on desktop. Android delivers orientation
+   * straight away; iPhones need permission, asked on the first tap in the hero that isn't on a link or button.
+   * Both need a secure (https) page.
+   */
+  private bindMotion() {
+    if (!this.coarse || this.options.reducedMotion || typeof DeviceOrientationEvent === "undefined") return;
+    const Orientation = DeviceOrientationEvent as typeof DeviceOrientationEvent & { requestPermission?: () => Promise<PermissionState> };
+    if (typeof Orientation.requestPermission !== "function") {
+      window.addEventListener("deviceorientation", this.onOrientation);
+      return;
+    }
+    const section = this.options.section;
+    const ask = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest("a, button, video")) return;
+      section.removeEventListener("click", ask);
+      Orientation.requestPermission!()
+        .then((state) => {
+          if (state === "granted" && !this.disposed) window.addEventListener("deviceorientation", this.onOrientation);
+        })
+        .catch(() => undefined);
+    };
+    section.addEventListener("click", ask);
+    this.observers.push({ disconnect: () => section.removeEventListener("click", ask) });
+  }
+
+  private onOrientation = (event: DeviceOrientationEvent) => {
+    if (event.beta === null || event.gamma === null) return;
+    if (!this.options.ambience.gyro) {
+      this.tiltHome = null;
+      this.pointerSeen = false;
+      return;
+    }
+    // Device axes turned to match the screen's current orientation.
+    const angle = screen.orientation?.angle ?? 0;
+    const [x, y] = angle === 90 ? [event.beta, -event.gamma]
+      : angle === 270 ? [-event.beta, event.gamma]
+      : angle === 180 ? [-event.gamma, -event.beta]
+      : [event.gamma, event.beta];
+    const now = performance.now();
+    const dt = this.tiltAt ? Math.min(0.25, (now - this.tiltAt) / 1000) : 0;
+    this.tiltAt = now;
+    if (!this.tiltHome) this.tiltHome = { x, y };
+    // However the phone is held becomes neutral over a few seconds, so the sign never gets stuck leaning.
+    this.tiltHome.x = damp(this.tiltHome.x, x, TILT_RECENTRE, dt);
+    this.tiltHome.y = damp(this.tiltHome.y, y, TILT_RECENTRE, dt);
+    // Tilting the phone is like moving your head the other way, so the view swings against the tilt.
+    this.pointer.set(clamp(-(x - this.tiltHome.x) / TILT_RANGE, -1, 1), clamp(-(y - this.tiltHome.y) / TILT_RANGE, -1, 1));
+    this.pointerSeen = true;
+  };
+
   private onScroll = () => {
     this.scroll = Math.max(0, window.scrollY - this.sectionTop);
   };
@@ -771,7 +854,7 @@ export class NeonSignScene {
   private onContextLost = (event: Event) => {
     event.preventDefault();
     this.stop();
-    this.options.onLost();
+    this.options.onLost("context-lost");
   };
 
   private queueLayout = () => {
@@ -819,15 +902,28 @@ export class NeonSignScene {
     const penX = box.left - frame.left;
     const baseY = box.top - frame.top + ascent;
 
-    // Only a band around the wordmark is drawn; the edges fade out in CSS.
-    const top = clamp(Math.floor(baseY - (trace.ink.maxY + BAND_ABOVE) * fontPx), 0, h - 1);
+    // Only a band around the wordmark is drawn; the edges fade out in a mask. During the phone intro the band
+    // reaches up to the centre of the screen where the letters start; the mask keeps the resting band's fade.
+    this.fontPx = fontPx;
+    const restTop = clamp(Math.floor(baseY - (trace.ink.maxY + BAND_ABOVE) * fontPx), 0, h - 1);
+    const lift = this.introLift();
+    this.bandLift = lift;
+    const top = clamp(restTop - Math.ceil(lift), 0, h - 1);
     const bottom = clamp(Math.ceil(baseY - (trace.ink.minY - BAND_BELOW) * fontPx), top + 1, h);
     if (top !== this.bandTop || bottom - top !== this.bandH || w !== this.w || !canvas.style.height) {
       canvas.style.top = `${top}px`;
       canvas.style.height = `${bottom - top}px`;
+      const rest = bottom - restTop;
+      const mask = `linear-gradient(180deg, transparent 0px, rgba(0,0,0,.35) ${Math.round(rest * 0.12)}px, #000 ${Math.round(rest * 0.3)}px, #000 calc(100% - ${Math.round(rest * 0.16)}px), transparent 100%)`;
+      canvas.style.maskImage = mask;
+      canvas.style.setProperty("-webkit-mask-image", mask);
     }
     this.w = w;
     this.h = h;
+    const phone = w <= PHONE_WIDTH;
+    this.phone = phone;
+    this.glowBoost = { bloom: phone ? PHONE_BLOOM_BOOST : 1, pool: phone ? PHONE_POOL_BOOST : 1 };
+    this.letterUniforms.uSheen.value = phone ? PHONE_SHEEN : 1;
     this.bandTop = top;
     this.bandH = bottom - top;
     this.renderer.setSize(w, this.bandH, false);
@@ -845,6 +941,8 @@ export class NeonSignScene {
     // Floated toward the camera and scaled down to compensate: at rest the front faces land on the DOM glyphs.
     this.sign.position.set((ox + cx * fontPx) * k, (oy + cy * fontPx) * k, signZ);
     this.sign.scale.setScalar(fontPx * k);
+    // Extrusion runs back from the front face (z = 0), so deepening it leaves the faces on the glyphs.
+    if (phone) this.sign.scale.z *= PHONE_DEPTH;
 
     const r = this.lightRect;
     this.pool.position.set(ox + (r.x0 + r.w / 2) * fontPx, oy + (r.y0 + r.h / 2) * fontPx, 0);
@@ -871,6 +969,41 @@ export class NeonSignScene {
     this.onScroll();
     this.updateCamera();
     if (draw && (!this.running || this.options.reducedMotion)) this.draw(performance.now(), 0);
+  }
+
+  /** How far above its resting band the phone intro needs drawing: up to where the letters start, plus room for glow. */
+  private introLift() {
+    const intro = this.options.clock.intro;
+    if (!intro || this.introDone || this.options.clock.still) return 0;
+    return Math.max(0, -intro.dy) + this.fontPx * 1.5;
+  }
+
+  /** Places each letter for the phone intro and ends the intro (shrinking the band back) once the last has landed. */
+  private updateDrop(at: number) {
+    const { clock } = this.options;
+    const intro = clock.intro;
+    if (!intro || this.introDone) {
+      this.drop.fill(0);
+      this.landed = 1;
+      return;
+    }
+    if (clock.lit !== null && at >= clock.lit + neonDropEnd() * 1000) {
+      this.introDone = true;
+      this.drop.fill(0);
+      this.landed = 1;
+      this.queueLayout();
+      return;
+    }
+    if (this.bandLift !== this.introLift()) this.queueLayout();
+    let remaining = 0;
+    const count = Math.min(this.raw.length, MAX_LETTERS);
+    for (let i = 0; i < count; i++) {
+      const offset = neonDropOffset(clock, at, i, this.fontPx);
+      // CSS px down on screen -> object units up (the sign is scaled so one unit is one em).
+      this.drop[i] = -offset / this.fontPx;
+      remaining += intro.dy ? Math.min(1, Math.abs(offset / intro.dy)) : 0;
+    }
+    this.landed = 1 - remaining / count;
   }
 
   private updateCamera() {
@@ -931,11 +1064,13 @@ export class NeonSignScene {
     const average = this.perfTime / this.perfFrames;
     this.perfTime = 0;
     this.perfFrames = 0;
-    if (average < 1 / 45) return;
-    if (this.quality === 2) {
-      // First step: fewer pixels and a cheaper bloom.
-      this.quality = 1;
-      this.dpr = Math.min(this.dpr, 1);
+    // Phones draw at ~30 fps by design, and iPhones in Low Power Mode run every page at 30 fps, so they are
+    // judged against a 24 fps floor rather than the desktop's 45.
+    if (average < (this.coarse ? 1 / 24 : 1 / 45)) return;
+    if (this.quality > 0 && (this.quality === 2 || this.coarse)) {
+      // Step down before giving up: fewer pixels and a cheaper bloom (phones get one more, smaller step).
+      this.quality -= 1;
+      this.dpr = this.quality === 1 ? Math.min(this.dpr, 1) : Math.min(this.dpr, 0.75);
       this.renderer.setPixelRatio(this.dpr);
       this.composer.setPixelRatio(this.dpr);
       this.glowComposer.setPixelRatio(this.glowDpr());
@@ -943,7 +1078,7 @@ export class NeonSignScene {
     } else {
       // Still slow: the CSS tubes are in sync, so hand the sign back to them.
       this.stop();
-      this.options.onLost();
+      this.options.onLost("slow");
     }
   }
 
@@ -957,6 +1092,7 @@ export class NeonSignScene {
     const t = now / 1000;
     const count = Math.min(this.raw.length, MAX_LETTERS);
     const { sag, blip, blipSecond } = this.updateAmbience(now, dt);
+    this.updateDrop(at);
     let sum = 0;
     for (let i = 0; i < count; i++) {
       let level = this.raw[i];
@@ -969,7 +1105,10 @@ export class NeonSignScene {
     (this.lightUniforms.uLevelsA.value as THREE.Vector3).set(this.levels[0], this.levels[1], this.levels[2]);
     (this.lightUniforms.uLevelsB.value as THREE.Vector3).set(this.levels[3], this.levels[4], this.levels[5]);
     this.dustUniforms.uTime.value = t % 1000;
-    this.dust.visible = !reducedMotion && sum > 0.01;
+    this.dust.visible = !reducedMotion && sum > 0.01 && this.landed > 0.98;
+    // The light the sign casts on the video sits under the resting word, so it gathers as the letters land.
+    this.poolUniforms.uGain.value *= this.landed * this.landed;
+    this.poolUniforms.uShadow.value = SHADOW_STRENGTH * this.landed;
     this.finalPass.uniforms.uSeed.value = reducedMotion ? 0 : t % 1;
 
     if (reducedMotion || pose?.rest) {
@@ -982,7 +1121,8 @@ export class NeonSignScene {
         this.pointer.set(pose.pointer.x, pose.pointer.y);
       }
       // Motion eases in from rest, so the hand-off from the CSS tubes is exact.
-      const presence = this.readyAt ? smoothstep(0, 2.4, (now - this.readyAt) / 1000) : 0;
+      // It stays square-on while the intro plays and only starts to sway once it has landed.
+      const presence = (this.readyAt ? smoothstep(0, 2.4, (now - this.readyAt) / 1000) : 0) * this.landed;
       const driftX = Math.sin(t * 0.23) * 0.5 + Math.sin(t * 0.61 + 1.3) * 0.14;
       const driftY = Math.cos(t * 0.17) * 0.36;
       const px = this.pointerSeen ? this.pointer.x * 0.85 + driftX * 0.15 : driftX;
@@ -991,10 +1131,11 @@ export class NeonSignScene {
       const step = pose ? 1 : dt;
       const rate = pose ? 60 : 1;
       // The camera orbits with the pointer and the sign leans the other way, opening up its returns.
-      this.offset.x = damp(this.offset.x, presence * px * 48, 2.4 * rate, step);
-      this.offset.y = damp(this.offset.y, presence * (-py * 26 - scroll * 70), 2.8 * rate, step);
-      this.turn.x = damp(this.turn.x, presence * -px * 0.055, 2 * rate, step);
-      this.turn.y = damp(this.turn.y, presence * (-py * 0.04 + scroll * 0.12), 2 * rate, step);
+      const sway = this.phone ? PHONE_SWAY : 1;
+      this.offset.x = damp(this.offset.x, presence * px * 48 * sway, 2.4 * rate, step);
+      this.offset.y = damp(this.offset.y, presence * (-py * 26 * sway - scroll * 70), 2.8 * rate, step);
+      this.turn.x = damp(this.turn.x, presence * -px * 0.055 * sway, 2 * rate, step);
+      this.turn.y = damp(this.turn.y, presence * (-py * 0.04 * sway + scroll * 0.12), 2 * rate, step);
       this.sign.rotation.set(this.turn.y, this.turn.x, presence * Math.sin(t * 0.41) * 0.0035);
     }
     this.updateCamera();
@@ -1043,8 +1184,8 @@ export class NeonSignScene {
     this.gain.glass = damp(this.gain.glass, metered ? lerp(1, 0.66, e) : 1, 4, step);
     this.letterUniforms.uExposure.value = this.gain.emit;
     this.letterUniforms.uGlassAlpha.value = this.gain.glass;
-    this.finalPass.uniforms.uGlowGain.value = BASE_GLOW_GAIN * this.gain.bloom;
-    this.poolUniforms.uGain.value = BASE_POOL_GAIN * this.gain.pool;
+    this.finalPass.uniforms.uGlowGain.value = BASE_GLOW_GAIN * this.gain.bloom * this.glowBoost.bloom;
+    this.poolUniforms.uGain.value = BASE_POOL_GAIN * this.gain.pool * this.glowBoost.pool;
 
     // 2. Colour pickup: halo, spill and dust lean toward the room's hue; the letters stay blue.
     const tint = stats ? roomTint(stats.hueX, stats.hueY) : null;
@@ -1061,7 +1202,7 @@ export class NeonSignScene {
     // 4 and 5. Reflections and spill adaptation fade in and out rather than switching.
     this.reflect = damp(this.reflect, toggles.reflection && stats ? 1 : 0, 4, step);
     this.spill = damp(this.spill, toggles.spill && stats ? 1 : 0, 4, step);
-    this.letterUniforms.uReflect.value = this.reflect * 1.25;
+    this.letterUniforms.uReflect.value = this.reflect * 1.25 * (this.phone ? PHONE_REFLECT : 1);
     this.poolUniforms.uSpillAdapt.value = this.spill;
 
     // 3. Strobe reaction: the whole sign sags and one letter blips.
@@ -1172,6 +1313,7 @@ export class NeonSignScene {
     this.disposed = true;
     this.stop();
     window.removeEventListener("pointermove", this.onPointer);
+    window.removeEventListener("deviceorientation", this.onOrientation);
     window.removeEventListener("scroll", this.onScroll);
     document.removeEventListener("visibilitychange", this.syncRunning);
     this.options.canvas.removeEventListener("webglcontextlost", this.onContextLost);

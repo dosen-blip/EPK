@@ -92,6 +92,32 @@ ready; the CSS `.neon-mark` stays as the fallback and the first frame. Extruded 
 light pools, selective bloom, and a random letter-by-letter power-on. Blue, with bloom radius kept modest. It
 reacts to the hero video through the "room" effects below.
 
+On phones (≤620px):
+
+- **Intro:** at the top of the page the wordmark powers on slowly in the centre of the screen (`NEON_DRAMATIC_PACE`
+  in `app/_hero/neon-timeline.mjs`: a longer dark beat, spaced-out letters, a stubborn last tube; lit in
+  about 3.5s), holds a beat once lit, then each letter drops into its resting place left to right with a slight
+  overshoot and settle (`neon-drop`, `.neon-mark.is-intro`). Only the tubes' paint moves (`translate` on the
+  inline-block tubes); the heading never leaves its place, so layout and the 3D sign's measurements are
+  unaffected. The 3D sign plays the same intro itself: it loads immediately on phones, reads the offset and the
+  drop timing from the shared clock (`clock.intro`, `NEON_DROP`/`neonDropOffset` in `neon-timeline.mjs`), draws
+  a taller band while the letters are up, stays square-on and fades its light pools and dust in as the letters
+  land. It takes over mid-intro as soon as it's ready; the CSS tubes cover the first flickers. The CSS keyframes
+  duplicate the `NEON_DROP` timings, so change both together. The intro is skipped under reduced motion, when
+  the page loads scrolled, or when it loads in a background tab.
+- **Glow boost:** the CSS tubes' outer glow runs at `--neon-boost: 1.45`, and the 3D sign's bloom and light
+  pools at ×1.4 and ×1.45 (`PHONE_*_BOOST` in the scene), because the letters have less area to carry the light.
+- **Depth and glass:** the letters extrude 2.6× deeper (`PHONE_DEPTH`, a z-scale behind the front faces, which
+  stay on the DOM glyphs), sway 1.7× further (`PHONE_SWAY`), and the glass reflection and highlights run 1.9× and
+  1.7× stronger (`PHONE_REFLECT`, `PHONE_SHEEN`), because the sides and glass are easy to miss at this size.
+- **Performance watchdog:** phones are judged against a 24 fps floor (desktop 45), since the sign draws at ~30 fps
+  on phones by design and iPhones in Low Power Mode cap pages at 30 fps. Phones step quality down twice (device
+  pixel ratio 1, then 0.75) before handing back to the CSS tubes.
+- - **Tilt to move (`gyro` effect):** tilting the device sways the sign like the cursor does on desktop, ±18° for a
+  full sweep, re-centring on however the phone is held. Android starts straight away; iPhones ask permission on
+  the first tap in the hero that isn't on a link, button or video. Needs https. Doesn't work on a local `http://`
+  LAN preview; test it with Chrome DevTools > Sensors.
+
 ### Ticker
 
 Flat neon lettering scrolling over a glossy strip that reflects the bottom of the hero video
@@ -116,7 +142,7 @@ All video-reactive and site-wide light effects are registered in `app/_hero/ambi
 (`AMBIENCE_EFFECTS`), grouped as:
 
 - **room** (reactions to the hero video): `exposure`, `hue` (capped at 35°), `strobe`, `reflection`, `spill`.
-- **site** (other light effects): `ambilight`, `posters`, `circuit`, `tilt`, `bookend`.
+- **site** (other light effects): `ambilight`, `posters`, `circuit`, `tilt`, `gyro`, `bookend`.
 
 `ambienceToggles()` in `app/_hero/ambience-store.ts` is the shared state. A switched-off effect is also mirrored
 as `data-no-<id>` on `<html>` so CSS can drop it. Test and debug controls:
@@ -124,6 +150,9 @@ as `data-no-<id>` on `<html>` so CSS can drop it. Test and debug controls:
 - `?ambience=none`, `?ambience=all`, `?ambience=a,b` (only these), `?ambience=-a` (all but this).
 - `?ambience-panel` shows a toggle panel. Choices are saved in `localStorage` under `dosen:ambience`.
 - `?neon-debug` shows the panel with live readings and exposes `window.__dosenNeonSign` / `window.__dosenAmbience`.
+  If the 3D sign falls back to the CSS tubes, the reason (`slow`, `context-lost`, a WebGL error, or "Ethnocentric
+  is not available") is shown in a red label on screen, set as `data-sign-fallback` on the heading and logged to
+  the console. Use it to diagnose phones, which have no console to hand.
 
 **Adding an effect:** add it to `AMBIENCE_EFFECTS` (and its test in `tests/ambience-model.test.mjs`), read its
 switch from `ambienceToggles()`, and add a `:root[data-no-<id>]` rule if it has CSS. Load it from the idle loader

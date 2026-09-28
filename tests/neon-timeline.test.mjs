@@ -11,6 +11,9 @@ import {
   neonLitAt,
   neonTubeLevel,
   planNeonIgnition,
+  NEON_DRAMATIC_PACE,
+  neonDropOffset,
+  neonDropEnd,
   readNeonLevels,
   sampleNeonStops,
 } from "../app/_hero/neon-timeline.mjs";
@@ -69,4 +72,28 @@ test("plans a random, CSS-rounded ignition and reads levels from the shared cloc
   assert.equal(out[2], 0);
   assert.equal(readNeonLevels({ ...clock, still: true }, 6100, out), 1);
   assert.deepEqual([...out], [1, 1, 1, 1, 1]);
+});
+
+test("the dramatic pace starts later, spaces the letters out and always ends on the stubborn tube", () => {
+  const random = () => 0.5;
+  const normal = planNeonIgnition(random);
+  const dramatic = planNeonIgnition(random, NEON_DRAMATIC_PACE);
+  assert.ok(Math.min(...dramatic.map((tube) => tube.delay)) > Math.min(...normal.map((tube) => tube.delay)));
+  assert.ok(neonLitAt(dramatic) > neonLitAt(normal));
+  const last = dramatic.reduce((a, b) => (b.delay > a.delay ? b : a));
+  assert.equal(last.ignition, "stubborn");
+});
+
+test("the phone intro's letters wait up high, drop in turn, overshoot and land", () => {
+  const clock = { still: false, tubes: null, start: 0, lit: null, fault: null, intro: { dy: -200 } };
+  assert.equal(neonDropOffset(clock, 500, 0, 70), -200);
+  clock.lit = 1000;
+  assert.equal(neonDropOffset(clock, 1000 + 640, 0, 70), -200);
+  const midFirst = neonDropOffset(clock, 1000 + 1100, 0, 70);
+  const midLast = neonDropOffset(clock, 1000 + 1100, 4, 70);
+  assert.ok(midFirst > -200 && midFirst < 0 && midLast < midFirst);
+  const landed = 1000 + (0.65 + 0.78 * 1.2) * 1000;
+  assert.ok(Math.abs(neonDropOffset(clock, landed, 0, 70) - 4.9) < 0.05);
+  assert.equal(neonDropOffset(clock, 1000 + neonDropEnd() * 1000, 4, 70), 0);
+  assert.equal(neonDropOffset({ ...clock, intro: null }, 1100, 0, 70), 0);
 });

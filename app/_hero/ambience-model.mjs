@@ -7,7 +7,7 @@
  * the URL (`?ambience=none`, `?ambience=exposure,hue`, `?ambience=-strobe`), or live from the panel shown
  * with `?ambience-panel`, which remembers its choices in localStorage.
  *
- * @typedef {"exposure" | "hue" | "strobe" | "reflection" | "spill" | "ambilight" | "posters" | "circuit" | "tilt" | "bookend"} AmbienceEffect
+ * @typedef {"exposure" | "hue" | "strobe" | "reflection" | "spill" | "ambilight" | "posters" | "circuit" | "tilt" | "gyro" | "bookend"} AmbienceEffect
  * @typedef {Record<AmbienceEffect, boolean>} AmbienceToggles
  * @typedef {{ x0: number, y0: number, x1: number, y1: number }} SampleRect
  *   Pixel rectangle inside the sampled frame.
@@ -27,6 +27,7 @@ export const AMBIENCE_EFFECTS = [
   { id: "posters", group: "site", label: "Poster light", hint: "Each performance card glows beneath in its poster's own dominant colour instead of a set tone." },
   { id: "circuit", group: "site", label: "Ticker ignition", hint: "The ticker's tubes power on with a flicker the first time it scrolls into view after the sign is lit." },
   { id: "tilt", group: "site", label: "Cover tilt", hint: "Vinyl covers tilt gently away wherever the cursor is closest, with the artwork drifting slightly in its frame. Mouse only; off under reduced motion." },
+  { id: "gyro", group: "site", label: "Tilt to move (phones)", hint: "On phones, tilting the device sways the 3D sign the way the cursor does on desktop. iPhones ask for motion access on the first tap in the hero. Off under reduced motion." },
   { id: "bookend", group: "site", label: "Bookend sign", hint: "The DOSEN watermark in the Book section is a neon outline that powers on once when you reach it." },
 ];
 
@@ -43,6 +44,7 @@ export const AMBIENCE_DEFAULTS = {
   posters: true,
   circuit: true,
   tilt: true,
+  gyro: true,
   bookend: true,
 };
 

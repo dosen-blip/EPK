@@ -66,7 +66,7 @@ buttons, glows, what was tried and set aside) is documented in `docs/design-syst
 
 | Module | Owns |
 | --- | --- |
-| `app/_hero/neon-sign-scene.ts` | The three.js 3D neon wordmark: extrusion, bloom, light pools, power-on, and its reactions to the hero video. Falls back to the CSS `.neon-mark` when WebGL2 is unavailable or the context is lost. |
+| `app/_hero/neon-sign-scene.ts` | The three.js 3D neon wordmark: extrusion, bloom, light pools, power-on, phone tilt (gyro) and glow boost, and its reactions to the hero video. Falls back to the CSS `.neon-mark` when WebGL2 is unavailable or the context is lost. |
 | `app/_hero/neon-ambience.ts` | `VideoAmbience`, which samples the hero video (48×36) for brightness, hue and strobes, plus the `?ambience-panel` / `?neon-debug` panel. |
 | `app/_hero/ambience-model.mjs` | The effect registry (`AMBIENCE_EFFECTS`, groups `room` and `site`), URL parsing for `?ambience=`, frame analysis and strobe detection. Pure and unit-tested in `tests/ambience-model.test.mjs`. |
 | `app/_hero/ambience-store.ts` | The shared switch state (`ambienceToggles()`) and the `data-no-<id>` flags on `<html>`. |
