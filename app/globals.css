@@ -109,24 +109,49 @@ button { color: inherit; }
 @keyframes neon-spill-surge { 0% { opacity: .55; } 14% { opacity: 1; } 100% { opacity: .9; } }
 /* Phones: the sign has less area to carry its light, so the tubes throw a stronger glow (the 3D sign boosts its
    bloom and light pools to match). On load it powers on slowly in the centre of the screen (the dramatic pace in
-   app/_hero/neon-timeline.mjs), holds a beat once lit, then each letter drops into its resting place in turn,
-   left to right, with a soft settle. Only the paint moves; the heading itself never leaves its place, so the
-   layout and the 3D sign's measurements are unaffected. The 3D sign plays the same intro from the shared clock
-   (NEON_DROP in app/_hero/neon-timeline.mjs; keep the timings here in step with it) and takes over as soon as it's
-   ready, so these CSS tubes only show until then or as the fallback. */
+   app/_hero/neon-timeline.mjs), holds a beat once lit, then pulls back and down into its resting place in one
+   smooth move, starting a little larger (--intro-scale) and arriving a hair past its mark before easing onto it.
+   Only the paint moves; the heading itself never leaves its place, so the layout and the 3D sign's measurements
+   are unaffected. The 3D sign plays the same move from the shared clock (NEON_DOLLY in
+   app/_hero/neon-timeline.mjs; keep the timings here in step with it) and takes over as soon as it's ready, so
+   these CSS tubes only show until then or as the fallback. */
 @media (max-width: 620px) {
   .neon-mark { --neon-boost: 1.45; }
   .neon-mark .neon-tubes::before { inset: -60% -18%; }
-  .neon-mark .neon-tube { display: inline-block; }
-  .neon-mark.is-intro.is-powering .neon-tube, .neon-mark.is-intro.is-powering .neon-tubes::before { translate: 0 var(--intro-dy, 0px); }
-  .neon-mark.is-intro.is-lit .neon-tube { animation: neon-drop 1.2s linear calc(.65s + var(--i, 0) * .13s) backwards; }
-  .neon-mark.is-intro.is-lit .neon-tubes::before { opacity: .9; animation: neon-spill-surge 1.2s ease-out both, neon-drop 1.2s linear .91s backwards; }
 }
-/* Gathers pace, lands slightly past its mark and eases back up into place. */
-@keyframes neon-drop {
-  from { translate: 0 var(--intro-dy, 0px); animation-timing-function: cubic-bezier(.62, 0, .3, 1); }
-  78% { translate: 0 .07em; animation-timing-function: cubic-bezier(.3, 0, .25, 1); }
-  to { translate: 0 0; }
+/* The intro dolly (phones and desktop): the CSS tubes start centred and enlarged, then glide into place. */
+.neon-mark.is-intro:not(.is-lit) .neon-tubes { translate: var(--intro-dx, 0px) var(--intro-dy, 0px); scale: var(--intro-scale, 1); }
+.neon-mark.is-intro.is-lit .neon-tubes { animation: neon-settle .5s step-end, neon-hum 9s step-end .5s infinite, neon-dolly 1.5s linear .5s backwards; }
+/* Phone intro, first paint: until the power-on starts (app/layout.tsx arms it, app/page.tsx releases it) the CSS
+   tubes stay hidden and the room dark, so nothing shows in the resting place or a fallback font. The CSS
+   no-script fallback waits longer while armed. The room layer is then driven frame by frame from the tubes' light,
+   and the landing flash is played once from script. */
+.intro-pending .neon-mark .neon-tubes { opacity: 0; }
+/* When the intro opens on the 3D sign, the flat CSS tubes must never show over it, not even while fading out. */
+.neon-mark.is-intro[data-sign="3d"] .neon-tube, .neon-mark.is-intro[data-sign="3d"] .neon-tubes::before { transition: none; }
+.intro-pending .neon-mark:not(.is-powering):not(.is-lit) .neon-tube { animation-delay: 6s; }
+.hero-room { position: absolute; z-index: -2; inset: 0; overflow: hidden; pointer-events: none; opacity: 0; }
+.intro-pending .hero-room { opacity: 1; }
+.hero-room > i { position: absolute; display: block; pointer-events: none; will-change: opacity, transform; }
+/* Darkness over the whole room, lifted as the sign's light grows. */
+.hero-room-dark { inset: 0; background: #020203; opacity: .96; }
+/* Darkness beyond the light's reach: a soft hole centred on the sign, scaled with how much light it gives. */
+.hero-room-reach { left: 0; top: 0; width: 260vmax; height: 260vmax; margin: -130vmax 0 0 -130vmax; transform: translate(50vw, 50vh) scale(.22); background: radial-gradient(circle, transparent 0, transparent 10%, rgba(2,2,3,.7) 17%, rgba(2,2,3,.95) 25%, #020203 33%); }
+/* God rays and depth light (app/_hero/hero-light.ts): a soft, half-resolution light layer over the room, blended as light. */
+.hero-light { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; mix-blend-mode: screen; opacity: 0; transition: opacity .25s ease; }
+.hero-light.is-on { opacity: 1; }
+/* Where the watermark mattes show (everything but narrow portrait screens), the light never reaches into them. */
+@media not all and (max-width: 700px) and (orientation: portrait) {
+  .hero-light { -webkit-mask-image: linear-gradient(180deg, transparent 0, transparent 9%, #000 19%, #000 77%, transparent 88%); mask-image: linear-gradient(180deg, transparent 0, transparent 9%, #000 19%, #000 77%, transparent 88%); }
+}
+/* The neon's own colour falling on the room around the sign, blended as light so it brightens the footage under it. */
+.hero-room-spill { left: 0; top: 0; width: 110vmax; height: 70vmax; margin: -35vmax 0 0 -55vmax; transform: translate(50vw, 50vh); opacity: 0; mix-blend-mode: screen; background: radial-gradient(closest-side, rgba(60,125,255,.36), rgba(38,95,255,.14) 32%, rgba(47,90,255,.03) 58%, transparent); }
+.hero-flash { position: absolute; z-index: 0; left: calc(var(--intro-rest-x, 50%) - 60vmax); width: 120vmax; top: calc(var(--intro-rest-y, 70%) - 32vh); height: 64vh; pointer-events: none; opacity: 0; background: radial-gradient(closest-side, rgba(220,240,255,.42), rgba(70,150,255,.2) 38%, rgba(47,91,255,.07) 66%, transparent); }
+/* An unhurried start and a long gentle arrival a hair past the mark, then a soft ease onto it (NEON_DOLLY). */
+@keyframes neon-dolly {
+  from { translate: var(--intro-dx, 0px) var(--intro-dy, 0px); scale: var(--intro-scale, 1); animation-timing-function: cubic-bezier(.5, 0, .12, 1); }
+  86% { translate: 0 calc(var(--intro-dy, 0px) * -.015); scale: 1; animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+  to { translate: 0 0; scale: 1; }
 }
 /* 3D sign: a transparent band over the film, under the copy. Its light pools and shadow replace the spill and text-shadow. */
 .neon-canvas { position: absolute; z-index: 1; top: 0; left: 0; width: 100%; height: 0; display: block; pointer-events: none; opacity: 0; transition: opacity .45s ease; -webkit-mask-image: linear-gradient(180deg, transparent, rgba(0,0,0,.35) 12%, #000 30%, #000 84%, transparent); mask-image: linear-gradient(180deg, transparent, rgba(0,0,0,.35) 12%, #000 30%, #000 84%, transparent); }

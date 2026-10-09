@@ -18,7 +18,7 @@
  *   start: number | null,
  *   lit: number | null,
  *   fault: NeonFault | null,
- *   intro?: { dy: number } | null,
+ *   intro?: { dy: number, dx?: number, scale?: number } | null,
  * }} NeonClock
  *   Times are `performance.now()` milliseconds. `start` is when the CSS ignition began, `lit` when the
  *   sign settled (`is-lit`). `still` means reduced motion: statically lit.
@@ -106,11 +106,13 @@ export function planNeonIgnition(random = Math.random, pace = NEON_PACE) {
 }
 
 /**
- * The phone intro's letter drop, shared by the CSS tubes (`neon-drop` in globals.css) and the 3D sign. Once lit,
- * the sign holds, then each letter falls from `intro.dy` (CSS px, negative = up) to its place in turn, lands
- * `NEON_DROP.overshoot` em past it and eases back up.
+ * The phone intro's settle, shared by the CSS tubes (`neon-dolly` in globals.css) and the 3D sign: once lit, the
+ * sign holds, then pulls back and down into its resting place in one continuous move, as if the camera were
+ * easing away. It starts centred on screen, `intro.scale` times its resting size (CSS px of `intro.dx` across and
+ * `intro.dy` above its place), arrives a hair past its mark vertically (`overshoot`, a share of the travel) and
+ * eases back onto it.
  */
-export const NEON_DROP = { hold: 0.65, stagger: 0.13, duration: 1.2, landAt: 0.78, overshoot: 0.07 };
+export const NEON_DOLLY = { hold: 0.5, duration: 1.5, landAt: 0.86, overshoot: 0.015 };
 
 /** A CSS `cubic-bezier(x1, y1, x2, y2)` timing function. */
 function cubicBezier(x1, y1, x2, y2) {
@@ -126,32 +128,60 @@ function cubicBezier(x1, y1, x2, y2) {
     return at(y1, y2, (lo + hi) / 2);
   };
 }
-const dropFall = cubicBezier(0.62, 0, 0.3, 1);
-const dropSettle = cubicBezier(0.3, 0, 0.25, 1);
+/** Unhurried start, long gentle arrival; then a soft ease back from the overshoot. Mirrored in globals.css. */
+const dollyGlide = cubicBezier(0.5, 0, 0.12, 1);
+const dollySettle = cubicBezier(0.3, 0, 0.3, 1);
 
 /**
- * How far (CSS px, down positive) a letter is from its resting place during the phone intro at `now`.
- * 0 when there is no intro or the letter has landed.
+ * Where the intro's sign is at `now`: `offset` (down positive) and `offsetX` (right positive) in CSS px from its
+ * resting place (0 when there is no intro or it has settled), `scale` relative to its resting size, and
+ * `progress` of the move (0..1).
  * @param {NeonClock} clock
  * @param {number} now performance.now() ms
- * @param {number} index letter index
- * @param {number} fontPx the wordmark's font size, for the em-sized overshoot
  */
-export function neonDropOffset(clock, now, index, fontPx) {
+export function neonDolly(clock, now) {
   const intro = clock.intro;
-  if (!intro || clock.still) return 0;
-  if (clock.lit === null) return intro.dy;
-  const t = ((now - clock.lit) / 1000 - NEON_DROP.hold - index * NEON_DROP.stagger) / NEON_DROP.duration;
-  if (t <= 0) return intro.dy;
-  if (t >= 1) return 0;
-  const overshoot = NEON_DROP.overshoot * fontPx;
-  if (t < NEON_DROP.landAt) return intro.dy + (overshoot - intro.dy) * dropFall(t / NEON_DROP.landAt);
-  return overshoot * (1 - dropSettle((t - NEON_DROP.landAt) / (1 - NEON_DROP.landAt)));
+  if (!intro || clock.still) return { offset: 0, offsetX: 0, scale: 1, progress: 1 };
+  const startScale = intro.scale ?? 1;
+  const dx = intro.dx ?? 0;
+  if (clock.lit === null) return { offset: intro.dy, offsetX: dx, scale: startScale, progress: 0 };
+  const t = ((now - clock.lit) / 1000 - NEON_DOLLY.hold) / NEON_DOLLY.duration;
+  if (t <= 0) return { offset: intro.dy, offsetX: dx, scale: startScale, progress: 0 };
+  if (t >= 1) return { offset: 0, offsetX: 0, scale: 1, progress: 1 };
+  if (t < NEON_DOLLY.landAt) {
+    const glide = dollyGlide(t / NEON_DOLLY.landAt);
+    return {
+      offset: intro.dy * (1 - (1 + NEON_DOLLY.overshoot) * glide),
+      offsetX: dx * (1 - glide),
+      scale: startScale + (1 - startScale) * glide,
+      progress: glide,
+    };
+  }
+  const settle = dollySettle((t - NEON_DOLLY.landAt) / (1 - NEON_DOLLY.landAt));
+  return { offset: -intro.dy * NEON_DOLLY.overshoot * (1 - settle), offsetX: 0, scale: 1, progress: 1 };
 }
 
-/** Seconds from `lit` until the last letter of the phone intro has landed. */
-export function neonDropEnd() {
-  return NEON_DROP.hold + (NEON_LETTERS.length - 1) * NEON_DROP.stagger + NEON_DROP.duration;
+/** Seconds after `lit` when the phone intro's sign arrives at its place (the hit). */
+export function neonDollyArrival() {
+  return NEON_DOLLY.hold + NEON_DOLLY.landAt * NEON_DOLLY.duration;
+}
+
+/** A quick-attack, slow-release flash starting `t` seconds ago (0 before it starts). */
+const flash = (t, decay) => (t < 0 ? 0 : Math.exp(-t * decay) * (1 - Math.exp(-t * 50)));
+
+/**
+ * The hit of light as the phone intro's sign arrives in place (0..~1).
+ * @param {NeonClock} clock
+ * @param {number} now
+ */
+export function neonLandingPulse(clock, now) {
+  if (!clock.intro || clock.lit === null || clock.still) return 0;
+  return flash((now - clock.lit) / 1000 - neonDollyArrival(), 4.5);
+}
+
+/** Seconds from `lit` until the phone intro's sign has settled. */
+export function neonDollyEnd() {
+  return NEON_DOLLY.hold + NEON_DOLLY.duration;
 }
 
 /**

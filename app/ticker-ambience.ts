@@ -238,10 +238,12 @@ export function startTickerAmbience(marquee: HTMLElement) {
     }
   };
 
+  // Runs only once a fair share of the strip is on screen: on phones it sits a few pixels below the fold during
+  // the hero intro, and mirroring the video every frame for an unseen sliver costs the intro its smoothness.
   const seen = new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
+    visible = entry.isIntersecting && entry.intersectionRatio >= 0.25;
     sync();
-  }, { rootMargin: "120px 0px" });
+  }, { threshold: [0, 0.25] });
   seen.observe(marquee);
   document.addEventListener("visibilitychange", sync);
 

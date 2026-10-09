@@ -26,7 +26,7 @@ import {
   type FrameStats,
 } from "./ambience-model.mjs";
 import { VideoAmbience, type AmbienceReading, type Rect } from "./neon-ambience";
-import { neonDropEnd, neonDropOffset, readNeonLevels, type NeonClock } from "./neon-timeline.mjs";
+import { neonDolly, neonDollyEnd, neonLandingPulse, readNeonLevels, type NeonClock } from "./neon-timeline.mjs";
 import { gaussianBlur, traceNeonWordmark, type NeonTrace, type Point } from "./neon-trace";
 
 export type NeonSignOptions = {
@@ -79,10 +79,14 @@ const PHONE_BLOOM_BOOST = 1.4;
 const PHONE_POOL_BOOST = 1.45;
 /** Phones: at this size the returns and glass are easy to miss, so the letters run deeper, lean further as they
  * sway, and reflect more. The front faces stay exactly on the DOM glyphs. */
-const PHONE_DEPTH = 2.6;
+const PHONE_DEPTH = 3.2;
 const PHONE_SWAY = 1.7;
-const PHONE_REFLECT = 1.9;
-const PHONE_SHEEN = 1.7;
+const PHONE_REFLECT = 2.8;
+const PHONE_SHEEN = 2.4;
+/** How far (CSS px per radian of turn) the sign's light is thrown toward where it faces. */
+const LIGHT_THROW = 900;
+/** Phone intro: how far the sign tips its top toward you while it's up, so its depth reads (radians). */
+const INTRO_PITCH = 0.11;
 /** Degrees of device tilt that map to a full cursor sweep, and how fast a new holding angle becomes neutral. */
 const TILT_RANGE = 18;
 const TILT_RECENTRE = 0.25;
@@ -111,7 +115,6 @@ const lightGLSL = /* glsl */ `
 const letterVertex = /* glsl */ `
   attribute float aLetter;
   uniform float uLevels[${MAX_LETTERS}];
-  uniform float uDrop[${MAX_LETTERS}];
   varying vec3 vPos;
   varying vec3 vObjectNormal;
   varying vec3 vNormal;
@@ -120,9 +123,7 @@ const letterVertex = /* glsl */ `
   varying vec3 vAxisX;
   varying vec3 vAxisY;
   void main() {
-    // Phone intro: each letter rides at its own height until it has dropped into place.
-    vec3 placed = position + vec3(0.0, uDrop[int(aLetter + 0.5)], 0.0);
-    vec4 mv = modelViewMatrix * vec4(placed, 1.0);
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
     vAxisX = normalMatrix * vec3(1.0, 0.0, 0.0);
     vAxisY = normalMatrix * vec3(0.0, 1.0, 0.0);
     vView = -mv.xyz;
@@ -505,11 +506,13 @@ export class NeonSignScene {
   private levels = new Float32Array(MAX_LETTERS);
   /** Phone intro: each letter's height above its place (object units), the share of the sign that has landed,
    * how far the drawn band currently reaches up for it, and whether the intro is over. */
-  private drop = new Float32Array(MAX_LETTERS);
+  /** The sign's resting place (world units, before any intro move). */
+  private restPos = new THREE.Vector3();
   private landed = 1;
   private bandLift = 0;
   private introDone = false;
   private fontPx = 100;
+  private sheenBase = 1;
   private debugPose: DebugPose | null = null;
 
   // Ambience: what the sign reads from the video and how it answers.
@@ -606,7 +609,6 @@ export class NeonSignScene {
       uRoomMap: { value: new THREE.Vector4() },
       uReflect: { value: 0 },
       uSheen: { value: 1 },
-      uDrop: { value: this.drop },
     };
     this.poolUniforms = {
       ...this.lightUniforms,
@@ -923,7 +925,8 @@ export class NeonSignScene {
     const phone = w <= PHONE_WIDTH;
     this.phone = phone;
     this.glowBoost = { bloom: phone ? PHONE_BLOOM_BOOST : 1, pool: phone ? PHONE_POOL_BOOST : 1 };
-    this.letterUniforms.uSheen.value = phone ? PHONE_SHEEN : 1;
+    this.sheenBase = phone ? PHONE_SHEEN : 1;
+    this.letterUniforms.uSheen.value = this.sheenBase;
     this.bandTop = top;
     this.bandH = bottom - top;
     this.renderer.setSize(w, this.bandH, false);
@@ -940,6 +943,7 @@ export class NeonSignScene {
     const cy = (trace.ink.minY + trace.ink.maxY) / 2;
     // Floated toward the camera and scaled down to compensate: at rest the front faces land on the DOM glyphs.
     this.sign.position.set((ox + cx * fontPx) * k, (oy + cy * fontPx) * k, signZ);
+    this.restPos.copy(this.sign.position);
     this.sign.scale.setScalar(fontPx * k);
     // Extrusion runs back from the front face (z = 0), so deepening it leaves the faces on the glyphs.
     if (phone) this.sign.scale.z *= PHONE_DEPTH;
@@ -975,35 +979,41 @@ export class NeonSignScene {
   private introLift() {
     const intro = this.options.clock.intro;
     if (!intro || this.introDone || this.options.clock.still) return 0;
-    return Math.max(0, -intro.dy) + this.fontPx * 1.5;
+    return Math.max(0, -intro.dy) + this.fontPx * (1.5 + Math.max(0, (intro.scale ?? 1) - 1));
   }
 
-  /** Places each letter for the phone intro and ends the intro (shrinking the band back) once the last has landed. */
-  private updateDrop(at: number) {
+  /**
+   * The phone intro's dolly: the whole sign floats nearer the camera at the centre of the screen, then pulls back
+   * and down into its resting place. It moves through depth rather than being scaled, so perspective shrinks it
+   * and shifts its returns naturally as it travels; its screen position follows the shared timeline exactly.
+   * Ends the intro (shrinking the band back) a beat after it has settled.
+   */
+  private updateDolly(at: number) {
     const { clock } = this.options;
     const intro = clock.intro;
     if (!intro || this.introDone) {
-      this.drop.fill(0);
+      this.sign.position.copy(this.restPos);
       this.landed = 1;
       return;
     }
-    if (clock.lit !== null && at >= clock.lit + neonDropEnd() * 1000) {
+    // The band shrinks back a beat after the sign settles, once the hit has faded and it is still, so the resize
+    // never lands on a moving frame.
+    if (clock.lit !== null && at >= clock.lit + (neonDollyEnd() + 1.2) * 1000) {
       this.introDone = true;
-      this.drop.fill(0);
+      this.sign.position.copy(this.restPos);
       this.landed = 1;
       this.queueLayout();
       return;
     }
     if (this.bandLift !== this.introLift()) this.queueLayout();
-    let remaining = 0;
-    const count = Math.min(this.raw.length, MAX_LETTERS);
-    for (let i = 0; i < count; i++) {
-      const offset = neonDropOffset(clock, at, i, this.fontPx);
-      // CSS px down on screen -> object units up (the sign is scaled so one unit is one em).
-      this.drop[i] = -offset / this.fontPx;
-      remaining += intro.dy ? Math.min(1, Math.abs(offset / intro.dy)) : 0;
-    }
-    this.landed = 1 - remaining / count;
+    const { offset, offsetX, scale, progress } = neonDolly(clock, at);
+    // Projected size goes as 1 / (camera distance - z): to look `scale` times larger, sit that much nearer.
+    const signZ = this.dist * LIFT;
+    const z = this.dist - (this.dist - signZ) / scale;
+    const k = (this.dist - signZ) / this.dist;
+    // The resting position, shifted by the offsets (CSS px; down -> world up) and carried to the new depth.
+    this.sign.position.set((this.restPos.x + offsetX * k) / scale, (this.restPos.y - offset * k) / scale, z);
+    this.landed = progress;
   }
 
   private updateCamera() {
@@ -1092,13 +1102,14 @@ export class NeonSignScene {
     const t = now / 1000;
     const count = Math.min(this.raw.length, MAX_LETTERS);
     const { sag, blip, blipSecond } = this.updateAmbience(now, dt);
-    this.updateDrop(at);
+    this.updateDolly(at);
     let sum = 0;
     for (let i = 0; i < count; i++) {
       let level = this.raw[i];
       // A faint mains shimmer and the CSS hum ride on the gas, never on the glass.
       if (!reducedMotion && level > 0) level *= hum * (0.988 + 0.012 * Math.sin(t * 47 + i * 2.3) * Math.sin(t * 2.9 + i * 1.1));
       if (level > 0) level *= sag * (i === this.blipLetter ? blip : i === this.blipSecond ? blipSecond : 1);
+      // Phone intro: each tube flares briefly as its letter touches down.
       this.levels[i] = level;
       sum += level;
     }
@@ -1109,6 +1120,12 @@ export class NeonSignScene {
     // The light the sign casts on the video sits under the resting word, so it gathers as the letters land.
     this.poolUniforms.uGain.value *= this.landed * this.landed;
     this.poolUniforms.uShadow.value = SHADOW_STRENGTH * this.landed;
+    // Phone intro: the last letter landing hits the sign with light, the gas surging, the bloom blooming and a
+    // flash running across the glass.
+    const hit = neonLandingPulse(clock, at);
+    this.letterUniforms.uExposure.value *= 1 + 0.4 * hit;
+    this.finalPass.uniforms.uGlowGain.value *= 1 + 1.25 * hit;
+    this.letterUniforms.uSheen.value = this.sheenBase * (1 + 2.4 * hit);
     this.finalPass.uniforms.uSeed.value = reducedMotion ? 0 : t % 1;
 
     if (reducedMotion || pose?.rest) {
@@ -1121,8 +1138,9 @@ export class NeonSignScene {
         this.pointer.set(pose.pointer.x, pose.pointer.y);
       }
       // Motion eases in from rest, so the hand-off from the CSS tubes is exact.
-      // It stays square-on while the intro plays and only starts to sway once it has landed.
-      const presence = (this.readyAt ? smoothstep(0, 2.4, (now - this.readyAt) / 1000) : 0) * this.landed;
+      // During the phone intro it sways at a little over half strength, enough for its deep returns and glass to
+      // catch the light without ever turning side-on, and comes to full strength as it settles.
+      const presence = (this.readyAt ? smoothstep(0, 2.4, (now - this.readyAt) / 1000) : 0) * (0.55 + 0.45 * this.landed);
       const driftX = Math.sin(t * 0.23) * 0.5 + Math.sin(t * 0.61 + 1.3) * 0.14;
       const driftY = Math.cos(t * 0.17) * 0.36;
       const px = this.pointerSeen ? this.pointer.x * 0.85 + driftX * 0.15 : driftX;
@@ -1136,7 +1154,10 @@ export class NeonSignScene {
       this.offset.y = damp(this.offset.y, presence * (-py * 26 * sway - scroll * 70), 2.8 * rate, step);
       this.turn.x = damp(this.turn.x, presence * -px * 0.055 * sway, 2 * rate, step);
       this.turn.y = damp(this.turn.y, presence * (-py * 0.04 * sway + scroll * 0.12), 2 * rate, step);
-      this.sign.rotation.set(this.turn.y, this.turn.x, presence * Math.sin(t * 0.41) * 0.0035);
+      // Phone intro: tipped very slightly toward you (top forward) so the lit tops of its deep returns show, easing
+      // out to level as it lands. Never turned side-on.
+      const pitch = this.options.clock.intro && !this.introDone ? INTRO_PITCH * (1 - this.landed) : 0;
+      this.sign.rotation.set(this.turn.y + pitch, this.turn.x, presence * Math.sin(t * 0.41) * 0.0035);
     }
     this.updateCamera();
     this.render();
@@ -1306,6 +1327,20 @@ export class NeonSignScene {
       }
     }
     return { left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };
+  }
+
+  /**
+   * Where the sign's light comes from relative to its resting place, in CSS px (down positive): how far the sign
+   * appears to move as the camera orbits (it floats in front of the video, so it shifts against it), plus a throw
+   * toward wherever it's turned. Lets the hero's light layer follow the sign as it sways with the pointer.
+   */
+  lightShift() {
+    const signZ = this.dist * LIFT;
+    const parallax = signZ / (this.dist - signZ);
+    return {
+      x: -this.offset.x * parallax - this.turn.x * LIGHT_THROW,
+      y: this.offset.y * parallax + this.turn.y * LIGHT_THROW,
+    };
   }
 
   dispose() {

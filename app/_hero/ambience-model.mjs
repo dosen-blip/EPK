@@ -7,7 +7,7 @@
  * the URL (`?ambience=none`, `?ambience=exposure,hue`, `?ambience=-strobe`), or live from the panel shown
  * with `?ambience-panel`, which remembers its choices in localStorage.
  *
- * @typedef {"exposure" | "hue" | "strobe" | "reflection" | "spill" | "ambilight" | "posters" | "circuit" | "tilt" | "gyro" | "bookend"} AmbienceEffect
+ * @typedef {"exposure" | "hue" | "strobe" | "reflection" | "spill" | "ambilight" | "posters" | "circuit" | "tilt" | "gyro" | "bookend" | "rays" | "depthlight"} AmbienceEffect
  * @typedef {Record<AmbienceEffect, boolean>} AmbienceToggles
  * @typedef {{ x0: number, y0: number, x1: number, y1: number }} SampleRect
  *   Pixel rectangle inside the sampled frame.
@@ -22,6 +22,8 @@ export const AMBIENCE_EFFECTS = [
   { id: "hue", group: "room", label: "Colour pickup", hint: "The sign's halo, spill and dust and the ticker's tubes lean toward the room's colour (capped at 35°); the letters stay DOSEN blue." },
   { id: "strobe", group: "room", label: "Strobe reaction", hint: "A sudden flash in the video makes the sign sag and letters blip, and the ticker flickers. Off under reduced motion." },
   { id: "reflection", group: "room", label: "Reflections", hint: "The sign's glass reflects a blurred copy of the video, and the ticker's glossy strip mirrors the video above it." },
+  { id: "rays", group: "room", label: "God rays (phone intro)", hint: "During the phone intro the sign's light streams out through the room's haze, blocked by dark silhouettes (and by anything nearer than the sign when depth light is on)." },
+  { id: "depthlight", group: "room", label: "Depth light (phone intro)", hint: "During the phone intro the sign lights the room by distance and angle, using a depth map baked from the hero video: nearer surfaces facing the sign catch the most." },
   { id: "spill", group: "room", label: "Spill adaptation", hint: "The sign's light on the video fades over bright parts of the frame and carries over dark ones." },
   { id: "ambilight", group: "site", label: "Video glow", hint: "A clip you play in the video library or a set's highlights glows around its frame in its own colours." },
   { id: "posters", group: "site", label: "Poster light", hint: "Each performance card glows beneath in its poster's own dominant colour instead of a set tone." },
@@ -40,6 +42,8 @@ export const AMBIENCE_DEFAULTS = {
   strobe: true,
   reflection: true,
   spill: true,
+  rays: true,
+  depthlight: true,
   ambilight: true,
   posters: true,
   circuit: true,

@@ -97,17 +97,66 @@ On phones (≤620px):
 - **Size:** the wordmark spans the hero exactly, margin to margin: `font-size: calc((100vw - 32px) / 4.57)`
   (the word measures 4.57em at its −.03em tracking). Re-measure if the tracking or typeface changes.
 
-- **Intro:** at the top of the page the wordmark powers on slowly in the centre of the screen (`NEON_DRAMATIC_PACE`
-  in `app/_hero/neon-timeline.mjs`: a longer dark beat, spaced-out letters, a stubborn last tube; lit in
-  about 3.5s), holds a beat once lit, then each letter drops into its resting place left to right with a slight
-  overshoot and settle (`neon-drop`, `.neon-mark.is-intro`). Only the tubes' paint moves (`translate` on the
-  inline-block tubes); the heading never leaves its place, so layout and the 3D sign's measurements are
-  unaffected. The 3D sign plays the same intro itself: it loads immediately on phones, reads the offset and the
-  drop timing from the shared clock (`clock.intro`, `NEON_DROP`/`neonDropOffset` in `neon-timeline.mjs`), draws
-  a taller band while the letters are up, stays square-on and fades its light pools and dust in as the letters
-  land. It takes over mid-intro as soon as it's ready; the CSS tubes cover the first flickers. The CSS keyframes
-  duplicate the `NEON_DROP` timings, so change both together. The intro is skipped under reduced motion, when
-  the page loads scrolled, or when it loads in a background tab.
+- **Intro** (phones and desktop, at the top of the page; skipped under reduced motion, when loaded scrolled, with a
+  `#hash` other than `#top`, with `?set=`, or in a background tab):
+  1. *Armed before first paint.* An inline script in `app/layout.tsx` adds `intro-pending` to `<html>`: the CSS
+     tubes are hidden and `.hero-room` (a dark layer over the video) is at 95%, so the first frames never show
+     the resting word or a fallback font. The script releases the wordmark after 4s if the page's JS never runs.
+     The font is preconnected and preloaded from the media origin.
+  2. *Gated start.* `NeonWordmark` measures the centring offset at once (the heading box doesn't depend on the
+     font), then waits for the Ethnocentric font and the 3D sign's first frame, up to `INTRO_GATE_MS` (1.4s),
+     before starting the ignition. The 3D build happens in the dark, not mid-animation, and when the 3D sign leads
+     the flat CSS tubes are hidden instantly rather than faded. (A side-on 3D reveal was tried and dropped.)
+  3. *The sign lights the room.* `.hero-room` holds three compositor-only layers driven per frame by
+     `NeonWordmark` from the tubes' live levels: darkness over the whole room (`.hero-room-dark`), darkness beyond
+     the light's reach (`.hero-room-reach`, a soft hole centred on the sign and scaled with its light) and the
+     neon's blue spill (`.hero-room-spill`). They flicker with the tubes (barely eased), lean toward whichever
+     letters are lit, travel down with the sign as it settles, and open up to the whole room as it arrives.
+  4. *God rays and depth light* (`app/_hero/hero-light.ts`, ambience effects `rays` and `depthlight`, each
+     switchable): a half-resolution WebGL2 layer over the room (`.hero-light`, blended as light) driven by the same
+     per-frame state. *Rays* march from each pixel toward the sign, gathering its glow and the haze it lights,
+     dimmed where dark silhouettes (and, with depth on, anything nearer than the sign) block the way. *Depth
+     light* lights the room by distance and angle from the sign using a depth map of the phone hero video baked
+     offline with Depth Anything V2 Small (`scripts/hero-depth/build.py` -> `app/_hero/depth/hero-mobile-depth.webp`
+     + `.json`: 550 frames at 12 fps in one ~211 KB atlas, blended between frames by the video's time but never across a
+     shot cut listed in the JSON's `cuts`). Re-bake if
+     the phone hero video changes (the script needs a Python with torch and transformers; it isn't a site
+     dependency). Test with `?ambience=-depthlight` (rays only), `?ambience=-rays` (depth only), the default
+     (both) or `?ambience=-rays,-depthlight` (neither). After the intro the layer stays on at a resting level
+     (`HERO_REST_LIGHT`, ~34% of the peak) following the tubes' hum and flickers, so the room keeps a trace of the
+     sign's light; phone pages that skip the intro get the resting light too. It only runs while the hero is on
+     screen and the tab is visible, redraws at most at 30 fps at rest, and re-copies the video only when its
+     playback time has moved on (read from whichever video element is current, so the copy can't freeze).
+     The rays hold for `RAYS_CALM_AFTER` (3s) after the sign settles, then ease down over 2.5s to 35% of that
+     (`RAYS_CALM_TO`). Surfaces lit by the depth light keep most of their own colour (a red wall brightens red),
+     while the rays stay the neon's blue, which keeps the depth effect legible. Over the same time both effects gather from the intro's wide pool (`INTRO_LIGHT_FOCUS`,
+     a pool about 0.62 x 0.32 of the hero around the sign, so the room beyond it keeps its own colour and the peak
+     never reads as an even blue filter) into a tight pool around the
+     sign (`focus`/`reach`). Pure black in the footage stays black, and a contrast curve drops faint spread-out
+     light faster than the shafts and lit surfaces. Depth frames are baked at 12 fps with the video's cut and strobe times
+     (`cuts` in the JSON) and never blended across one, which would light a new shot with the last one's shapes.
+     *Desktop* gets the same layer at a steady level (`HERO_REST_LIGHT_DESKTOP`, started at full strength to be
+     tuned down), lit from the left-aligned wordmark, with its own depth bake of `hero-desktop-v1.mp4`
+     (`hero-desktop-depth.webp`, 134 frames, ~69 KB; the layer picks the bake matching the playing video's shape).
+     The light follows the 3D sign as it sways with the pointer (`NeonSignScene.lightShift()`: its parallax
+     against the video plus a throw toward where it faces). Wherever the watermark mattes show, a mask keeps the
+     light out of the matte bands, so the masking contract is untouched.
+  *Desktop* plays the same intro: the wordmark rests large and left-aligned, so it starts centred on screen
+     (`clock.intro.dx` as well as `dy`, a little larger, within 86% of the width) and glides down and across into
+     place. The word's width comes from its font size and tracking (4.72em + tracking), not the rendered text.
+  `?neon-debug` also exposes the light layer as `window.__dosenHeroLight`. (Artificial beams fanning from
+     behind the word were tried and dropped.)
+  5. *Dolly and landing.* Once lit and after a 0.5s hold, the sign pulls back and down into its resting place in
+     one continuous 1.5s move (`NEON_DOLLY`/`neonDolly`, mirrored by the `neon-dolly` keyframes on `.neon-tubes`):
+     it starts as large as the screen allows with ~14px clear each side (`clock.intro.scale`, from the font size),
+     glides with an unhurried start and a long gentle arrival a hair past its mark, then eases onto it. The 3D
+     sign moves through depth rather than being scaled, so perspective shrinks it naturally. The arrival hits the
+     sign with light (`neonLandingPulse`: gas, bloom and a flash across the glass) while `.hero-flash` throws a
+     pulse of blue light on the room behind it. A letter-by-letter drop was tried first and replaced: it read as
+     choppy. Haptics were left out: phones only allow vibration after the visitor has touched the page.
+  6. *Clean-up.* The 3D band (taller during the intro) shrinks 1.2s after landing, once the sign is still, so
+     the canvas resize never lands on a moving frame. The ticker's video reflection only runs once at least a
+     quarter of the strip is on screen, so it doesn't load the intro while sitting just below the fold.
 - **Glow boost:** the CSS tubes' outer glow runs at `--neon-boost: 1.45`, and the 3D sign's bloom and light
   pools at ×1.4 and ×1.45 (`PHONE_*_BOOST` in the scene), because the letters have less area to carry the light.
 - **Depth and glass:** the letters extrude 2.6× deeper (`PHONE_DEPTH`, a z-scale behind the front faces, which
@@ -145,7 +194,8 @@ an eyebrow and a heading; no counters or coordinates. The press profile keeps on
 All video-reactive and site-wide light effects are registered in `app/_hero/ambience-model.mjs`
 (`AMBIENCE_EFFECTS`), grouped as:
 
-- **room** (reactions to the hero video): `exposure`, `hue` (capped at 35°), `strobe`, `reflection`, `spill`.
+- **room** (reactions to the hero video): `exposure`, `hue` (capped at 35°), `strobe`, `reflection`, `spill`,
+  `rays` and `depthlight` (the phone intro's god rays and depth light).
 - **site** (other light effects): `ambilight`, `posters`, `circuit`, `tilt`, `gyro`, `bookend`.
 
 `ambienceToggles()` in `app/_hero/ambience-store.ts` is the shared state. A switched-off effect is also mirrored

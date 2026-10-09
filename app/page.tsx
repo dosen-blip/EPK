@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEdgeGlow } from "./edge-glow";
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type TransitionEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type TransitionEvent } from "react";
 import {
   createSingleFileSegments,
   getAudioDuration,
@@ -11,10 +11,14 @@ import {
 import {
   NEON_FAULT_HOLD_MS,
   NEON_DRAMATIC_PACE,
+  neonDolly,
+  neonDollyArrival,
+  neonDollyEnd,
   NEON_LETTERS,
   NEON_LIT_DELAY_MS,
   neonLitAt,
   planNeonIgnition,
+  readNeonLevels,
   type NeonClock,
   type NeonFaultKind,
   type NeonTube,
@@ -380,6 +384,22 @@ type NeonFault = { index: number; kind: NeonFaultKind };
 // The transparent text keeps the wordmark's exact size and accessible name; the tubes are paint only.
 // Once WebGL is ready a 3D sign (app/_hero/neon-sign-scene.ts) takes over from the CSS tubes, reading
 // the same ignition plan through `clock`. The tubes keep running underneath as the fallback.
+/** Phone intro: how dark the room starts, how far the fully lit tubes alone lift it (the rest comes as the sign
+ * lands), and the longest the dark opening waits for the wordmark's font and the 3D sign before powering on. */
+const INTRO_ROOM_DARK = 0.96;
+const INTRO_TUBE_LIGHT = 0.72;
+/** How much the intro's god rays and depth light already gather toward the sign (0: even across the room). */
+const INTRO_LIGHT_FOCUS = 0.85;
+const INTRO_GATE_MS = 1400;
+/** Phones: how much of the god rays and depth light stays on once the sign has settled (of the intro's peak). */
+const HERO_REST_LIGHT = 0.34;
+/** Desktop: the god rays and depth light settle to this steady level after the intro (started strong, to tune down). */
+const HERO_REST_LIGHT_DESKTOP = 1;
+/** Once settled, the god rays hold for this many seconds, then ease down over the next few to this share. */
+const RAYS_CALM_AFTER = 3;
+const RAYS_CALM_OVER = 2.5;
+const RAYS_CALM_TO = 0.35;
+
 function NeonWordmark() {
   const markRef = useRef<HTMLHeadingElement>(null);
   const clockRef = useRef<NeonClock>({ still: false, tubes: null, start: null, lit: null, fault: null });
@@ -387,26 +407,51 @@ function NeonWordmark() {
   const [lit, setLit] = useState(false);
   const [fault, setFault] = useState<NeonFault | null>(null);
   const [sign, setSign] = useState<"css" | "3d">("css");
-  // Phones only: the sign powers on slowly in the centre of the screen, then its letters drop into place one by one
-  // (see .neon-mark.is-intro). Decided once, when the page loads visible and at the top, so the ignition can use the
-  // dramatic pace and the 3D sign below knows to wait for it.
+  // Phones only: the hero intro. The room opens dark with the sign in the centre of the screen; it powers on slowly,
+  // its light reaching into the room as the tubes catch, then pulls back and down into its place in one smooth move
+  // and arrives with a hit of light (see .neon-mark.is-intro, .hero-room, .hero-flash and the 3D sign).
+  // Armed before the first paint by the head script in app/layout.tsx.
   const introRef = useRef(false);
-  const [intro, setIntro] = useState<{ dy: number } | null>(null);
+  const [intro, setIntro] = useState<{ dx: number; dy: number; scale: number } | null>(null);
+  // Settles once the 3D sign has drawn its first frame or given up, so the intro can open on it.
+  // The 3D sign, once it's up, so the hero's light layer can follow it as it sways.
+  const sceneRef = useRef<NeonSignScene | null>(null);
+  const [signReady] = useState(() => {
+    let resolve = () => {};
+    const promise = new Promise<void>((done) => {
+      resolve = done;
+    });
+    return { promise, resolve: () => resolve() };
+  });
 
   useEffect(() => {
     const clock = clockRef.current;
+    const root = document.documentElement;
+    (window as Window & { __dosenIntro?: boolean }).__dosenIntro = true;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       clock.still = true;
+      root.classList.remove("intro-pending");
       return;
     }
-    introRef.current = window.matchMedia("(max-width: 620px)").matches && window.scrollY < 40 && document.visibilityState === "visible";
+    const wantsIntro = root.classList.contains("intro-pending") && window.scrollY < 40;
+    if (!wantsIntro) root.classList.remove("intro-pending");
+    introRef.current = wantsIntro;
 
-    const plan = introRef.current ? planNeonIgnition(Math.random, NEON_DRAMATIC_PACE) : planNeonIgnition();
+    const plan = wantsIntro ? planNeonIgnition(Math.random, NEON_DRAMATIC_PACE) : planNeonIgnition();
     const litAt = neonLitAt(plan);
     clock.tubes = plan;
+    let disposed = false;
+    let frame = 0;
     let faultTimer = 0;
     let resetTimer = 0;
     let litTimer = 0;
+    let gateTimer = 0;
+    let flashTimer = 0;
+    let roomFrame = 0;
+    const section = markRef.current?.closest<HTMLElement>(".hero") ?? null;
+    const room = section?.querySelector<HTMLElement>(".hero-room") ?? null;
+    const flash = section?.querySelector<HTMLElement>(".hero-flash") ?? null;
+    const phoneLight = window.matchMedia("(max-width: 620px)").matches;
 
     const scheduleFault = () => {
       faultTimer = window.setTimeout(() => {
@@ -421,31 +466,248 @@ function NeonWordmark() {
       }, 5200 + Math.random() * 7800);
     };
 
-    const frame = window.requestAnimationFrame(() => {
-      clock.start = performance.now();
-      if (introRef.current && markRef.current) {
-        // How far up the letters start so the word sits in the centre of the screen.
-        const box = markRef.current.getBoundingClientRect();
-        const next = { dy: Math.round(window.innerHeight / 2 - (box.top + box.height / 2)) };
-        // The 3D sign reads the same offset and drop timing from the shared clock.
-        clock.intro = next;
-        setIntro(next);
+    // The last letter landing throws a flash of the sign's light across the room.
+    const hitRoom = () => {
+      flash?.animate([{ opacity: 0 }, { opacity: 1, offset: 0.05 }, { opacity: 0 }], { duration: 1150, easing: "cubic-bezier(.25, .6, .3, 1)" });
+    };
+
+    const begin = () => {
+      if (disposed || frame) return;
+      window.clearTimeout(gateTimer);
+      frame = window.requestAnimationFrame(() => {
+        clock.start = performance.now();
+        setTubes(plan);
+        litTimer = window.setTimeout(() => {
+          clock.lit = performance.now();
+          setLit(true);
+          scheduleFault();
+          if (clock.intro) flashTimer = window.setTimeout(hitRoom, neonDollyArrival() * 1000);
+        }, litAt * 1000 + NEON_LIT_DELAY_MS);
+      });
+    };
+
+    // The room is lit by the sign itself. It starts black; as tubes catch, light reaches out from them: the dark
+    // over the video lifts most where the light is (a pool of visibility with darkness beyond its reach), a blue
+    // neon spill tints the room, both flicker exactly with the tubes and lean toward whichever letters are lit,
+    // and the light travels down with the sign as it settles. Once it arrives it opens up to the whole room.
+    // Only opacity and transforms change, so the layers composite without repainting.
+    const dark = room?.querySelector<HTMLElement>(".hero-room-dark") ?? null;
+    const reach = room?.querySelector<HTMLElement>(".hero-room-reach") ?? null;
+    const spill = room?.querySelector<HTMLElement>(".hero-room-spill") ?? null;
+    const levels = new Float32Array(NEON_LETTERS.length);
+    // The intro's light pool: most of the room, falling off toward its edges.
+    // Tight enough that the room beyond it keeps its own (often red) light, so the blue reads as the sign's light.
+    const introReach = (area: HTMLElement) => ({ x: area.clientWidth * 0.62, y: area.clientHeight * 0.32 });
+    let letterX: number[] = [];
+    let restX = 0;
+    let restY = 0;
+    let fontPx = 100;
+    let heroLight: import("./_hero/hero-light").HeroLight | null = null;
+    let light = 0;
+    let lastAt = 0;
+    const lightRoom = (now: number) => {
+      if (disposed || !room || !dark || !reach || !spill) return;
+      const dt = lastAt ? Math.min(0.1, (now - lastAt) / 1000) : 0;
+      lastAt = now;
+      let target = 0;
+      let lean = 0;
+      const { offset: drop, offsetX: slide, scale } = neonDolly(clock, now);
+      if (clock.start !== null) {
+        readNeonLevels(clock, now, levels);
+        let sum = 0;
+        let weighted = 0;
+        levels.forEach((level, i) => {
+          sum += level;
+          weighted += level * (letterX[i] ?? 0) * scale;
+        });
+        target = sum / levels.length;
+        lean = sum > 0.01 ? weighted / sum : 0;
       }
-      setTubes(plan);
-      litTimer = window.setTimeout(() => {
-        clock.lit = performance.now();
-        setLit(true);
-        scheduleFault();
-      }, litAt * 1000 + NEON_LIT_DELAY_MS);
-    });
+      // Light is near-instant: just enough easing that a flicker reads as a flicker, not a strobe.
+      light += (target - light) * (1 - Math.exp(-(target > light ? 34 : 18) * dt));
+      const open = clock.lit === null ? 0 : Math.min(1, (now - clock.lit) / 1000 / neonDollyEnd());
+      const opened = open * open * (3 - 2 * open);
+      const x = restX + slide + lean;
+      const y = restY + drop;
+      dark.style.opacity = ((INTRO_ROOM_DARK - INTRO_TUBE_LIGHT * light) * (1 - opened)).toFixed(3);
+      reach.style.opacity = (1 - opened).toFixed(3);
+      reach.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${(0.22 + 0.8 * light + 2.4 * opened).toFixed(3)})`;
+      spill.style.opacity = (0.7 * light * (1 - 0.75 * opened)).toFixed(3);
+      spill.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+      // God rays and depth light (app/_hero/hero-light.ts), each on its own switch so they can be compared.
+      if (heroLight) {
+        const toggles = ambienceToggles();
+        heroLight.render({
+          light,
+          fade: 1 - opened * (1 - (phoneLight ? HERO_REST_LIGHT : HERO_REST_LIGHT_DESKTOP)),
+          centre: { x, y },
+          letters: letterX.map((offset, i) => ({ x: restX + slide + offset * scale, level: levels[i] ?? 0 })),
+          fontPx: fontPx * scale,
+          rays: toggles.rays,
+          depth: toggles.depthlight,
+          // Even at its peak the light falls off toward the edges of the room, so it reads as light from the sign
+          // rather than an even blue wash.
+          focus: INTRO_LIGHT_FOCUS,
+          reach: introReach(room),
+        });
+      }
+      if (clock.lit !== null && now > clock.lit + neonDollyEnd() * 1000 + 250) {
+        room.style.opacity = "0";
+        startRest();
+        return;
+      }
+      roomFrame = window.requestAnimationFrame(lightRoom);
+    };
+
+    // Where the word rests in the room and where each letter sits across it (relative to the word's centre), for
+    // the room light; then the god rays / depth light layer, which loads alongside the 3D sign.
+    const setUpLight = (mark: HTMLElement, word: { x: number; y: number }) => {
+      if (!section) return;
+      const frame = section.getBoundingClientRect();
+      restX = word.x - frame.left;
+      restY = word.y - frame.top;
+      section.style.setProperty("--intro-rest-x", `${Math.round(restX)}px`);
+      section.style.setProperty("--intro-rest-y", `${Math.round(restY)}px`);
+      letterX = Array.from(mark.querySelectorAll<HTMLElement>(".neon-tube"), (tube) => {
+        const r = tube.getBoundingClientRect();
+        return r.left + r.width / 2 - word.x;
+      });
+      fontPx = parseFloat(getComputedStyle(mark).fontSize) || fontPx;
+      if (!ambienceToggles().rays && !ambienceToggles().depthlight) return;
+      void import("./_hero/hero-light").then(({ HeroLight }) => {
+        if (disposed) return;
+        heroLight = HeroLight.create(section, () => section.querySelector<HTMLVideoElement>(".hero-video"));
+        if (!heroLight) return;
+        if (new URLSearchParams(window.location.search).has("neon-debug")) Object.assign(window, { __dosenHeroLight: heroLight });
+        section.querySelector(".hero-room")?.after(heroLight.canvas);
+        if (!wantsIntro) startRest();
+      }).catch(() => undefined);
+    };
+
+    // After the intro (or on a phone page that skipped it), the rays and depth light stay on at a resting level,
+    // following the tubes' hum and flickers and the live footage. Only while the hero is on screen and the tab is
+    // visible, and at most at the footage's own 30 fps.
+    let restFrame = 0;
+    let restDrawn = 0;
+    let restSince = 0;
+    let restSeen = true;
+    let restObserver: IntersectionObserver | null = null;
+    const restLight = (now: number) => {
+      restFrame = 0;
+      if (disposed || !heroLight || !section) return;
+      restFrame = window.requestAnimationFrame(restLight);
+      if (now - restDrawn < 32) return;
+      restDrawn = now;
+      readNeonLevels(clock, now, levels);
+      const toggles = ambienceToggles();
+      const shift = sceneRef.current?.lightShift() ?? { x: 0, y: 0 };
+      const middle = restX + shift.x;
+      const across = letterX.length ? letterX.reduce((sum, x) => sum + x, 0) / letterX.length : 0;
+      // A few seconds after the sign settles, the rays ease down and both effects gather into a pool around the
+      // sign, so the room behind stops competing with it.
+      if (!restSince) restSince = now;
+      const t = Math.min(1, Math.max(0, ((now - restSince) / 1000 - RAYS_CALM_AFTER) / RAYS_CALM_OVER));
+      const calm = t * t * (3 - 2 * t);
+      const wide = introReach(section);
+      heroLight.render({
+        light: levels.reduce((sum, level) => sum + level, 0) / levels.length,
+        fade: phoneLight ? HERO_REST_LIGHT : HERO_REST_LIGHT_DESKTOP,
+        rayGain: 1 - (1 - RAYS_CALM_TO) * calm,
+        // From the intro's wide pool to a tight one around the sign.
+        focus: INTRO_LIGHT_FOCUS + (1 - INTRO_LIGHT_FOCUS) * calm,
+        reach: {
+          x: wide.x + (fontPx * 4.7 * 0.72 - wide.x) * calm,
+          y: wide.y + (fontPx * 2.3 - wide.y) * calm,
+        },
+        centre: { x: middle + across, y: restY + shift.y },
+        letters: letterX.map((offset, i) => ({ x: middle + offset, level: levels[i] ?? 0 })),
+        fontPx,
+        rays: toggles.rays,
+        depth: toggles.depthlight,
+      });
+    };
+    const syncRest = () => {
+      const run = restSeen && document.visibilityState === "visible";
+      if (run && !restFrame) restFrame = window.requestAnimationFrame(restLight);
+      else if (!run && restFrame) {
+        window.cancelAnimationFrame(restFrame);
+        restFrame = 0;
+      }
+    };
+    function startRest() {
+      if (!heroLight || !section || restObserver) return;
+      restObserver = new IntersectionObserver(([entry]) => {
+        restSeen = entry.isIntersecting;
+        syncRest();
+      });
+      restObserver.observe(section);
+      document.addEventListener("visibilitychange", syncRest);
+      syncRest();
+    }
+
+    // The word's width and centre. The width comes from the font size (Ethnocentric's DOSEN advances 4.72em plus
+    // its tracking; 4.57em on phones), not from the rendered text, which may still be in a fallback font this
+    // early. The heading's box depends only on its size, so it can be measured before the font arrives.
+    const measureWord = (mark: HTMLElement) => {
+      const box = mark.getBoundingClientRect();
+      const style = getComputedStyle(mark);
+      const size = parseFloat(style.fontSize) || box.height;
+      const tracking = (parseFloat(style.letterSpacing) || 0) / size;
+      const width = size * (4.72 + 5 * tracking);
+      return { width, x: box.left + width / 2, y: box.top + box.height / 2 };
+    };
+
+    if (wantsIntro && markRef.current) {
+      const word = measureWord(markRef.current);
+      // It starts centred on screen and as large as fits: on phones the word already spans the margins at rest,
+      // so it keeps ~14px clear each side (the 3D sign's deep returns add a little width at the edges); on wider
+      // screens it starts a little larger, within 86% of the width.
+      const fit = phoneLight ? (window.innerWidth - 28) / word.width : (window.innerWidth * 0.86) / word.width;
+      const scale = Math.min(phoneLight ? 1.2 : 1.15, Math.max(1, fit));
+      const next = {
+        dx: Math.round(window.innerWidth / 2 - word.x),
+        dy: Math.round(window.innerHeight / 2 - word.y),
+        scale: Math.round(scale * 1000) / 1000,
+      };
+      // The 3D sign reads the same offsets and timing from the shared clock.
+      clock.intro = next;
+      setIntro(next);
+      setUpLight(markRef.current, word);
+      // The power-on opens on darkness, so it can wait for the wordmark's font and the 3D sign, up to a point.
+      gateTimer = window.setTimeout(begin, INTRO_GATE_MS);
+      void Promise.all([
+        document.fonts.load('400 100px "Ethnocentric"').catch(() => undefined),
+        signReady.promise,
+      ]).then(begin);
+      // The room layers stay on for the whole intro (the pre-paint class only covers the first frames).
+      if (room) room.style.opacity = "1";
+      roomFrame = window.requestAnimationFrame(lightRoom);
+    } else {
+      begin();
+      // Desktop, and phones that skipped the intro (loaded part-way down, or from a link), get the resting light.
+      if (markRef.current) setUpLight(markRef.current, measureWord(markRef.current));
+    }
 
     return () => {
+      disposed = true;
       window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(roomFrame);
+      window.cancelAnimationFrame(restFrame);
+      restObserver?.disconnect();
+      document.removeEventListener("visibilitychange", syncRest);
+      heroLight?.dispose();
+      window.clearTimeout(gateTimer);
+      window.clearTimeout(flashTimer);
       window.clearTimeout(litTimer);
       window.clearTimeout(faultTimer);
       window.clearTimeout(resetTimer);
     };
-  }, []);
+  }, [signReady]);
+
+  // The wordmark is released from its hidden first paint in the same frame its ignition is committed.
+  useLayoutEffect(() => {
+    if (tubes && introRef.current) document.documentElement.classList.remove("intro-pending");
+  }, [tubes]);
 
   // Pin the shared clock to the moment the browser actually started the CSS ignition.
   useEffect(() => {
@@ -468,7 +730,10 @@ function NeonWordmark() {
     const mark = markRef.current;
     const text = mark?.querySelector<HTMLElement>(".neon-mark-text");
     const section = mark?.closest<HTMLElement>(".hero");
-    if (!mark || !text || !section || typeof WebGL2RenderingContext === "undefined") return;
+    if (!mark || !text || !section || typeof WebGL2RenderingContext === "undefined") {
+      signReady.resolve();
+      return;
+    }
 
     const canvas = document.createElement("canvas");
     canvas.className = "neon-canvas";
@@ -487,7 +752,9 @@ function NeonWordmark() {
     const fallBack = (reason: string) => {
       scene?.dispose();
       scene = null;
+      sceneRef.current = null;
       canvas.remove();
+      signReady.resolve();
       if (disposed) return;
       setSign("css");
       mark.dataset.signFallback = reason;
@@ -516,6 +783,7 @@ function NeonWordmark() {
               if (disposed) return;
               canvas.classList.add("is-ready");
               setSign("3d");
+              signReady.resolve();
             },
             onLost: (reason) => fallBack(reason),
           }),
@@ -523,6 +791,7 @@ function NeonWordmark() {
         .then((created) => {
           if (disposed) return created.dispose();
           scene = created;
+          sceneRef.current = created;
           if (params.has("neon-debug")) Object.assign(window, { __dosenNeonSign: created, __dosenAmbience: ambience });
           if (params.has("ambience-panel") || params.has("neon-debug")) {
             import("./_hero/neon-ambience").then(({ mountAmbiencePanel }) => {
@@ -552,7 +821,7 @@ function NeonWordmark() {
       scene?.dispose();
       canvas.remove();
     };
-  }, []);
+  }, [signReady]);
 
   const litAt = tubes ? neonLitAt(tubes) : 0;
   const phase = lit ? " is-lit" : tubes ? " is-powering" : "";
@@ -562,7 +831,7 @@ function NeonWordmark() {
       ref={markRef}
       className={`hero-mark neon-mark${phase}${intro ? " is-intro" : ""}`}
       data-sign={sign}
-      style={tubes ? ({ "--neon-lit-at": `${litAt.toFixed(2)}s`, ...(intro ? { "--intro-dy": `${intro.dy}px` } : {}) } as CSSProperties) : undefined}
+      style={tubes ? ({ "--neon-lit-at": `${litAt.toFixed(2)}s`, ...(intro ? { "--intro-dx": `${intro.dx}px`, "--intro-dy": `${intro.dy}px`, "--intro-scale": intro.scale } : {}) } as CSSProperties) : undefined}
     >
       <span className="neon-mark-text">DOSEN</span>
       <span className="neon-tubes" aria-hidden="true">
@@ -572,7 +841,7 @@ function NeonWordmark() {
             <span
               className={`neon-tube${fault?.index === index ? ` is-${fault.kind}` : ""}`}
               data-ignition={tube?.ignition}
-              style={tube ? ({ "--neon-delay": `${tube.delay.toFixed(2)}s`, "--neon-duration": `${tube.duration.toFixed(2)}s`, "--i": index } as CSSProperties) : undefined}
+              style={tube ? ({ "--neon-delay": `${tube.delay.toFixed(2)}s`, "--neon-duration": `${tube.duration.toFixed(2)}s` } as CSSProperties) : undefined}
               key={letter}
             >
               {letter}
@@ -1464,7 +1733,14 @@ export default function Home() {
             aria-hidden="true"
           />
         </div>
+        {/* Phone intro: the dark the sign lights up, and the flash of its landing (see NeonWordmark). */}
+        <div className="hero-room" aria-hidden="true">
+          <i className="hero-room-dark" />
+          <i className="hero-room-reach" />
+          <i className="hero-room-spill" />
+        </div>
         <div className="hero-shade" aria-hidden="true" />
+        <div className="hero-flash" aria-hidden="true" />
 
         <div className="hero-copy">
           <NeonWordmark />

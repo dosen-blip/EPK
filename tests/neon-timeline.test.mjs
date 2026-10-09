@@ -12,8 +12,10 @@ import {
   neonTubeLevel,
   planNeonIgnition,
   NEON_DRAMATIC_PACE,
-  neonDropOffset,
-  neonDropEnd,
+  neonLandingPulse,
+  neonDolly,
+  neonDollyArrival,
+  neonDollyEnd,
   readNeonLevels,
   sampleNeonStops,
 } from "../app/_hero/neon-timeline.mjs";
@@ -84,16 +86,27 @@ test("the dramatic pace starts later, spaces the letters out and always ends on 
   assert.equal(last.ignition, "stubborn");
 });
 
-test("the phone intro's letters wait up high, drop in turn, overshoot and land", () => {
-  const clock = { still: false, tubes: null, start: 0, lit: null, fault: null, intro: { dy: -200 } };
-  assert.equal(neonDropOffset(clock, 500, 0, 70), -200);
-  clock.lit = 1000;
-  assert.equal(neonDropOffset(clock, 1000 + 640, 0, 70), -200);
-  const midFirst = neonDropOffset(clock, 1000 + 1100, 0, 70);
-  const midLast = neonDropOffset(clock, 1000 + 1100, 4, 70);
-  assert.ok(midFirst > -200 && midFirst < 0 && midLast < midFirst);
-  const landed = 1000 + (0.65 + 0.78 * 1.2) * 1000;
-  assert.ok(Math.abs(neonDropOffset(clock, landed, 0, 70) - 4.9) < 0.05);
-  assert.equal(neonDropOffset(clock, 1000 + neonDropEnd() * 1000, 4, 70), 0);
-  assert.equal(neonDropOffset({ ...clock, intro: null }, 1100, 0, 70), 0);
+
+
+test("the phone intro's sign waits centred and enlarged, glides back into place in one move, then hits", () => {
+  const tubes = planNeonIgnition(() => 0.5, NEON_DRAMATIC_PACE);
+  const clock = { still: false, tubes, start: 1000, lit: null, fault: null, intro: { dy: -200, scale: 1.07 } };
+  assert.deepEqual(neonDolly(clock, 2000), { offset: -200, offsetX: 0, scale: 1.07, progress: 0 });
+  clock.lit = 5000;
+  assert.equal(neonDolly(clock, 5000 + 490).offset, -200);
+  const mid = neonDolly(clock, 5000 + 1200);
+  assert.ok(mid.offset > -200 && mid.offset < 0 && mid.scale < 1.07 && mid.scale > 1);
+  const arrived = neonDolly(clock, 5000 + neonDollyArrival() * 1000);
+  assert.ok(Math.abs(arrived.offset - 3) < 0.05 && arrived.scale === 1);
+  assert.deepEqual(neonDolly(clock, 5000 + neonDollyEnd() * 1000), { offset: 0, offsetX: 0, scale: 1, progress: 1 });
+  assert.deepEqual(neonDolly({ ...clock, intro: null }, 6000), { offset: 0, offsetX: 0, scale: 1, progress: 1 });
+  // Desktop starts centred across too: it glides sideways into place with the same curve, without overshoot.
+  const wide = { ...clock, intro: { dy: -200, dx: 300, scale: 1.1 } };
+  const midWide = neonDolly(wide, 5000 + 1200);
+  assert.ok(midWide.offsetX > 0 && midWide.offsetX < 300);
+  assert.equal(neonDolly(wide, 5000 + neonDollyArrival() * 1000).offsetX, 0);
+  const hit = 5000 + neonDollyArrival() * 1000;
+  assert.equal(neonLandingPulse(clock, hit - 10), 0);
+  assert.ok(neonLandingPulse(clock, hit + 60) > 0.6);
+  assert.ok(neonLandingPulse(clock, hit + 1500) < 0.01);
 });
