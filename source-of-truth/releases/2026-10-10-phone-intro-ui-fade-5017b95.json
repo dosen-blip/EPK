@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-10-10T06:20:59Z",
+  "reason": "Publish phone intro UI hiding and landing fade (5017b95)",
+  "sourceCommit": "5017b95ca7fb2be2e3db3545ba52aec7079b04fe",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "e4d0036f-4c9d-4e01-bf65-e87242c5c6fd",
+    "deploymentUrl": "https://e4d0036f.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "2c02ab276129d12e87dc70d3278a92ea0c030b900c08a5e245317d645890d5bd",
+  "verification": {
+    "unitAndRenderTests": "passed via npm test",
+    "remoteMediaObjects": "134 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/release-check?source=codex",
+    "livePersistentPlayer": "present"
+  }
+}
