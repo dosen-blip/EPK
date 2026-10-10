@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "releasedAt": "2026-10-10T06:41:37Z",
+  "reason": "Publish video-gated hero intro, light-frame readiness and lazy image loading (513cf6e)",
+  "sourceCommit": "513cf6efc6d17e18b68d43866b039322ce21c4d0",
+  "repository": {
+    "url": "https://github.com/dosen-blip/EPK",
+    "visibility": "public",
+    "branch": "main"
+  },
+  "cloudflarePages": {
+    "project": "dosen-epk",
+    "deploymentId": "f6a72b23-fc60-460d-bf4d-f26b979ecda0",
+    "deploymentUrl": "https://f6a72b23.dosen-epk.pages.dev",
+    "productionUrl": "https://dosen-epk.pages.dev",
+    "canonicalUrl": "https://www.dosen.ca"
+  },
+  "mediaManifestSha256": "2c02ab276129d12e87dc70d3278a92ea0c030b900c08a5e245317d645890d5bd",
+  "verification": {
+    "unitAndRenderTests": "passed via npm test",
+    "remoteMediaObjects": "134 passed",
+    "deploymentHtml": "HTTP 200",
+    "pagesHtml": "HTTP 200",
+    "canonicalHtml": "HTTP 200",
+    "apexRedirect": "HTTP 301 to https://www.dosen.ca/release-check?source=codex",
+    "livePersistentPlayer": "present"
+  }
+}
