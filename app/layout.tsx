@@ -7,7 +7,7 @@ import { MEDIA_ORIGIN } from "./content";
 // (`intro-pending`): the wordmark stays hidden and the room dark until app/page.tsx starts the power-on, so the
 // first frames never show the resting word or a fallback font. If the page's script never starts the intro, the
 // wordmark is released after 4s.
-const ARM_INTRO = `(function(){try{var d=document.documentElement;if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&document.visibilityState==="visible"&&(!location.hash||location.hash==="#top")&&!/[?&]set=/.test(location.search)){d.classList.add("intro-pending");setTimeout(function(){if(!window.__dosenIntro)d.classList.remove("intro-pending")},4000)}}catch(e){}})();`;
+const ARM_INTRO = `(function(){try{var d=document.documentElement;if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&document.visibilityState==="visible"&&(!location.hash||location.hash==="#top")&&!/[?&]set=/.test(location.search)){d.classList.add("intro-pending");if(matchMedia("(max-width: 620px)").matches)d.classList.add("intro-ui-hidden");setTimeout(function(){if(!window.__dosenIntro)d.classList.remove("intro-pending","intro-ui-hidden")},4000)}}catch(e){}})();`;
 
 const title = "DOSEN — Electronic Press Kit";
 const description = "Ottawa DJ playing tech house, house, trance, and techno.";

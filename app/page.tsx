@@ -388,6 +388,9 @@ type NeonFault = { index: number; kind: NeonFaultKind };
  * lands), and the longest the dark opening waits for the wordmark's font and the 3D sign before powering on. */
 const INTRO_ROOM_DARK = 0.96;
 const INTRO_TUBE_LIGHT = 0.72;
+// Phone intro: how long the hidden UI takes to fade in as the sign lands, and the latest it may stay hidden.
+const INTRO_UI_FADE_MS = 900;
+const INTRO_UI_SAFETY_MS = 9000;
 /** How much the intro's god rays and depth light already gather toward the sign (0: even across the room). */
 const INTRO_LIGHT_FOCUS = 0.85;
 const INTRO_GATE_MS = 1400;
@@ -428,13 +431,22 @@ function NeonWordmark() {
     const clock = clockRef.current;
     const root = document.documentElement;
     (window as Window & { __dosenIntro?: boolean }).__dosenIntro = true;
+    // Phones hide the header, hero copy and player during the centred power-on (`intro-ui-hidden`, set before first
+    // paint); they fade back in as the sign lands.
+    let uiTimer = 0;
+    const revealUi = () => {
+      if (!root.classList.contains("intro-ui-hidden")) return;
+      root.classList.remove("intro-ui-hidden");
+      root.classList.add("intro-ui-reveal");
+      window.setTimeout(() => root.classList.remove("intro-ui-reveal"), INTRO_UI_FADE_MS + 100);
+    };
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       clock.still = true;
-      root.classList.remove("intro-pending");
+      root.classList.remove("intro-pending", "intro-ui-hidden");
       return;
     }
     const wantsIntro = root.classList.contains("intro-pending") && window.scrollY < 40;
-    if (!wantsIntro) root.classList.remove("intro-pending");
+    if (!wantsIntro) root.classList.remove("intro-pending", "intro-ui-hidden");
     introRef.current = wantsIntro;
 
     const plan = wantsIntro ? planNeonIgnition(Math.random, NEON_DRAMATIC_PACE) : planNeonIgnition();
@@ -481,7 +493,12 @@ function NeonWordmark() {
           clock.lit = performance.now();
           setLit(true);
           scheduleFault();
-          if (clock.intro) flashTimer = window.setTimeout(hitRoom, neonDollyArrival() * 1000);
+          if (clock.intro) {
+            flashTimer = window.setTimeout(() => {
+              hitRoom();
+              revealUi();
+            }, neonDollyArrival() * 1000);
+          }
         }, litAt * 1000 + NEON_LIT_DELAY_MS);
       });
     };
@@ -675,6 +692,8 @@ function NeonWordmark() {
       setUpLight(markRef.current, word);
       // The power-on opens on darkness, so it can wait for the wordmark's font and the 3D sign, up to a point.
       gateTimer = window.setTimeout(begin, INTRO_GATE_MS);
+      // Never leave the page without its navigation, whatever happens to the intro.
+      uiTimer = window.setTimeout(revealUi, INTRO_UI_SAFETY_MS);
       void Promise.all([
         document.fonts.load('400 100px "Ethnocentric"').catch(() => undefined),
         signReady.promise,
@@ -701,6 +720,8 @@ function NeonWordmark() {
       window.clearTimeout(litTimer);
       window.clearTimeout(faultTimer);
       window.clearTimeout(resetTimer);
+      window.clearTimeout(uiTimer);
+      root.classList.remove("intro-ui-hidden");
     };
   }, [signReady]);
 

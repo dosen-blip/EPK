@@ -132,6 +132,11 @@ button { color: inherit; }
 .intro-pending .neon-mark:not(.is-powering):not(.is-lit) .neon-tube { animation-delay: 6s; }
 .hero-room { position: absolute; z-index: -2; inset: 0; overflow: hidden; pointer-events: none; opacity: 0; }
 .intro-pending .hero-room { opacity: 1; }
+/* Phone intro: the header, hero copy and player stay out of the way while the sign powers on centred, then fade in
+   as it lands (app/page.tsx revealUi; the fade length matches INTRO_UI_FADE_MS). */
+.intro-ui-hidden :is(.site-header, .hero-bottom, .signal-dock) { opacity: 0 !important; pointer-events: none; }
+.intro-ui-reveal :is(.site-header, .hero-bottom, .signal-dock) { animation: intro-ui-in .9s cubic-bezier(.22,.7,.3,1) both; }
+@keyframes intro-ui-in { from { opacity: 0; } }
 .hero-room > i { position: absolute; display: block; pointer-events: none; will-change: opacity, transform; }
 /* Darkness over the whole room, lifted as the sign's light grows. */
 .hero-room-dark { inset: 0; background: #020203; opacity: .96; }

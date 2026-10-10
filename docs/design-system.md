@@ -102,7 +102,11 @@ On phones (≤620px):
   1. *Armed before first paint.* An inline script in `app/layout.tsx` adds `intro-pending` to `<html>`: the CSS
      tubes are hidden and `.hero-room` (a dark layer over the video) is at 95%, so the first frames never show
      the resting word or a fallback font. The script releases the wordmark after 4s if the page's JS never runs.
-     The font is preconnected and preloaded from the media origin.
+     The font is preconnected and preloaded from the media origin. On phones (≤620px) it also adds
+     `intro-ui-hidden`, which hides the header, the hero tag and Library button (`.hero-bottom`) and the player
+     dock while the sign powers on centred; `NeonWordmark` swaps it for `intro-ui-reveal` (a 0.9s fade,
+     `INTRO_UI_FADE_MS`) as the sign lands, with a 9s safety reveal (`INTRO_UI_SAFETY_MS`). Skipped intros never
+     hide the UI.
   2. *Gated start.* `NeonWordmark` measures the centring offset at once (the heading box doesn't depend on the
      font), then waits for the Ethnocentric font and the 3D sign's first frame, up to `INTRO_GATE_MS` (1.4s),
      before starting the ignition. The 3D build happens in the dark, not mid-animation, and when the 3D sign leads
