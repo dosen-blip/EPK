@@ -322,9 +322,14 @@ export class HeroLight {
     const w = this.section.clientWidth;
     const h = this.section.clientHeight;
     if (Math.round(w * LIGHT_SCALE) !== this.canvas.width || Math.round(h * LIGHT_SCALE) !== this.canvas.height) this.resize();
-    const on = (state.rays || state.depth) && state.fade > 0.001;
+    // Without a frame on screen to light, the layer hides rather than drawing a picture the page isn't showing,
+    // which would sit over the footage as a frozen ghost: while the video loads or was just swapped for another,
+    // and while it has never started (iOS can refuse autoplay, e.g. in Low Power Mode, and then shows nothing
+    // although WebGL can still read the first frame).
+    const ready = !!video && video.readyState >= 2 && video.videoWidth > 0 && (!video.paused || video.currentTime > 0);
+    const on = (state.rays || state.depth) && state.fade > 0.001 && ready;
     this.canvas.classList.toggle("is-on", on);
-    if (!on || !video || video.readyState < 2 || !video.videoWidth) return;
+    if (!on || !video) return;
     const box = this.videoBox(video);
     if (state.depth) this.useAtlas(video.videoWidth >= video.videoHeight ? "landscape" : "portrait");
 

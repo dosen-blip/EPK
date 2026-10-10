@@ -109,7 +109,9 @@ On phones (≤620px):
      hide the UI.
   2. *Gated start.* `NeonWordmark` measures the centring offset at once (the heading box doesn't depend on the
      font), then waits for the Ethnocentric font and the 3D sign's first frame, up to `INTRO_GATE_MS` (1.4s),
-     before starting the ignition. The 3D build happens in the dark, not mid-animation, and when the 3D sign leads
+     and for the hero video to be under way (`videoCanPlayOn`: the browser expects it to play through, or it is
+     playing with `INTRO_VIDEO_AHEAD_S` (1.5s) buffered), up to `INTRO_VIDEO_WAIT_MS` (8s), before starting the
+     ignition, so on a slow connection the sign never lights a room whose footage hasn't started. The 3D build happens in the dark, not mid-animation, and when the 3D sign leads
      the flat CSS tubes are hidden instantly rather than faded. (A side-on 3D reveal was tried and dropped.)
   3. *The sign lights the room.* `.hero-room` holds three compositor-only layers driven per frame by
      `NeonWordmark` from the tubes' live levels: darkness over the whole room (`.hero-room-dark`), darkness beyond
@@ -131,6 +133,9 @@ On phones (≤620px):
      sign's light; phone pages that skip the intro get the resting light too. It only runs while the hero is on
      screen and the tab is visible, redraws at most at 30 fps at rest, and re-copies the video only when its
      playback time has moved on (read from whichever video element is current, so the copy can't freeze).
+     It hides instead of drawing while the video has no frame on screen (loading, just swapped, or never started
+     because iOS refused autoplay), so it can't leave a frozen ghost over the footage. The hero video gets no
+     source until the page knows the screen shape, so phones never load the desktop video first.
      The rays hold for `RAYS_CALM_AFTER` (3s) after the sign settles, then ease down over 2.5s to 35% of that
      (`RAYS_CALM_TO`). Surfaces lit by the depth light keep most of their own colour (a red wall brightens red),
      while the rays stay the neon's blue, which keeps the depth effect legible. Over the same time both effects gather from the intro's wide pool (`INTRO_LIGHT_FOCUS`,

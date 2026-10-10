@@ -51,6 +51,17 @@ function mediaUrl(path: string) {
 // Media read back through canvas (the hero and clip videos) is requested with CORS. A query of its own keeps
 // those responses in a separate cache entry from any plain request for the same file, which Chrome can
 // otherwise fail to write.
+/** Whether a video is under way: the browser expects it to play through, or it's playing with some buffered ahead. */
+function videoCanPlayOn(video: HTMLVideoElement) {
+  if (video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) return true;
+  if (video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA || video.paused || video.currentTime < 0.2) return false;
+  const { buffered, currentTime } = video;
+  for (let i = 0; i < buffered.length; i++) {
+    if (buffered.start(i) <= currentTime + 0.1 && buffered.end(i) - currentTime >= INTRO_VIDEO_AHEAD_S) return true;
+  }
+  return false;
+}
+
 function corsMediaUrl(path: string) {
   return `${mediaUrl(path)}?cors=1`;
 }
@@ -313,13 +324,13 @@ function DossierVinylPlayer({
           <div className="dossier-vinyl-record" ref={recordRef}>
             <span className="dossier-vinyl-shine" />
             <span className="dossier-vinyl-label">
-              <img src={mediaUrl(set.artwork.vinylCover)} alt="" />
+              <img src={mediaUrl(set.artwork.vinylCover)} alt="" loading="lazy" decoding="async" />
               <i />
             </span>
           </div>
         </div>
         <div className="dossier-vinyl-sleeve" aria-hidden="true">
-          <img src={mediaUrl(set.artwork.vinylCover)} alt="" />
+          <img src={mediaUrl(set.artwork.vinylCover)} alt="" loading="lazy" decoding="async" />
           <span />
         </div>
         <button
@@ -390,10 +401,15 @@ const INTRO_ROOM_DARK = 0.96;
 const INTRO_TUBE_LIGHT = 0.72;
 // Phone intro: how long the hidden UI takes to fade in as the sign lands, and the latest it may stay hidden.
 const INTRO_UI_FADE_MS = 900;
-const INTRO_UI_SAFETY_MS = 9000;
+const INTRO_UI_SAFETY_MS = 9000; // from the start of the power-on
 /** How much the intro's god rays and depth light already gather toward the sign (0: even across the room). */
 const INTRO_LIGHT_FOCUS = 0.85;
 const INTRO_GATE_MS = 1400;
+/** The power-on also waits for the hero video to be playing (the browser expects it to play through, or it has
+ * started and `INTRO_VIDEO_AHEAD_S` seconds are buffered), so the sign never lights an empty room on a slow
+ * connection; past `INTRO_VIDEO_WAIT_MS` it starts anyway. */
+const INTRO_VIDEO_AHEAD_S = 1.5;
+const INTRO_VIDEO_WAIT_MS = 8000;
 /** Phones: how much of the god rays and depth light stays on once the sign has settled (of the intro's peak). */
 const HERO_REST_LIGHT = 0.34;
 /** Desktop: the god rays and depth light settle to this steady level after the intro (started strong, to tune down). */
@@ -458,6 +474,7 @@ function NeonWordmark() {
     let resetTimer = 0;
     let litTimer = 0;
     let gateTimer = 0;
+    let videoTimer = 0;
     let flashTimer = 0;
     let roomFrame = 0;
     const section = markRef.current?.closest<HTMLElement>(".hero") ?? null;
@@ -486,6 +503,9 @@ function NeonWordmark() {
     const begin = () => {
       if (disposed || frame) return;
       window.clearTimeout(gateTimer);
+      window.clearTimeout(videoTimer);
+      // Never leave the page without its navigation, whatever happens to the intro.
+      if (introRef.current) uiTimer = window.setTimeout(revealUi, INTRO_UI_SAFETY_MS);
       frame = window.requestAnimationFrame(() => {
         clock.start = performance.now();
         setTubes(plan);
@@ -690,14 +710,24 @@ function NeonWordmark() {
       clock.intro = next;
       setIntro(next);
       setUpLight(markRef.current, word);
-      // The power-on opens on darkness, so it can wait for the wordmark's font and the 3D sign, up to a point.
-      gateTimer = window.setTimeout(begin, INTRO_GATE_MS);
-      // Never leave the page without its navigation, whatever happens to the intro.
-      uiTimer = window.setTimeout(revealUi, INTRO_UI_SAFETY_MS);
-      void Promise.all([
-        document.fonts.load('400 100px "Ethnocentric"').catch(() => undefined),
-        signReady.promise,
-      ]).then(begin);
+      // The power-on opens on darkness, so it can wait: for the wordmark's font and the 3D sign (up to
+      // INTRO_GATE_MS), and for the hero video to be ready to play on (up to INTRO_VIDEO_WAIT_MS).
+      const assets = Promise.race([
+        Promise.all([document.fonts.load('400 100px "Ethnocentric"').catch(() => undefined), signReady.promise]),
+        new Promise((resolve) => window.setTimeout(resolve, INTRO_GATE_MS)),
+      ]);
+      const footage = new Promise<void>((resolve) => {
+        // The video element may not have its source yet (the page picks phone or desktop footage after mount) and
+        // can be swapped, so it's looked up afresh each time.
+        const check = () => {
+          const video = section?.querySelector<HTMLVideoElement>(".hero-video");
+          if (disposed || (video?.getAttribute("src") && videoCanPlayOn(video))) return resolve();
+          videoTimer = window.setTimeout(check, 100);
+        };
+        check();
+      });
+      gateTimer = window.setTimeout(begin, INTRO_VIDEO_WAIT_MS);
+      void Promise.all([assets, footage]).then(begin);
       // The room layers stay on for the whole intro (the pre-paint class only covers the first frames).
       if (room) room.style.opacity = "1";
       roomFrame = window.requestAnimationFrame(lightRoom);
@@ -721,6 +751,7 @@ function NeonWordmark() {
       window.clearTimeout(faultTimer);
       window.clearTimeout(resetTimer);
       window.clearTimeout(uiTimer);
+      window.clearTimeout(videoTimer);
       root.classList.remove("intro-ui-hidden");
     };
   }, [signReady]);
@@ -976,7 +1007,9 @@ export default function Home() {
   const [transmitting, setTransmitting] = useState(false);
   const [activeSetSlug, setActiveSetSlug] = useState(DEFAULT_FEATURED_SET_SLUG);
   const [playerStatus, setPlayerStatus] = useState<"ready" | "loading" | "error">("ready");
-  const [mobileHero, setMobileHero] = useState(false);
+  // Unknown until the first effect reads the screen: the hero video gets no source until then, so phones never
+  // start loading (and briefly showing) the desktop video before switching to theirs.
+  const [mobileHero, setMobileHero] = useState<boolean | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [archiveLibraryOpen, setArchiveLibraryOpen] = useState(false);
   const [selectedSetSlug, setSelectedSetSlug] = useState<string | null>(null);
@@ -1735,7 +1768,7 @@ export default function Home() {
             ref={heroVideoRef}
             key={mobileHero ? "mobile-hero" : "desktop-hero"}
             className="hero-video"
-            src={corsMediaUrl(mobileHero ? "/media/hero/hero-mobile-v3.mp4" : "/media/hero/hero-desktop-v1.mp4")}
+            src={mobileHero === null ? undefined : corsMediaUrl(mobileHero ? "/media/hero/hero-mobile-v3.mp4" : "/media/hero/hero-desktop-v1.mp4")}
             crossOrigin="anonymous"
             autoPlay
             muted
@@ -1846,7 +1879,7 @@ export default function Home() {
                 key={item.id}
               >
                 <span className="set-library-media">
-                  <img src={mediaUrl(getEventArtwork(item))} alt="" />
+                  <img src={mediaUrl(getEventArtwork(item))} alt="" loading="lazy" decoding="async" />
                   <span className="mono">{String(index + 1).padStart(2, "0")}</span>
                 </span>
                 <span className="set-library-meta mono"><span>{item.date}</span><span>{item.id}</span></span>
@@ -2008,6 +2041,7 @@ export default function Home() {
                 <img
                   src={mediaUrl(getEventArtwork(selectedSet))}
                   alt={`${selectedSet.title} event poster`}
+                  decoding="async"
                 />
                 <figcaption className="mono">OFFICIAL EVENT POSTER / ARCHIVE VISUAL</figcaption>
               </figure>
@@ -2076,7 +2110,7 @@ export default function Home() {
               <div className="vinyl-record" ref={vinylRef}>
                 <div className="vinyl-record-shine" />
                 <div className="vinyl-label">
-                  <img src={mediaUrl(activeSet.artwork.vinylCover)} alt="" />
+                  <img src={mediaUrl(activeSet.artwork.vinylCover)} alt="" loading="lazy" decoding="async" />
                   <span className="vinyl-spindle" />
                 </div>
               </div>
@@ -2084,7 +2118,7 @@ export default function Home() {
 
             <div className="vinyl-sleeve">
               <div className="vinyl-sleeve-art">
-                <img src={mediaUrl(activeSet.artwork.vinylCover)} alt={`${activeSet.title} official set artwork`} />
+                <img src={mediaUrl(activeSet.artwork.vinylCover)} alt={`${activeSet.title} official set artwork`} loading="lazy" decoding="async" />
               </div>
               <span className="vinyl-sleeve-grain" aria-hidden="true" />
               <span className="vinyl-sleeve-edge" aria-hidden="true" />
@@ -2127,7 +2161,7 @@ export default function Home() {
                   key={set.slug}
                 >
                   <span className="set-selector-cover">
-                    <img src={mediaUrl(set.artwork.vinylCover)} alt="" />
+                    <img src={mediaUrl(set.artwork.vinylCover)} alt="" loading="lazy" decoding="async" />
                     {isActive && <span className="set-selector-active mono">ON AIR</span>}
                   </span>
                   <span className="set-selector-meta">
@@ -2164,7 +2198,7 @@ export default function Home() {
                 onClick={() => openSetDossier(item.slug)}
               >
                 <div className="archive-media media-slot" data-media-slot={item.slot}>
-                  <img className="archive-poster" src={mediaUrl(getEventArtwork(item))} alt="" />
+                  <img className="archive-poster" src={mediaUrl(getEventArtwork(item))} alt="" loading="lazy" decoding="async" />
                   <span className="archive-index mono">{String(index + 1).padStart(2, "0")}</span>
                   <span className="placeholder-label mono">VIEW MORE / {item.id}</span>
                 </div>
@@ -2219,6 +2253,8 @@ export default function Home() {
             <img
               src={mediaUrl("/media/profile/dosen-headshot-2026.jpeg")}
               alt="DOSEN seated beneath blue architectural lighting"
+              loading="lazy"
+              decoding="async"
             />
             <figcaption className="mono">DOSEN / ARTIST PORTRAIT</figcaption>
           </figure>
