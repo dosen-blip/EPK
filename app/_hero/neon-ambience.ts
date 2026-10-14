@@ -1,3 +1,5 @@
+import * as THREE from "three";
+import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
 import {
   AMBIENCE_DEFAULTS,
   AMBIENCE_EFFECTS,
@@ -25,67 +27,178 @@ export type AmbienceReading = {
   strobeAgo: number;
 };
 
-// Fixed size: the canvas backs a WebGL texture, and WebGL2 textures keep the size they were created with.
-// Portrait (mobile) video is squeezed into it; every mapping is in normalised units, so nothing moves.
 const SAMPLE_WIDTH = 48;
 const SAMPLE_HEIGHT = 36;
 
+/** A frame's numbers, and when the frame was taken (performance.now() ms). */
+export type RoomSample = { stats: FrameStats; at: number };
+
+/* One bilinear tap per sample pixel, at the same points a 2D canvas drawImage() of the whole frame reads. The video
+   is uploaded raw (sRGB-encoded, so it filters as stored, like the canvas did) and the sRGB target re-encodes on
+   write, so the stored bytes and the decoded colour the sign's shaders sample are what the canvas used to hold. */
+const sampleVertex = /* glsl */ `
+  varying vec2 vUv;
+  void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }
+`;
+const sampleFragment = /* glsl */ `
+  uniform sampler2D uVideo;
+  varying vec2 vUv;
+  vec3 decode(vec3 c) { return mix(pow((c + 0.055) / 1.055, vec3(2.4)), c / 12.92, vec3(lessThanEqual(c, vec3(0.04045)))); }
+  void main() { gl_FragColor = vec4(decode(texture2D(uVideo, vec2(vUv.x, 1.0 - vUv.y)).rgb), 1.0); }
+`;
+
 /**
- * Samples the hero video into a tiny canvas. The canvas doubles as the blurred "room" texture the glass
- * reflects. The video must be requested with `crossOrigin="anonymous"`; if the browser still refuses the
+ * Samples the hero video into a tiny texture on the GPU. The texture doubles as the blurred "room" the glass
+ * reflects; its pixels are read back asynchronously for the numbers the sign reacts to, so sampling never stalls
+ * a frame waiting on the GPU (a 2D canvas read of a video frame copies the whole frame back and flushes the GPU,
+ * 5-15 ms on the main thread). Portrait (mobile) video is squeezed into it; every mapping is in normalised units,
+ * so nothing moves. The video must be requested with `crossOrigin="anonymous"`; if the browser still refuses the
  * pixels, sampling switches itself off and the sign keeps its fixed look.
  */
 export class VideoAmbience {
-  readonly canvas = document.createElement("canvas");
   box: VideoBox | null = null;
-  private context: CanvasRenderingContext2D | null;
+  readonly texture: THREE.Texture;
+  private target: THREE.WebGLRenderTarget;
+  private material: THREE.ShaderMaterial;
+  private quad: FullScreenQuad;
+  private source: THREE.VideoTexture | null = null;
+  private pixels = new Uint8Array(SAMPLE_WIDTH * SAMPLE_HEIGHT * 4);
+  private frame = new Uint8ClampedArray(SAMPLE_WIDTH * SAMPLE_HEIGHT * 4);
+  private reading = false;
+  private latest: RoomSample | null = null;
   private broken = false;
+  private disposed = false;
+  /** The video the box was measured for, and at what size; the box is re-measured only when these or the hero change. */
+  private boxOf: { video: HTMLVideoElement | null; width: number; height: number } = { video: null, width: 0, height: 0 };
+  private observer: ResizeObserver;
 
-  constructor(private readonly video: () => HTMLVideoElement | null, private readonly section: HTMLElement) {
-    this.canvas.width = SAMPLE_WIDTH;
-    this.canvas.height = SAMPLE_HEIGHT;
-    this.context = this.canvas.getContext("2d", { willReadFrequently: true });
-    if (this.context) {
-      this.context.fillStyle = "#000";
-      this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    }
+  constructor(
+    private readonly renderer: THREE.WebGLRenderer,
+    private readonly video: () => HTMLVideoElement | null,
+    private readonly section: HTMLElement,
+  ) {
+    this.target = new THREE.WebGLRenderTarget(SAMPLE_WIDTH, SAMPLE_HEIGHT, {
+      depthBuffer: false,
+      colorSpace: THREE.SRGBColorSpace,
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      generateMipmaps: false,
+    });
+    this.texture = this.target.texture;
+    this.material = new THREE.ShaderMaterial({
+      uniforms: { uVideo: { value: null } },
+      vertexShader: sampleVertex,
+      fragmentShader: sampleFragment,
+      depthTest: false,
+      depthWrite: false,
+    });
+    this.quad = new FullScreenQuad(this.material);
+    this.observer = new ResizeObserver(() => {
+      this.boxOf = { video: null, width: 0, height: 0 };
+    });
+    this.observer.observe(section);
   }
 
   get available() {
-    return !this.broken && !!this.context;
+    return !this.broken;
   }
 
-  /** Reads the current frame; `band` is the area behind the wordmark in section CSS px. */
-  sample(band: Rect): FrameStats | null {
+  /**
+   * Copies the current frame into the room texture and starts reading it back; `band` is the area behind the
+   * wordmark in section CSS px. The numbers arrive a frame or so later through `take()`. False when there was no
+   * frame to sample.
+   */
+  sample(band: Rect, now: number): boolean {
     const video = this.video();
-    const context = this.context;
-    if (this.broken || !context || !video || video.readyState < 2 || !video.videoWidth || !video.videoHeight) return null;
+    if (this.broken || this.disposed || !video || video.readyState < 2 || !video.videoWidth || !video.videoHeight) return false;
+    if (this.source?.image !== video && !this.adopt(video)) return false;
 
-    const frame = this.section.getBoundingClientRect();
-    const shown = video.getBoundingClientRect();
-    const scale = Math.max(shown.width / video.videoWidth, shown.height / video.videoHeight);
-    const w = video.videoWidth * scale;
-    const h = video.videoHeight * scale;
-    this.box = { x0: shown.left - frame.left + (shown.width - w) / 2, y0: shown.top - frame.top + (shown.height - h) / 2, w, h };
-
-    const width = SAMPLE_WIDTH;
-    const height = SAMPLE_HEIGHT;
-
-    let data: Uint8ClampedArray;
-    try {
-      context.drawImage(video, 0, 0, width, height);
-      data = context.getImageData(0, 0, width, height).data;
-    } catch {
-      this.broken = true;
-      return null;
+    const of = this.boxOf;
+    if (!this.box || of.video !== video || of.width !== video.videoWidth || of.height !== video.videoHeight) {
+      const frame = this.section.getBoundingClientRect();
+      const shown = video.getBoundingClientRect();
+      const scale = Math.max(shown.width / video.videoWidth, shown.height / video.videoHeight);
+      const w = video.videoWidth * scale;
+      const h = video.videoHeight * scale;
+      this.box = { x0: shown.left - frame.left + (shown.width - w) / 2, y0: shown.top - frame.top + (shown.height - h) / 2, w, h };
+      this.boxOf = { video, width: video.videoWidth, height: video.videoHeight };
     }
     const box = this.box;
-    return analyzeFrame(data, width, height, {
+
+    const renderer = this.renderer;
+    const previous = renderer.getRenderTarget();
+    this.source!.needsUpdate = true;
+    renderer.setRenderTarget(this.target);
+    this.quad.render(renderer);
+    renderer.setRenderTarget(previous);
+
+    // One read in flight at a time; a sample that lands while one is pending still refreshes the room texture.
+    if (this.reading) return true;
+    this.reading = true;
+    const width = SAMPLE_WIDTH;
+    const height = SAMPLE_HEIGHT;
+    const rect = {
       x0: ((band.left - box.x0) / box.w) * width,
       x1: ((band.right - box.x0) / box.w) * width,
       y0: ((band.top - box.y0) / box.h) * height,
       y1: ((band.bottom - box.y0) / box.h) * height,
-    });
+    };
+    renderer
+      .readRenderTargetPixelsAsync(this.target, 0, 0, width, height, this.pixels)
+      .then(() => {
+        if (this.disposed) return;
+        // GL rows run bottom-up; the numbers are taken over the frame top-down, as a canvas holds it.
+        const row = width * 4;
+        for (let y = 0; y < height; y++) this.frame.set(this.pixels.subarray((height - 1 - y) * row, (height - y) * row), y * row);
+        this.latest = { stats: analyzeFrame(this.frame, width, height, rect), at: now };
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        this.reading = false;
+      });
+    return true;
+  }
+
+  /** The newest frame's numbers since the last call, if any. */
+  take() {
+    const latest = this.latest;
+    this.latest = null;
+    return latest;
+  }
+
+  /** Starts sampling a (new) video element, once it has proved its pixels can be read. */
+  private adopt(video: HTMLVideoElement) {
+    const renderer = this.renderer;
+    const gl = renderer.getContext();
+    const probe = gl.createTexture();
+    let readable = true;
+    gl.bindTexture(gl.TEXTURE_2D, probe);
+    try {
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+    } catch {
+      readable = false;
+    }
+    gl.deleteTexture(probe);
+    // Raw GL calls above: three's cached bindings no longer match the context.
+    renderer.resetState();
+    if (!readable) {
+      this.broken = true;
+      return false;
+    }
+    this.source?.dispose();
+    this.source = new THREE.VideoTexture(video);
+    this.source.flipY = false;
+    this.material.uniforms.uVideo.value = this.source;
+    return true;
+  }
+
+  dispose() {
+    this.disposed = true;
+    this.observer.disconnect();
+    this.source?.dispose();
+    this.quad.dispose();
+    this.material.dispose();
+    this.target.dispose();
   }
 }
 

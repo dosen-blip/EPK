@@ -517,7 +517,6 @@ export class NeonSignScene {
 
   // Ambience: what the sign reads from the video and how it answers.
   private room: VideoAmbience;
-  private roomTexture: THREE.CanvasTexture;
   private band: Rect | null = null;
   private stats: FrameStats | null = null;
   private nextSample = 0;
@@ -585,13 +584,8 @@ export class NeonSignScene {
       uLevelsB: { value: new THREE.Vector3() },
     };
     const colors = { uViolet: { value: VIOLET.clone() }, uHot: { value: HOT.clone() }, uCore: { value: CORE.clone() } };
-    this.room = new VideoAmbience(options.video, options.section);
-    this.roomTexture = this.track(new THREE.CanvasTexture(this.room.canvas));
-    this.roomTexture.colorSpace = THREE.SRGBColorSpace;
-    this.roomTexture.minFilter = THREE.LinearFilter;
-    this.roomTexture.magFilter = THREE.LinearFilter;
-    this.roomTexture.generateMipmaps = false;
-    const room = { value: this.roomTexture };
+    this.room = this.track(new VideoAmbience(renderer, options.video, options.section));
+    const room = { value: this.room.texture };
     VIOLET.getHSL(this.baseHsl.violet);
     HOT.getHSL(this.baseHsl.hot);
     DUST.getHSL(this.baseHsl.dust);
@@ -661,7 +655,8 @@ export class NeonSignScene {
     this.glowComposer.addPass(new RenderPass(this.scene, this.camera));
     this.glowComposer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), 0.42, 0.05, 0.0));
 
-    this.composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+    // Nothing reads the scene's depth after it's drawn, so the multisampled depth is never resolved (only colour is).
+    this.composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4, resolveDepthBuffer: false }));
     this.composer.setPixelRatio(this.dpr);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.finalPass = new ShaderPass(finalShader);
@@ -1176,21 +1171,21 @@ export class NeonSignScene {
     const step = dt > 0 ? dt : 1 / 60;
     if (this.band && now >= this.nextSample && AMBIENCE_IDS.some((id) => toggles[id])) {
       this.nextSample = now + (this.coarse ? 100 : 66);
-      const stats = this.room.sample(this.band);
-      if (stats) {
-        const gap = this.lastSample ? (now - this.lastSample) / 1000 : 0;
-        this.lastSample = now;
-        this.stats = stats;
-        this.roomTexture.needsUpdate = true;
-        this.updateRoomMaps();
-        const hit = this.detectStrobe(stats.luma, now / 1000, gap);
-        if (hit > 0 && toggles.strobe && !reducedMotion) {
-          this.strobeAt = now;
-          this.strobeDepth = 0.3 + 0.45 * hit;
-          const letters = Math.min(this.raw.length, MAX_LETTERS);
-          this.blipLetter = Math.floor(Math.random() * letters);
-          this.blipSecond = Math.random() < 0.4 ? (this.blipLetter + 1 + Math.floor(Math.random() * (letters - 1))) % letters : -1;
-        }
+      // The room texture updates now; its numbers are read back without stalling and arrive a frame or so later.
+      if (this.room.sample(this.band, now)) this.updateRoomMaps();
+    }
+    const fresh = this.room.take();
+    if (fresh) {
+      const gap = this.lastSample ? (fresh.at - this.lastSample) / 1000 : 0;
+      this.lastSample = fresh.at;
+      this.stats = fresh.stats;
+      const hit = this.detectStrobe(fresh.stats.luma, fresh.at / 1000, gap);
+      if (hit > 0 && toggles.strobe && !reducedMotion) {
+        this.strobeAt = now;
+        this.strobeDepth = 0.3 + 0.45 * hit;
+        const letters = Math.min(this.raw.length, MAX_LETTERS);
+        this.blipLetter = Math.floor(Math.random() * letters);
+        this.blipSecond = Math.random() < 0.4 ? (this.blipLetter + 1 + Math.floor(Math.random() * (letters - 1))) % letters : -1;
       }
     }
     const stats = this.stats;

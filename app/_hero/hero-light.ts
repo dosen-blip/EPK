@@ -14,7 +14,8 @@ import mobileDepthMeta from "./depth/hero-mobile-depth.json";
  *   surfaces facing the sign catch the most.
  *
  * It renders at reduced resolution, redraws the video copy only when the video's time has moved on, and pauses
- * whenever the hero is off screen or the tab is hidden.
+ * whenever the hero is off screen or the tab is hidden. Its shaders compile in the background (it stays off until
+ * they're ready), and it measures the page only when the hero resizes, never per frame.
  */
 
 export type HeroLightState = {
@@ -45,6 +46,12 @@ const ATLASES = {
 const RAY_STEPS = 36;
 const LETTERS = 5;
 const LIGHT_SCALE = 0.5;
+const SCENE_UNIFORMS = ["uVideo", "uTarget", "uSize", "uVideoBox"] as const;
+const LIGHT_UNIFORMS = [
+  "uScene", "uDepth", "uTarget", "uSize", "uVideoBox", "uCellA", "uCellB", "uDepthMix", "uDepthOn", "uRaysOn", "uRayGain",
+  "uFocus", "uReach", "uLight", "uFade", "uSign", "uLetters", "uFont", "uTint",
+] as const;
+type Locations<T extends readonly string[]> = Record<T[number], WebGLUniformLocation | null>;
 /** The neon's blue, as the light it casts: deep and saturated, so the lit room stays coloured rather than pale. */
 const TINT = [0.2, 0.46, 1.0];
 
@@ -197,7 +204,17 @@ export class HeroLight {
    * screen). Read from whichever video element is current, so it can never go stale. */
   private copiedAt = -1;
   private copiedFrom: HTMLVideoElement | null = null;
-  private uniforms = new Map<string, WebGLUniformLocation | null>();
+  private sceneUniforms: Locations<typeof SCENE_UNIFORMS> | null = null;
+  private lightUniforms: Locations<typeof LIGHT_UNIFORMS> | null = null;
+  private parallel: object | null;
+  /** Null while the shaders are still compiling, then whether they linked. */
+  private linked: boolean | null = null;
+  /** The section's size and where the video's picture sits in it, measured only when either changes. */
+  private size = { w: 0, h: 0 };
+  private box: [number, number, number, number] | null = null;
+  private boxOf: { video: HTMLVideoElement | null; width: number; height: number } = { video: null, width: 0, height: 0 };
+  private observer: ResizeObserver;
+  private letters = new Float32Array(LETTERS * 2);
   private disposed = false;
 
   private constructor(
@@ -208,6 +225,8 @@ export class HeroLight {
   ) {
     this.canvas = canvas;
     this.gl = gl;
+    // Compiled in the background where the browser can: nothing asks for the result until it's done.
+    this.parallel = gl.getExtension("KHR_parallel_shader_compile");
     this.sceneProgram = this.program(SCENE);
     this.lightProgram = this.program(LIGHT);
     const quad = gl.createBuffer();
@@ -219,7 +238,16 @@ export class HeroLight {
     this.depthTexture = this.texture();
     this.sceneTexture = this.texture();
     this.sceneTarget = gl.createFramebuffer()!;
+    this.measure();
     this.resize();
+    this.observer = new ResizeObserver(() => this.measure());
+    this.observer.observe(section);
+  }
+
+  /** Called when the hero resizes (and once up front); the video box is re-measured on next use. */
+  private measure() {
+    this.size = { w: this.section.clientWidth, h: this.section.clientHeight };
+    this.box = null;
   }
 
   /** Null when WebGL2 isn't available. */
@@ -236,13 +264,13 @@ export class HeroLight {
     }
   }
 
+  /** Starts compiling and linking; `ready()` checks the outcome once it's done, so this never waits on the driver. */
   private program(fragment: string) {
     const gl = this.gl;
     const compile = (type: number, source: string) => {
       const shader = gl.createShader(type)!;
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader) ?? "shader");
       return shader;
     };
     const program = gl.createProgram()!;
@@ -250,8 +278,23 @@ export class HeroLight {
     gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragment));
     gl.bindAttribLocation(program, 0, "aPosition");
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program) ?? "link");
     return program;
+  }
+
+  /** Whether both programs have linked, without blocking while they are still compiling. */
+  private ready() {
+    if (this.linked !== null) return this.linked;
+    const gl = this.gl;
+    const programs = [this.sceneProgram, this.lightProgram];
+    // COMPLETION_STATUS_KHR: polling it never blocks, unlike asking for the link status.
+    if (this.parallel && !programs.every((program) => gl.getProgramParameter(program, 0x91b1))) return false;
+    this.linked = programs.every((program) => gl.getProgramParameter(program, gl.LINK_STATUS));
+    if (!this.linked) return false;
+    const locate = <T extends readonly string[]>(program: WebGLProgram, names: T) =>
+      Object.fromEntries(names.map((name) => [name, gl.getUniformLocation(program, name)])) as Locations<T>;
+    this.sceneUniforms = locate(this.sceneProgram, SCENE_UNIFORMS);
+    this.lightUniforms = locate(this.lightProgram, LIGHT_UNIFORMS);
+    return true;
   }
 
   private texture() {
@@ -285,8 +328,8 @@ export class HeroLight {
 
   private resize() {
     const gl = this.gl;
-    const w = Math.max(1, this.section.clientWidth);
-    const h = Math.max(1, this.section.clientHeight);
+    const w = Math.max(1, this.size.w);
+    const h = Math.max(1, this.size.h);
     // Soft light needs little resolution: half the CSS size for the light, a third for the video copy.
     this.canvas.width = Math.round(w * LIGHT_SCALE);
     this.canvas.height = Math.round(h * LIGHT_SCALE);
@@ -299,35 +342,32 @@ export class HeroLight {
     this.freshFrame = true;
   }
 
-  private set(program: WebGLProgram, name: string, apply: (location: WebGLUniformLocation | null) => void) {
-    const key = `${program === this.sceneProgram ? "s" : "l"}:${name}`;
-    if (!this.uniforms.has(key)) this.uniforms.set(key, this.gl.getUniformLocation(program, name));
-    apply(this.uniforms.get(key) ?? null);
-  }
-
   /** Where the video's picture sits in the section (object-fit: cover, centred, including its CSS scale). */
   private videoBox(video: HTMLVideoElement) {
+    const of = this.boxOf;
+    if (this.box && of.video === video && of.width === video.videoWidth && of.height === video.videoHeight) return this.box;
     const frame = this.section.getBoundingClientRect();
     const shown = video.getBoundingClientRect();
     const scale = Math.max(shown.width / video.videoWidth, shown.height / video.videoHeight);
     const w = video.videoWidth * scale;
     const h = video.videoHeight * scale;
-    return [shown.left - frame.left + (shown.width - w) / 2, shown.top - frame.top + (shown.height - h) / 2, w, h] as const;
+    this.boxOf = { video, width: video.videoWidth, height: video.videoHeight };
+    this.box = [shown.left - frame.left + (shown.width - w) / 2, shown.top - frame.top + (shown.height - h) / 2, w, h];
+    return this.box;
   }
 
   render(state: HeroLightState) {
     if (this.disposed) return;
     const gl = this.gl;
     const video = this.video();
-    const w = this.section.clientWidth;
-    const h = this.section.clientHeight;
+    const { w, h } = this.size;
     if (Math.round(w * LIGHT_SCALE) !== this.canvas.width || Math.round(h * LIGHT_SCALE) !== this.canvas.height) this.resize();
     // Without a frame on screen to light, the layer hides rather than drawing a picture the page isn't showing,
     // which would sit over the footage as a frozen ghost: while the video loads or was just swapped for another,
     // and while it has never started (iOS can refuse autoplay, e.g. in Low Power Mode, and then shows nothing
     // although WebGL can still read the first frame).
     const ready = !!video && video.readyState >= 2 && video.videoWidth > 0 && (!video.paused || video.currentTime > 0);
-    const on = (state.rays || state.depth) && state.fade > 0.001 && ready;
+    const on = (state.rays || state.depth) && state.fade > 0.001 && ready && this.ready();
     this.canvas.classList.toggle("is-on", on);
     if (!on || !video) return;
     const box = this.videoBox(video);
@@ -348,10 +388,11 @@ export class HeroLight {
       gl.useProgram(this.sceneProgram);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, this.videoTexture);
-      this.set(this.sceneProgram, "uVideo", (l) => gl.uniform1i(l, 0));
-      this.set(this.sceneProgram, "uTarget", (l) => gl.uniform2f(l, this.sceneSize.w, this.sceneSize.h));
-      this.set(this.sceneProgram, "uSize", (l) => gl.uniform2f(l, w, h));
-      this.set(this.sceneProgram, "uVideoBox", (l) => gl.uniform4f(l, ...box));
+      const u = this.sceneUniforms!;
+      gl.uniform1i(u.uVideo, 0);
+      gl.uniform2f(u.uTarget, this.sceneSize.w, this.sceneSize.h);
+      gl.uniform2f(u.uSize, w, h);
+      gl.uniform4f(u.uVideoBox, box[0], box[1], box[2], box[3]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
@@ -366,49 +407,48 @@ export class HeroLight {
     const now = video.currentTime % (meta.frames / meta.fps);
     const cut = meta.cuts.find((time) => time > a / meta.fps && time <= (a + 1) / meta.fps);
     const mix = cut === undefined ? at - a : now < cut ? 0 : 1;
-    const cell = (i: number) => {
-      const col = i % meta.cols;
-      const row = Math.floor(i / meta.cols);
-      return [col / meta.cols, row / meta.rows, 1 / meta.cols, 1 / meta.rows] as const;
-    };
+    const cell = (location: WebGLUniformLocation | null, i: number) =>
+      gl.uniform4f(location, (i % meta.cols) / meta.cols, Math.floor(i / meta.cols) / meta.rows, 1 / meta.cols, 1 / meta.rows);
 
-    const p = this.lightProgram;
+    const u = this.lightUniforms!;
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-    gl.useProgram(p);
+    gl.useProgram(this.lightProgram);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.sceneTexture);
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, this.depthTexture);
-    this.set(p, "uScene", (l) => gl.uniform1i(l, 0));
-    this.set(p, "uDepth", (l) => gl.uniform1i(l, 1));
-    this.set(p, "uTarget", (l) => gl.uniform2f(l, this.canvas.width, this.canvas.height));
-    this.set(p, "uSize", (l) => gl.uniform2f(l, w, h));
-    this.set(p, "uVideoBox", (l) => gl.uniform4f(l, ...box));
-    this.set(p, "uCellA", (l) => gl.uniform4f(l, ...cell(a)));
-    this.set(p, "uCellB", (l) => gl.uniform4f(l, ...cell(b)));
-    this.set(p, "uDepthMix", (l) => gl.uniform1f(l, mix));
-    this.set(p, "uDepthOn", (l) => gl.uniform1f(l, state.depth && this.depthReady ? 1 : 0));
-    this.set(p, "uRaysOn", (l) => gl.uniform1f(l, state.rays ? 1 : 0));
-    this.set(p, "uRayGain", (l) => gl.uniform1f(l, state.rayGain ?? 1));
-    this.set(p, "uFocus", (l) => gl.uniform1f(l, state.focus ?? 0));
-    this.set(p, "uReach", (l) => gl.uniform2f(l, state.reach?.x ?? w, state.reach?.y ?? h));
-    this.set(p, "uLight", (l) => gl.uniform1f(l, state.light));
-    this.set(p, "uFade", (l) => gl.uniform1f(l, state.fade));
-    this.set(p, "uSign", (l) => gl.uniform2f(l, state.centre.x, state.centre.y));
-    const letters = new Float32Array(LETTERS * 2);
-    state.letters.slice(0, LETTERS).forEach((letter, i) => {
-      letters[i * 2] = letter.x;
-      letters[i * 2 + 1] = letter.level;
-    });
-    this.set(p, "uLetters", (l) => gl.uniform2fv(l, letters));
-    this.set(p, "uFont", (l) => gl.uniform1f(l, state.fontPx));
-    this.set(p, "uTint", (l) => gl.uniform3f(l, TINT[0], TINT[1], TINT[2]));
+    gl.uniform1i(u.uScene, 0);
+    gl.uniform1i(u.uDepth, 1);
+    gl.uniform2f(u.uTarget, this.canvas.width, this.canvas.height);
+    gl.uniform2f(u.uSize, w, h);
+    gl.uniform4f(u.uVideoBox, box[0], box[1], box[2], box[3]);
+    cell(u.uCellA, a);
+    cell(u.uCellB, b);
+    gl.uniform1f(u.uDepthMix, mix);
+    gl.uniform1f(u.uDepthOn, state.depth && this.depthReady ? 1 : 0);
+    gl.uniform1f(u.uRaysOn, state.rays ? 1 : 0);
+    gl.uniform1f(u.uRayGain, state.rayGain ?? 1);
+    gl.uniform1f(u.uFocus, state.focus ?? 0);
+    gl.uniform2f(u.uReach, state.reach?.x ?? w, state.reach?.y ?? h);
+    gl.uniform1f(u.uLight, state.light);
+    gl.uniform1f(u.uFade, state.fade);
+    gl.uniform2f(u.uSign, state.centre.x, state.centre.y);
+    const letters = this.letters;
+    letters.fill(0);
+    for (let i = 0; i < Math.min(LETTERS, state.letters.length); i++) {
+      letters[i * 2] = state.letters[i].x;
+      letters[i * 2 + 1] = state.letters[i].level;
+    }
+    gl.uniform2fv(u.uLetters, letters);
+    gl.uniform1f(u.uFont, state.fontPx);
+    gl.uniform3f(u.uTint, TINT[0], TINT[1], TINT[2]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
+    this.observer.disconnect();
     this.canvas.remove();
     this.gl.getExtension("WEBGL_lose_context")?.loseContext();
   }

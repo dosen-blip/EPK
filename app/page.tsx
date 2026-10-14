@@ -532,9 +532,14 @@ function NeonWordmark() {
     const reach = room?.querySelector<HTMLElement>(".hero-room-reach") ?? null;
     const spill = room?.querySelector<HTMLElement>(".hero-room-spill") ?? null;
     const levels = new Float32Array(NEON_LETTERS.length);
+    // The hero's size, measured when it resizes: read inside the light loops, straight after the room's style
+    // writes, it would force a style recalc every frame.
+    let heroSize = { w: section?.clientWidth ?? 0, h: section?.clientHeight ?? 0 };
+    const sizeObserver = section ? new ResizeObserver(() => { heroSize = { w: section.clientWidth, h: section.clientHeight }; }) : null;
+    if (section) sizeObserver?.observe(section);
     // The intro's light pool: most of the room, falling off toward its edges.
     // Tight enough that the room beyond it keeps its own (often red) light, so the blue reads as the sign's light.
-    const introReach = (area: HTMLElement) => ({ x: area.clientWidth * 0.62, y: area.clientHeight * 0.32 });
+    const introReach = () => ({ x: heroSize.w * 0.62, y: heroSize.h * 0.32 });
     let letterX: number[] = [];
     let restX = 0;
     let restY = 0;
@@ -585,7 +590,7 @@ function NeonWordmark() {
           // Even at its peak the light falls off toward the edges of the room, so it reads as light from the sign
           // rather than an even blue wash.
           focus: INTRO_LIGHT_FOCUS,
-          reach: introReach(room),
+          reach: introReach(),
         });
       }
       if (clock.lit !== null && now > clock.lit + neonDollyEnd() * 1000 + 250) {
@@ -645,7 +650,7 @@ function NeonWordmark() {
       if (!restSince) restSince = now;
       const t = Math.min(1, Math.max(0, ((now - restSince) / 1000 - RAYS_CALM_AFTER) / RAYS_CALM_OVER));
       const calm = t * t * (3 - 2 * t);
-      const wide = introReach(section);
+      const wide = introReach();
       heroLight.render({
         light: levels.reduce((sum, level) => sum + level, 0) / levels.length,
         fade: phoneLight ? HERO_REST_LIGHT : HERO_REST_LIGHT_DESKTOP,
@@ -743,6 +748,7 @@ function NeonWordmark() {
       window.cancelAnimationFrame(roomFrame);
       window.cancelAnimationFrame(restFrame);
       restObserver?.disconnect();
+      sizeObserver?.disconnect();
       document.removeEventListener("visibilitychange", syncRest);
       heroLight?.dispose();
       window.clearTimeout(gateTimer);
