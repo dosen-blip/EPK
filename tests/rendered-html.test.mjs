@@ -27,7 +27,7 @@ test("server-renders the DOSEN EPK scaffold", async () => {
   assert.match(html, /DJ · Electronic press kit/);
   assert.match(html, /Recent dates/);
   assert.match(html, /Make a night of it\./);
-  assert.match(html, /DOWNLOAD EPK \/ PDF/);
+  assert.match(html, /DOWNLOAD EPK/);
   assert.match(html, /href="https:\/\/dosen-media\.matiadosen\.workers\.dev\/media\/press\/dosen-epk-2026-07-signal-sky-lounge\.pdf"/);
   assert.match(html, /download="DOSEN-EPK-2026\.pdf"/);
   assert.ok(html.indexOf("SELECT A SET") < html.indexOf("Selected sets"));
@@ -97,7 +97,6 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(packageJson, /"release:cloudflare": "node scripts\/release\.mjs deploy"/);
   assert.ok(mediaKeys.has("media/profile/dosen-headshot-2026.jpeg"));
   assert.match(page, /className="press-headshot"/);
-  assert.match(page, /DOSEN \/ ARTIST PORTRAIT/);
   assert.match(page, /SELECT A SET/);
   assert.match(page, /className="dock-toggle"/);
   assert.match(page, /--dock-progress/);
@@ -124,7 +123,6 @@ test("keeps production media and visual treatments explicit", async () => {
   }
 
   assert.match(page, /Open video library/);
-  assert.match(page, /SET DETAILS/);
   assert.match(page, /DossierVinylPlayer/);
   assert.match(page, /dossier-vinyl-player/);
   assert.match(page, /selectedPlayableSet &&/);
@@ -169,7 +167,6 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /WebkitBackdropFilter: "blur\(13px\)"/);
   assert.match(css, /\.hero-film-matte \{ display: none; \}/);
   assert.doesNotMatch(page, /PERFORMANCE REEL|LOADING FILM|hero-film-placeholder/);
-  assert.match(page, /FULL CLIP LIBRARY \/ ORIGINAL AUDIO/);
   assert.equal(content.mediaOrigin, "https://dosen-media.matiadosen.workers.dev");
   assert.equal(content.pressKit.path, "/media/press/dosen-epk-2026-07-signal-sky-lounge.pdf");
   assert.equal(content.pressKit.filename, "DOSEN-EPK-2026.pdf");
@@ -180,17 +177,13 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(css, /\.contact-actions \.contact-download \{/);
   assert.match(page, /audio\.src = mediaUrl\(segment\.src\)/);
   assert.match(page, /src=\{mediaUrl\(activeSegments\[0\]\.src\)\}/);
-  assert.match(page, /PROFESSIONAL MEDIA/);
-  assert.match(page, /SOCIAL MEDIA POST/);
   assert.doesNotMatch(page, /ORIGINAL AUDIO \/ FULL CLIP/);
   assert.match(page, /const clipLabel = `\$\{eventTitle\} CLIP \$\{clipNumber\}`/);
   assert.match(page, /startIndex=\{landscapeClips\.length\}/);
   assert.match(page, /controls/);
   assert.match(page, /mailto:matiadosen@outlook\.com/);
-  assert.match(page, /ARTIST PROFILE \/ OFFICIAL BIO/);
+  assert.doesNotMatch(page, /className="eyebrow"|ARTIST PROFILE|320 KBPS/);
   assert.match(css, /\.press \{[^}]*grid-template-columns: minmax\(240px, 364px\) minmax\(0, 800px\) minmax\(220px, 300px\)[^}]*justify-content: center/);
-  assert.match(css, /\.press-label \{[^}]*position: absolute[^}]*bottom: calc\(100% \+ 18px\)/);
-  assert.match(css, /@media \(max-width: 900px\) \{[\s\S]*?\.press-label \{ position: static; \}/);
   assert.match(css, /\.press-copy \{ min-width: 0; \}/);
   assert.doesNotMatch(page, /WORKING COPY|DRAFT|FINAL APPROVAL|ADD BEFORE LAUNCH|EPK PREVIEW|IN PROGRESS/);
   assert.match(playerModel, /Array\.from\(\{ length: 62 \}/);
@@ -203,7 +196,6 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /transmitting \? "PAUSE" : "PLAY"/);
   assert.match(page, /function PlaybackIcon/);
   assert.doesNotMatch(page, /▶|Ⅱ/);
-  assert.match(page, /320 KBPS/);
   assert.match(page, /Seek through \$\{activeSet\.title\}/);
   assert.match(page, /data-active-set/);
   assert.match(page, /signalSectionRef/);
@@ -213,8 +205,7 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /const MOBILE_CHAPTERS/);
   assert.match(page, /className="mobile-index-trigger mono"/);
   assert.match(page, /id="mobile-index"/);
-  assert.match(page, /MobileChapterMarker number="01" label="LISTEN"/);
-  assert.match(page, /MobileChapterMarker number="05" label="BOOK"/);
+  assert.doesNotMatch(page, /MobileChapterMarker/);
   assert.match(page, /id="dates"/);
   assert.match(page, /mobileDockCompact \? "is-compact"/);
   assert.match(page, /downwardTravel >= 64/);
@@ -262,7 +253,6 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /mediaUrl\(set\.artwork\.vinylCover\)/);
   assert.doesNotMatch(page, /mediaUrl\(set\.artwork\.eventPoster\)/);
   assert.match(page, /selectedHighlightClips/);
-  assert.match(page, /FEATURED CLIPS/);
   assert.match(page, /SCROLL FOR MORE/);
   assert.match(css, /\.set-dossier-scroll-cue/);
   assert.match(css, /\.set-dossier-highlight\.is-portrait video/);

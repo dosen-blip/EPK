@@ -40,9 +40,16 @@ Type:
 - **Wordmark:** Ethnocentric (served from R2, `/fonts/Ethnocentric-Regular.otf`). **Never change the hero
   wordmark's typeface or size.** Its on-screen position is also locked: measure the wordmark's box before and
   after any hero edit at 1280×800, 820×1000 and 375×812.
-- **Labels, buttons, metadata:** the mono stack (`"SFMono-Regular", Consolas, monospace`), uppercase, tracked.
-- **Headings and body:** the existing sans stack. The "Signal" type experiment (Archivo Expanded / Martian Mono)
-  was set aside.
+- **Headings, ticker, set and date titles:** Jost (`--font-display`), a geometric sans in the Futura line, at weight
+  700 and -.02em tracking. Big Shoulders Display was tried first and rejected as too boxy; condensed, grotesque and
+  serif alternatives lost out to geometric.
+- **Body:** Libre Franklin (`--font-body`).
+- **Labels, buttons, metadata:** Libre Franklin at a slightly larger optical size (`--font-label`, the `.mono` class),
+  uppercase, lightly tracked. The class name is historical; nothing on the page is a monospace except the clock.
+- **Running clocks** (`.dock-time`, `.dossier-vinyl-time`): the system monospace (`--font-clock`), because the web
+  subsets of both faces have proportional digits and a ticking time would jitter.
+- Both web faces are variable latin subsets bundled from `app/fonts` (SIL OFL). The "Signal" type experiment
+  (Archivo Expanded / Martian Mono) was set aside.
 
 ## Components
 
@@ -195,8 +202,10 @@ rejected; don't reintroduce them.
 
 ### Set cards and sections
 
-Set cards show only "ON AIR" on the active card; no index numbers or "SELECT" labels. Section headers carry
-an eyebrow and a heading; no counters or coordinates. The press profile keeps only the "SETS" fact.
+Set cards show only "ON AIR" on the active card; no "SELECT" labels. Sections carry a heading alone: no eyebrows
+above it, no catalogue codes, no counters or coordinates. Cards, date rows and the phone menu have no index numbers.
+Lists read as plain text, with commas rather than slashes (`GRIDWRKS, OTTAWA`). The press profile keeps only the
+"SETS" fact.
 
 ## Effects framework
 

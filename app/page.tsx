@@ -29,7 +29,6 @@ import {
   DEFAULT_FEATURED_SET_SLUG,
   getEventArtwork,
   getLibraryEvent,
-  LIBRARY_CLIP_COUNT,
   LIBRARY_EVENTS,
   MEDIA_ORIGIN,
   playableSets,
@@ -117,7 +116,6 @@ function OrientationClipRow({
     <div className={`clip-format is-${orientation}`}>
       <div className="clip-format-header mono">
         <span>{formatLabel}</span>
-        <span>{clips.length} CLIP{clips.length === 1 ? "" : "S"}</span>
       </div>
 
       <div
@@ -143,13 +141,7 @@ function OrientationClipRow({
                 <source src={corsMediaUrl(clip.src)} type="video/mp4" />
               </video>
               <div className="clip-card-copy">
-                <span className="mono">{clipNumber}</span>
-                <div>
-                  <h4>{clipLabel}</h4>
-                  <p className="mono">
-                    {clip.orientation === "landscape" ? "PROFESSIONAL MEDIA" : "SOCIAL MEDIA POST"}
-                  </p>
-                </div>
+                <h4>{clipLabel}</h4>
               </div>
             </article>
           );
@@ -186,7 +178,6 @@ function EventClipRow({
     <section className="clip-event" id={`event-${event.id}`} aria-labelledby={`${event.id}-title`}>
       <header className="clip-event-header">
         <div>
-          <p className="eyebrow">{event.set}</p>
           <h3 id={`${event.id}-title`}>{event.title}</h3>
         </div>
         <dl className="clip-event-facts mono">
@@ -345,10 +336,8 @@ function DossierVinylPlayer({
       </div>
 
       <div className="dossier-vinyl-controls">
-        <p className="mono">FULL SET / LOCAL MASTER</p>
         <h4>{set.title}</h4>
         <div className="dossier-vinyl-meta mono">
-          <span>320 KBPS MP3</span>
           <span>{isActive ? status : "READY"}</span>
         </div>
         <input
@@ -371,24 +360,15 @@ function DossierVinylPlayer({
 }
 
 const MOBILE_CHAPTERS = [
-  { id: "signal", number: "01", label: "LISTEN" },
-  { id: "archive", number: "02", label: "SELECTED SETS" },
-  { id: "dates", number: "03", label: "DATES" },
-  { id: "press", number: "04", label: "PROFILE" },
-  { id: "contact", number: "05", label: "BOOK" },
+  { id: "signal", label: "LISTEN" },
+  { id: "archive", label: "SELECTED SETS" },
+  { id: "dates", label: "DATES" },
+  { id: "press", label: "PROFILE" },
+  { id: "contact", label: "BOOK" },
 ] as const;
 
 type MobileChapterId = (typeof MOBILE_CHAPTERS)[number]["id"];
 type MobileDockPhase = "expanded" | "collapsing" | "compact" | "expanding";
-
-function MobileChapterMarker({ number, label }: { number: string; label: string }) {
-  return (
-    <div className="mobile-chapter-marker mono mobile-reveal" data-number={number} aria-hidden="true">
-      <span>{number}</span>
-      <span>{label}</span>
-    </div>
-  );
-}
 
 type NeonFault = { index: number; kind: NeonFaultKind };
 
@@ -1744,7 +1724,6 @@ export default function Home() {
           <div className="mobile-index-panel" ref={mobileIndexRef}>
             <header>
               <div>
-                <p className="mono">DOSEN / MOBILE INDEX</p>
                 <h2 id="mobile-index-title">Choose a chapter.</h2>
               </div>
               <button className="mono" type="button" onClick={() => setMobileIndexOpen(false)}>
@@ -1759,7 +1738,6 @@ export default function Home() {
                   onClick={() => setMobileIndexOpen(false)}
                   key={chapter.id}
                 >
-                  <span className="mono">{chapter.number}</span>
                   <strong>{chapter.label}</strong>
                 </a>
               ))}
@@ -1837,7 +1815,6 @@ export default function Home() {
           <div className="clip-library-header">
             <div>
               <span className="wordmark wordmark-small">DOSEN</span>
-              <p className="mono">FULL CLIP LIBRARY / ORIGINAL AUDIO</p>
             </div>
             <button type="button" onClick={closeLibrary} aria-label="Close video library">
               CLOSE <span aria-hidden="true">×</span>
@@ -1845,7 +1822,6 @@ export default function Home() {
           </div>
 
           <div className="clip-library-intro">
-            <p className="eyebrow">PERFORMANCE FILMS / {LIBRARY_CLIP_COUNT} CLIPS</p>
             <h2 id="clip-library-title">Inside the room.</h2>
             <p>Organized by night. Open a row, choose a perspective, and hear every clip with its original audio.</p>
           </div>
@@ -1868,7 +1844,7 @@ export default function Home() {
           <header className="set-library-header">
             <div>
               <span className="wordmark wordmark-small">DOSEN</span>
-              <p className="mono" id="set-library-title">SET LIBRARY / {transmissions.length} SELECTED SETS</p>
+              <p className="mono" id="set-library-title">SET LIBRARY</p>
             </div>
             <button type="button" onClick={() => setArchiveLibraryOpen(false)} aria-label="Close set library">
               CLOSE <span aria-hidden="true">×</span>
@@ -1876,7 +1852,7 @@ export default function Home() {
           </header>
 
           <div className="set-library-grid">
-            {transmissions.map((item, index) => (
+            {transmissions.map((item) => (
               <button
                 className={`set-library-card tone-${item.tone}`}
                 type="button"
@@ -1886,9 +1862,8 @@ export default function Home() {
               >
                 <span className="set-library-media">
                   <img src={mediaUrl(getEventArtwork(item))} alt="" loading="lazy" decoding="async" />
-                  <span className="mono">{String(index + 1).padStart(2, "0")}</span>
                 </span>
-                <span className="set-library-meta mono"><span>{item.date}</span><span>{item.id}</span></span>
+                <span className="set-library-meta mono"><span>{item.date}</span></span>
                 <strong>{item.title}</strong>
                 <small className="mono">{item.venue}</small>
               </button>
@@ -1908,7 +1883,6 @@ export default function Home() {
           <header className="set-dossier-header">
             <div>
               <span className="wordmark wordmark-small">DOSEN</span>
-              <p className="mono">SET DETAILS / {selectedSet.id}</p>
             </div>
             <button type="button" onClick={closeSetDossier} aria-label="Close set dossier">
               CLOSE <span aria-hidden="true">×</span>
@@ -1917,7 +1891,6 @@ export default function Home() {
 
           <div className="set-dossier-primary">
             <div className="set-dossier-primary-heading">
-              <p className="eyebrow">SELECTED SET / {selectedSet.date}</p>
               <h2 id="set-dossier-title">{selectedSet.title}</h2>
               <p>{selectedSet.detail}</p>
             </div>
@@ -1933,12 +1906,10 @@ export default function Home() {
             <div className="set-dossier-main">
               <div className="set-dossier-notes">
                 <section>
-                  <p className="mono">THE NIGHT</p>
                   <h3>Context</h3>
                   <p>{selectedSet.story}</p>
                 </section>
                 <section>
-                  <p className="mono">THE SET</p>
                   <h3>Sound and arc</h3>
                   <p>{selectedSet.sound}</p>
                 </section>
@@ -1989,7 +1960,6 @@ export default function Home() {
             <section className="set-dossier-highlights" aria-labelledby="set-dossier-highlights-title">
               <div className="set-dossier-highlights-heading">
                 <div>
-                  <p className="eyebrow">FEATURED CLIPS / {selectedHighlightClips.length} OF {selectedLibraryEvent.clips.length}</p>
                   <h3 id="set-dossier-highlights-title">Inside the room.</h3>
                 </div>
                 <button className="mono" type="button" onClick={() => openSetMedia(selectedLibraryEvent.id)}>
@@ -2011,7 +1981,7 @@ export default function Home() {
                     >
                       <source src={corsMediaUrl(clip.src)} type="video/mp4" />
                     </video>
-                    <p className="mono">HIGHLIGHT {String(index + 1).padStart(2, "0")} / {clip.title}</p>
+                    <p className="mono">{clip.title}</p>
                   </article>
                 ))}
               </div>
@@ -2030,7 +2000,6 @@ export default function Home() {
             >
               <header className="event-visual-header">
                 <div>
-                  <p className="mono">EVENT VISUAL / {selectedSet.date}</p>
                   <h3 id="event-visual-title">{selectedSet.title}</h3>
                 </div>
                 <button
@@ -2049,7 +2018,6 @@ export default function Home() {
                   alt={`${selectedSet.title} event poster`}
                   decoding="async"
                 />
-                <figcaption className="mono">OFFICIAL EVENT POSTER / ARCHIVE VISUAL</figcaption>
               </figure>
             </div>
           )}
@@ -2098,15 +2066,11 @@ export default function Home() {
           }}
         />
 
-        <MobileChapterMarker number="01" label="LISTEN" />
-
         <div className="signal-feature-grid mobile-reveal">
           <div className="signal-intro" key={`${activeSet.slug}-copy`}>
-            <p className="eyebrow">FEATURED SET / {activeSet.date}</p>
             <h2>{activeSet.title}</h2>
             <p>{activeSet.story}</p>
             <div className="signal-sound">
-              <span className="mono">SOUND / ARC</span>
               <p>{activeSet.sound}</p>
             </div>
           </div>
@@ -2137,7 +2101,7 @@ export default function Home() {
               >
                 <PlaybackIcon playing={transmitting} className="vinyl-play-icon" />
                 <span>{transmitting ? "PAUSE" : "PLAY"}</span>
-                <small className="mono">320 KBPS / {formatTime(duration)}</small>
+                <small className="mono">{formatTime(duration)}</small>
               </button>
             </div>
           </div>
@@ -2145,8 +2109,8 @@ export default function Home() {
           <div className="signal-data mono" key={`${activeSet.slug}-data`}>
             <div><span>NOW QUEUED</span><strong>{activeSet.lineup}</strong></div>
             <div><span>LOCATION</span><strong>{activeSet.venue}</strong></div>
-            <div><span>FORMAT</span><strong>FULL SET / {formatTime(duration)}</strong></div>
-            <div><span>STATUS</span><strong>{playerStateLabel} / 320 KBPS MP3</strong></div>
+            <div><span>RUN TIME</span><strong>{formatTime(duration)}</strong></div>
+            <div><span>DATE</span><strong>{activeSet.date}</strong></div>
           </div>
         </div>
 
@@ -2172,7 +2136,7 @@ export default function Home() {
                   </span>
                   <span className="set-selector-meta">
                     <strong>{set.title}</strong>
-                    <small className="mono">{set.date} / {formatTime(getAudioDuration(getSetSegments(set)))}</small>
+                    <small className="mono">{set.date}</small>
                   </span>
                 </button>
               );
@@ -2182,11 +2146,8 @@ export default function Home() {
       </section>
 
       <section className="archive section" id="archive">
-        <MobileChapterMarker number="02" label="SELECTED SETS" />
-
         <div className="section-heading mobile-reveal">
           <div>
-            <p className="eyebrow">SELECTED PERFORMANCES / 2025—2026</p>
             <h2>Selected sets</h2>
           </div>
           <button className="archive-library-button mono" type="button" onClick={openArchiveLibrary}>
@@ -2195,7 +2156,7 @@ export default function Home() {
         </div>
 
         <div className="archive-grid mobile-reveal">
-          {transmissions.map((item, index) => (
+          {transmissions.map((item) => (
             <article className={`archive-card tone-${item.tone}`} key={item.id}>
               <button
                 className="archive-card-trigger"
@@ -2205,13 +2166,11 @@ export default function Home() {
               >
                 <div className="archive-media media-slot" data-media-slot={item.slot}>
                   <img className="archive-poster" src={mediaUrl(getEventArtwork(item))} alt="" loading="lazy" decoding="async" />
-                  <span className="archive-index mono">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="placeholder-label mono">VIEW MORE / {item.id}</span>
+                  <span className="placeholder-label mono">VIEW MORE</span>
                 </div>
                 <div className="archive-meta mono">
-                  <span>{item.id}</span><span>{item.date}</span>
+                  <span>{item.date}</span>
                 </div>
-                {item.featuredLabel && <p className="archive-featured mono">{item.featuredLabel}</p>}
                 <h3>{item.title}</h3>
                 <p>{item.detail}</p>
                 <span className="venue mono">{item.venue}</span>
@@ -2223,16 +2182,13 @@ export default function Home() {
       </section>
 
       <section className="timeline section" id="dates" aria-labelledby="timeline-title">
-        <MobileChapterMarker number="03" label="DATES" />
-
         <div className="section-heading compact mobile-reveal">
           <div>
-            <p className="eyebrow">SELECTED DATES / VERIFIED</p>
             <h2 id="timeline-title">Recent dates</h2>
           </div>
         </div>
         <div className="timeline-list mobile-reveal">
-          {timeline.map((item, index) => (
+          {timeline.map((item) => (
             <button
               className="timeline-row"
               type="button"
@@ -2240,21 +2196,17 @@ export default function Home() {
               onClick={() => openSetDossier(item.slug)}
               key={item.slug}
             >
-              <span className="row-number mono">{String(index + 1).padStart(2, "0")}</span>
               <time className="mono">{item.date}</time>
               <strong>{item.title}</strong>
-              <span>{item.venue.split(" / ")[0]}</span>
+              <span>{item.venue.split(", ")[0]}</span>
               <span className="mono format">{item.timelineFormat}</span>
             </button>
           ))}
         </div>
       </section>
 
-      <section className="press section" id="press">
-        <MobileChapterMarker number="04" label="PROFILE" />
-
+      <section className="press section" id="press" aria-label="Artist profile">
         <div className="press-profile mobile-reveal">
-          <div className="press-label mono">ARTIST PROFILE / OFFICIAL BIO</div>
           <figure className="press-headshot">
             <img
               src={mediaUrl("/media/profile/dosen-headshot-2026.jpeg")}
@@ -2262,11 +2214,10 @@ export default function Home() {
               loading="lazy"
               decoding="async"
             />
-            <figcaption className="mono">DOSEN / ARTIST PORTRAIT</figcaption>
           </figure>
         </div>
         <div className="press-copy mobile-reveal">
-          <p className="drop-cap">
+          <p>
             DOSEN is an Ottawa-based DJ with a sound rooted in minimal, gritty
             tech house and sharpened by shades of trance, house, and techno.
           </p>
@@ -2278,13 +2229,11 @@ export default function Home() {
           </p>
         </div>
         <aside className="press-facts mobile-reveal">
-          <div><span>SETS</span><strong>SOLO / B2B / SUPPORT</strong></div>
+          <div><span>SETS</span><strong>SOLO, B2B, SUPPORT</strong></div>
         </aside>
       </section>
 
       <section className="contact section" id="contact">
-        <MobileChapterMarker number="05" label="BOOK" />
-        <p className="eyebrow">BOOKINGS / PRESS / COLLABORATION</p>
         <h2 className="mobile-reveal">Make a night of it.</h2>
         <div className="contact-actions mobile-reveal">
           <a
@@ -2303,7 +2252,7 @@ export default function Home() {
 
       <footer>
         <span className="mini-mark wordmark wordmark-small">DOSEN</span>
-        <p className="mono">ELECTRONIC PRESS KIT / OTTAWA / 2026</p>
+        <p className="mono">ELECTRONIC PRESS KIT, OTTAWA 2026</p>
         <a href="#top" aria-label="Back to top">↑ TOP</a>
       </footer>
 

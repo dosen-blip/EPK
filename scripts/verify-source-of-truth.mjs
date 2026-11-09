@@ -50,7 +50,7 @@ for (const event of content.libraryEvents) {
 }
 
 const contentMediaPaths = new Set();
-assert.equal(content.pressKit.label, "DOWNLOAD EPK / PDF");
+assert.equal(content.pressKit.label, "DOWNLOAD EPK");
 assert.equal(content.pressKit.filename, "DOSEN-EPK-2026.pdf");
 contentMediaPaths.add(content.pressKit.path);
 for (const event of content.libraryEvents) {

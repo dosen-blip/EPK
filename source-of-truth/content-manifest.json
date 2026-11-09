@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "mediaOrigin": "https://dosen-media.matiadosen.workers.dev",
   "pressKit": {
-    "label": "DOWNLOAD EPK / PDF",
+    "label": "DOWNLOAD EPK",
     "path": "/media/press/dosen-epk-2026-07-signal-sky-lounge.pdf",
     "filename": "DOSEN-EPK-2026.pdf"
   },
@@ -26,8 +26,8 @@
       "title": "FREQUENCY SHIFT TECHNO SPECIAL",
       "set": "DOSEN / LIVE PERFORMANCE",
       "date": "04 SEP 2026",
-      "time": "SET TIME / TBC",
-      "location": "GRIDWRKS / OTTAWA",
+      "time": "TBC",
+      "location": "GRIDWRKS, OTTAWA",
       "clips": [
         {
           "title": "Techno Special Clip 01",
@@ -60,8 +60,8 @@
       "title": "OFF GRID 1 YEAR",
       "set": "DOSEN B2B FASTR",
       "date": "28 MAR 2026",
-      "time": "SET TIME / TBC",
-      "location": "GRIDWRKS / OTTAWA",
+      "time": "TBC",
+      "location": "GRIDWRKS, OTTAWA",
       "clips": [
         {
           "title": "Anniversary Clip 02",
@@ -136,8 +136,8 @@
       "title": "OFF GRID × FREQUENCY SHIFT",
       "set": "DOSEN / RECORDED SET",
       "date": "03 JAN 2026",
-      "time": "SET TIME / TBC",
-      "location": "GRIDWRKS / OTTAWA",
+      "time": "TBC",
+      "location": "GRIDWRKS, OTTAWA",
       "clips": [
         {
           "title": "Frequency Shift Clip 01",
@@ -164,8 +164,8 @@
       "title": "SOLSTICE × FREQUENCY SHIFT",
       "set": "DOSEN B2B GAB BALLADELLI",
       "date": "22 MAY 2026",
-      "time": "SET TIME / TBC",
-      "location": "CITY AT NIGHT / OTTAWA",
+      "time": "TBC",
+      "location": "CITY AT NIGHT, OTTAWA",
       "clips": [
         {
           "title": "Solstice Clip 01",
@@ -199,7 +199,7 @@
       "id": "TR-0626",
       "slug": "escapade-afterparty",
       "date": "26 JUN 2026",
-      "venue": "GRIDWRKS / OTTAWA",
+      "venue": "GRIDWRKS, OTTAWA",
       "title": "ESCAPADE OFFICIAL AFTERPARTY",
       "detail": "OPENING SUPPORT — ODD MOB B2B WALKER & ROYCE",
       "featuredLabel": "FEATURED / OFFICIAL AFTERPARTY",
@@ -223,14 +223,14 @@
         "kind": "segmented",
         "model": "escapade-62-segment",
         "accent": "#b748ff",
-        "dockTitle": "ESCAPADE AP / OPENING SET"
+        "dockTitle": "ESCAPADE AP OPENING SET"
       }
     },
     {
       "id": "OGS-053",
       "slug": "off-grid-1-year",
       "date": "28 MAR 2026",
-      "venue": "GRIDWRKS / OTTAWA",
+      "venue": "GRIDWRKS, OTTAWA",
       "title": "OFF GRID 1 YEAR",
       "detail": "DOSEN B2B FASTR — FULL SET AVAILABLE",
       "featuredLabel": "FEATURED / 1 YEAR ANNIVERSARY",
@@ -255,21 +255,21 @@
         "src": "/audio/off-grid-1-year-dosen-b2b-fastr.mp3",
         "durationSeconds": 4212.623469,
         "accent": "#ff9933",
-        "dockTitle": "OFF GRID 1 YEAR / DOSEN B2B FASTR"
+        "dockTitle": "OFF GRID 1 YEAR, DOSEN B2B FASTR"
       }
     },
     {
       "id": "FS-0904",
       "slug": "frequency-shift-techno-special",
       "date": "04 SEP 2026",
-      "venue": "GRIDWRKS / OTTAWA",
+      "venue": "GRIDWRKS, OTTAWA",
       "title": "FREQUENCY SHIFT TECHNO SPECIAL",
       "detail": "DOSEN — LIVE PERFORMANCE CLIPS",
       "slot": "frequency-shift-techno-special",
       "tone": "magenta",
       "role": "LIVE PERFORMANCE",
       "timelineFormat": "SOLO PERFORMANCE",
-      "lineup": "G SUTTY / ZAK BLACK / ENKO B2B DJ GABBY / DOSEN",
+      "lineup": "G SUTTY, ZAK BLACK, ENKO B2B DJ GABBY, DOSEN",
       "duration": "LIVE CLIPS",
       "artwork": {
         "vinylCover": "/media/dossiers/frequency-shift-techno-special-poster.png",
@@ -287,14 +287,14 @@
       "id": "INS-0814",
       "slug": "instinct-block-party",
       "date": "14 AUG 2026",
-      "venue": "SNIDER PARK / OTTAWA",
+      "venue": "SNIDER PARK, OTTAWA",
       "title": "INSTINCT X BLOCK PARTY",
       "detail": "OPENING SET — FULL SET AVAILABLE",
       "slot": "instinct-block-party",
       "tone": "red",
       "role": "OPENING SET",
       "timelineFormat": "OPENING SET",
-      "lineup": "DOSEN / TONE A / COMFORT + G3LIO",
+      "lineup": "DOSEN, TONE A, COMFORT + G3LIO",
       "duration": "1:17:19",
       "artwork": {
         "vinylCover": "/media/dossiers/instinct-block-party-cover.png",
@@ -311,14 +311,14 @@
         "src": "/audio/instinct-block-party-opening-set.mp3",
         "durationSeconds": 4639.150023,
         "accent": "#eef20b",
-        "dockTitle": "INSTINCT X BLOCK PARTY / OPENING SET"
+        "dockTitle": "INSTINCT X BLOCK PARTY OPENING SET"
       }
     },
     {
       "id": "FS-0522",
       "slug": "solstice-frequency-shift",
       "date": "22 MAY 2026",
-      "venue": "CITY AT NIGHT / OTTAWA",
+      "venue": "CITY AT NIGHT, OTTAWA",
       "title": "SOLSTICE X FREQUENCY SHIFT",
       "detail": "DOSEN B2B GAB BALLADELLI",
       "slot": "solstice-frequency",
@@ -343,7 +343,7 @@
       "id": "FS-0103",
       "slug": "off-grid-frequency-shift",
       "date": "03 JAN 2026",
-      "venue": "GRIDWRKS / OTTAWA",
+      "venue": "GRIDWRKS, OTTAWA",
       "title": "OFF GRID X FREQUENCY SHIFT",
       "detail": "TECH HOUSE SET — FULL RECORDING AVAILABLE",
       "slot": "frequency-shift",
@@ -374,13 +374,13 @@
       "id": "OGS-032",
       "slug": "off-grid-halloweekend",
       "date": "01 NOV 2025",
-      "venue": "GRIDWRKS / OTTAWA",
+      "venue": "GRIDWRKS, OTTAWA",
       "title": "OFF GRID HALLOWEEKEND",
-      "detail": "DEBUT / OPENING SET — FULL SET AVAILABLE",
+      "detail": "DEBUT OPENING SET — FULL SET AVAILABLE",
       "slot": "offgrid-halloween",
       "tone": "red",
-      "role": "DEBUT / OPENING SET",
-      "timelineFormat": "DEBUT / OPENING",
+      "role": "DEBUT OPENING SET",
+      "timelineFormat": "DEBUT OPENING",
       "lineup": "DOSEN",
       "duration": "1:34:42",
       "artwork": {
@@ -398,20 +398,20 @@
         "src": "/audio/offgrid-032.mp3",
         "durationSeconds": 5682.410975,
         "accent": "#ff4938",
-        "dockTitle": "OFF GRID / HALLOWEEKEND"
+        "dockTitle": "OFF GRID HALLOWEEKEND"
       }
     },
     {
       "id": "EXO-002",
       "slug": "exosphere-002-sky-lounge",
       "date": "SUMMER 2025",
-      "venue": "SKY LOUNGE / OTTAWA",
+      "venue": "SKY LOUNGE, OTTAWA",
       "title": "EXOSPHERE 002",
-      "detail": "FIRST-EVER DEBUT / OPENING SET — FULL SET AVAILABLE",
+      "detail": "FIRST-EVER DEBUT OPENING SET — FULL SET AVAILABLE",
       "slot": "exosphere-002",
       "tone": "amber",
-      "role": "DEBUT / OPENING SET",
-      "timelineFormat": "FIRST DEBUT / OPENING",
+      "role": "DEBUT OPENING SET",
+      "timelineFormat": "FIRST DEBUT OPENING",
       "lineup": "DOSEN",
       "duration": "0:59:08",
       "artwork": {
@@ -429,7 +429,7 @@
         "src": "/audio/exosphere-002-sky-lounge.mp3",
         "durationSeconds": 3548.686009,
         "accent": "#ff9933",
-        "dockTitle": "EXOSPHERE 002 / SKY LOUNGE"
+        "dockTitle": "EXOSPHERE 002 AT SKY LOUNGE"
       }
     }
   ]
