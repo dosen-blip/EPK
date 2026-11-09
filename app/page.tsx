@@ -1800,7 +1800,7 @@ export default function Home() {
         </div>
 
         <div className="scroll-note mono" aria-hidden="true">
-          SCROLL TO EXPLORE <span>↓</span>
+          SCROLL TO EXPLORE
         </div>
       </section>
 
@@ -1931,16 +1931,16 @@ export default function Home() {
               <div className="set-dossier-actions mono">
                 {selectedSet.recordingUrl && (
                   <a href={selectedSet.recordingUrl} target="_blank" rel="noreferrer">
-                    LISTEN TO FULL SET <span aria-hidden="true">↗</span>
+                    LISTEN TO FULL SET
                   </a>
                 )}
                 {selectedSet.secondaryUrl && (
                   <a href={selectedSet.secondaryUrl} target="_blank" rel="noreferrer">
-                    WATCH FULL SET <span aria-hidden="true">↗</span>
+                    WATCH FULL SET
                   </a>
                 )}
                 <button type="button" onClick={() => setEventVisualOpen(true)}>
-                  OPEN EVENT VISUAL <span aria-hidden="true">↗</span>
+                  OPEN EVENT VISUAL
                 </button>
               </div>
             </div>
@@ -1952,7 +1952,6 @@ export default function Home() {
               aria-hidden="true"
             >
               <span>SCROLL FOR MORE</span>
-              <span aria-hidden="true">↓</span>
             </div>
           )}
 
@@ -1963,7 +1962,7 @@ export default function Home() {
                   <h3 id="set-dossier-highlights-title">Inside the room.</h3>
                 </div>
                 <button className="mono" type="button" onClick={() => openSetMedia(selectedLibraryEvent.id)}>
-                  VIEW ALL {selectedLibraryEvent.clips.length} EVENT VIDEOS <span aria-hidden="true">↗</span>
+                  VIEW ALL {selectedLibraryEvent.clips.length} EVENT VIDEOS
                 </button>
               </div>
 
@@ -2151,7 +2150,7 @@ export default function Home() {
             <h2>Selected sets</h2>
           </div>
           <button className="archive-library-button mono" type="button" onClick={openArchiveLibrary}>
-            LIBRARY <span aria-hidden="true">↗</span>
+            LIBRARY
           </button>
         </div>
 
@@ -2242,18 +2241,18 @@ export default function Home() {
             download={PRESS_KIT.filename}
             aria-label="Download the DOSEN electronic press kit PDF"
           >
-            {PRESS_KIT.label} ↓
+            {PRESS_KIT.label}
           </a>
-          <a href="mailto:matiadosen@outlook.com">matiadosen@outlook.com ↗</a>
-          <a href="https://www.instagram.com/matia_dosen/" target="_blank" rel="noreferrer">Instagram ↗</a>
-          <a href="https://soundcloud.com/user-278640203" target="_blank" rel="noreferrer">SoundCloud ↗</a>
+          <a href="mailto:matiadosen@outlook.com">matiadosen@outlook.com</a>
+          <a href="https://www.instagram.com/matia_dosen/" target="_blank" rel="noreferrer">Instagram</a>
+          <a href="https://soundcloud.com/user-278640203" target="_blank" rel="noreferrer">SoundCloud</a>
         </div>
       </section>
 
       <footer>
         <span className="mini-mark wordmark wordmark-small">DOSEN</span>
         <p className="mono">ELECTRONIC PRESS KIT, OTTAWA 2026</p>
-        <a href="#top" aria-label="Back to top">↑ TOP</a>
+        <a href="#top" aria-label="Back to top">TOP</a>
       </footer>
 
       <div

@@ -236,10 +236,8 @@ button { color: inherit; }
 .set-dossier-header > div { display: flex; align-items: center; gap: 22px; }
 .set-dossier-header button { padding: 10px 15px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--paper); cursor: pointer; font: 700 .6rem/1 var(--font-label); letter-spacing: .08em; }
 .set-dossier-header button span { margin-left: 7px; font-size: 1rem; }
-.set-dossier-scroll-cue { position: fixed; z-index: 4; left: clamp(18px, 3vw, 48px); bottom: clamp(24px, 4vh, 48px); padding: 8px 9px 8px 13px; border: 1px solid color-mix(in srgb, var(--dossier-accent) 58%, var(--line)); border-radius: 999px; display: flex; align-items: center; gap: 12px; opacity: 0; transform: translateY(12px); pointer-events: none; background: rgba(2,2,3,.88); color: var(--paper); box-shadow: 0 12px 38px rgba(0,0,0,.42); font-size: .58rem; letter-spacing: .1em; backdrop-filter: blur(10px); transition: opacity .25s ease, transform .35s cubic-bezier(.22,.76,.2,1); }
+.set-dossier-scroll-cue { position: fixed; z-index: 4; left: clamp(18px, 3vw, 48px); bottom: clamp(24px, 4vh, 48px); padding: 9px 14px; border: 1px solid color-mix(in srgb, var(--dossier-accent) 58%, var(--line)); border-radius: 999px; display: flex; align-items: center; gap: 12px; opacity: 0; transform: translateY(12px); pointer-events: none; background: rgba(2,2,3,.88); color: var(--paper); box-shadow: 0 12px 38px rgba(0,0,0,.42); font-size: .58rem; letter-spacing: .1em; backdrop-filter: blur(10px); transition: opacity .25s ease, transform .35s cubic-bezier(.22,.76,.2,1); }
 .set-dossier-scroll-cue.is-visible { opacity: 1; transform: none; }
-.set-dossier-scroll-cue span:last-child { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--dossier-accent); color: var(--ink); font-size: .9rem; animation: dossier-scroll-cue-bob 1.3s ease-in-out infinite; }
-@keyframes dossier-scroll-cue-bob { 50% { transform: translateY(3px); } }
 .set-dossier-primary { padding: clamp(46px, 7vw, 100px) clamp(18px, 3vw, 48px) clamp(68px, 9vw, 140px); display: grid; grid-template-columns: minmax(220px, .55fr) minmax(0, 1.45fr); gap: clamp(40px, 7vw, 120px); }
 .set-dossier-primary-heading { grid-column: 1 / -1; min-width: 0; padding-bottom: clamp(34px, 5vw, 62px); border-bottom: 1px solid var(--line); }
 .set-dossier-primary-heading h2 { width: 100%; max-width: 13ch; margin: 0 0 24px; font-size: clamp(3.35rem, 5.5vw, 7rem); line-height: .94; letter-spacing: 0; overflow-wrap: break-word; text-wrap: balance; }
@@ -258,7 +256,6 @@ button { color: inherit; }
 .set-dossier-highlights h3 { margin: 0; font-size: clamp(3.25rem, 7vw, 7.5rem); line-height: .94; letter-spacing: 0; }
 .set-dossier-highlights-heading button { min-height: 44px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 999px; flex: 0 0 auto; background: transparent; color: var(--paper); cursor: pointer; font-size: .6rem; letter-spacing: .08em; transition: border-color .22s ease, background .22s ease; }
 .set-dossier-highlights-heading button:hover { border-color: var(--dossier-accent); background: color-mix(in srgb, var(--dossier-accent) 14%, transparent); }
-.set-dossier-highlights-heading button span { margin-left: 8px; color: var(--dossier-accent); }
 .set-dossier-highlights-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 2vw, 30px); align-items: start; }
 .set-dossier-highlight { min-width: 0; }
 .set-dossier-highlight video { width: 100%; display: block; border: 1px solid var(--line); background: #111; aspect-ratio: 16 / 9; object-fit: contain; }
@@ -294,7 +291,6 @@ button { color: inherit; }
 .set-dossier-actions { margin-top: 38px; display: flex; flex-wrap: wrap; gap: 10px; }
 .set-dossier-actions a, .set-dossier-actions button { padding: 13px 17px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--paper); cursor: pointer; font: 700 .57rem/1 var(--font-label); letter-spacing: .07em; transition: background .2s ease, border-color .2s ease; }
 .set-dossier-actions a:hover, .set-dossier-actions button:hover { border-color: var(--dossier-accent); background: color-mix(in srgb, var(--dossier-accent) 12%, transparent); }
-.set-dossier-actions span { margin-left: 10px; color: var(--dossier-accent); }
 .event-visual-lightbox { position: fixed; z-index: 12; inset: 0; padding: 22px clamp(18px, 3vw, 48px) 30px; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 20px; background: rgba(5,5,6,.93); backdrop-filter: blur(18px); animation: event-visual-reveal .34s cubic-bezier(.16,1,.3,1) both; }
 @keyframes event-visual-reveal { from { opacity: 0; transform: translateY(12px) scale(.992); } to { opacity: 1; transform: none; } }
 .event-visual-header { min-height: 62px; padding-bottom: 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
@@ -336,7 +332,6 @@ button { color: inherit; }
 .section-heading h2, .signal-intro h2, .contact h2 { margin: 0; font-size: clamp(3.4rem, 8vw, 8.6rem); line-height: .94; }
 .archive-library-button { padding: 12px 18px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--paper); cursor: pointer; font-size: .63rem; letter-spacing: .08em; transition: border-color .2s ease, background .2s ease; }
 .archive-library-button:hover { border-color: var(--violet); background: rgba(183,72,255,.1); }
-.archive-library-button span { margin-left: 16px; color: var(--violet); }
 .archive-grid { display: grid; grid-template-columns: repeat(12, 1fr); align-items: start; gap: clamp(16px, 2vw, 30px); }
 .archive-card { grid-column: span 6; min-width: 0; }
 .archive-card-trigger { width: 100%; padding: 0; border: 0; display: block; background: transparent; color: inherit; cursor: pointer; text-align: left; font: inherit; }
@@ -935,7 +930,6 @@ footer p, footer a { font-size: .62rem; }
 @media (hover: hover) and (pointer: fine) {
   .hero-actions .hero-action:hover, .site-header .nav-cta:hover, .section-heading .archive-library-button:hover, .contact .contact-actions > a:hover { color: #041222; box-shadow: 0 0 0 1px rgba(214,239,255,.95), 0 0 12px 1px #2fa8ff, 0 0 40px 4px color-mix(in srgb, #2fa8ff 72%, transparent), 0 0 100px 10px color-mix(in srgb, #2f5bff 42%, transparent); }
   .hero-actions .hero-action:hover::before, .site-header .nav-cta:hover::before, .section-heading .archive-library-button:hover::before, .contact .contact-actions > a:hover::before { opacity: 1; }
-  .section-heading .archive-library-button:hover span { color: #1766c9; }
 }
 .hero-actions .hero-action:focus-visible, .site-header .nav-cta:focus-visible, .section-heading .archive-library-button:focus-visible, .contact .contact-actions > a:focus-visible { color: #041222; box-shadow: 0 0 0 1px rgba(214,239,255,.95), 0 0 12px 1px #2fa8ff, 0 0 40px 4px color-mix(in srgb, #2fa8ff 72%, transparent); }
 .hero-actions .hero-action:focus-visible::before, .site-header .nav-cta:focus-visible::before, .section-heading .archive-library-button:focus-visible::before, .contact .contact-actions > a:focus-visible::before { opacity: 1; }

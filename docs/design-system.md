@@ -207,6 +207,9 @@ above it, no catalogue codes, no counters or coordinates. Cards, date rows and t
 Lists read as plain text, with commas rather than slashes (`GRIDWRKS, OTTAWA`). The press profile keeps only the
 "SETS" fact.
 
+Links, buttons, cues and the phone menu carry words only: no arrows (↗ ↓ ↑ ↘) or other emoji-like glyphs. The web
+fonts don't include them, so phones fall back to the emoji font. `tests/rendered-html.test.mjs` fails if one returns.
+
 ## Effects framework
 
 All video-reactive and site-wide light effects are registered in `app/_hero/ambience-model.mjs`

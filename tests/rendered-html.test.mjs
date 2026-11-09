@@ -206,6 +206,8 @@ test("keeps production media and visual treatments explicit", async () => {
   assert.match(page, /className="mobile-index-trigger mono"/);
   assert.match(page, /id="mobile-index"/);
   assert.doesNotMatch(page, /MobileChapterMarker/);
+  // No arrow or emoji glyphs in links or cues: phones render them as emoji.
+  assert.doesNotMatch(page, /[\u2190-\u21FF\u2B00-\u2BFF\u{1F000}-\u{1FAFF}\uFE0F]/u);
   assert.match(page, /id="dates"/);
   assert.match(page, /mobileDockCompact \? "is-compact"/);
   assert.match(page, /downwardTravel >= 64/);
